@@ -20,6 +20,14 @@ Check one of the installable packages for installation and usage instructions:
 
 It is intended that this library will be split into a platform agnostic 'core' layer, and a nodejs specific layer. This will allow for using WebSerial or other serial backends. Let me know if you are interested in utilising this, as a reminder to get it done!
 
+## References
+
+This is largly based on the prior works:
+
+- https://github.com/foxxyz/loupedeck
+- https://github.com/CommandPost/CommandPost/blob/develop/src/extensions/hs/loupedeck/init.lua
+- https://github.com/bitfocus/loupedeck-ct
+
 ## Contributing
 
 The @loupedeck team enthusiastically welcomes contributions and project participation! There's a bunch of things you can do if you want to contribute! Please don't hesitate to jump in if you'd like to, or even ask us questions if something isn't clear.

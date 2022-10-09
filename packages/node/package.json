@@ -1,41 +1,41 @@
 {
-  "name": "@loupedeck/node",
-  "version": "0.1.0-0",
-  "main": "dist/index.js",
-  "typings": "dist/index.d.ts",
-  "license": "MIT",
-  "homepage": "https://github.com/julusian/node-loupedeck#readme",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/julusian/node-loupedeck.git"
-  },
-  "bugs": {
-    "url": "https://github.com/julusian/node-loupedeck/issues"
-  },
-  "author": {
-    "name": "Julian Waller",
-    "email": "git@julusian.co.uk"
-  },
-  "keywords": [
-    "loupedeck",
-    "usb",
-    "hardware",
-    "interface",
-    "controller"
-  ],
-  "scripts": {
-    "build": "rimraf dist && yarn build:main",
-    "build:main": "tsc -p tsconfig.build.json"
-  },
-  "files": [
-    "dist"
-  ],
-  "engines": {
-    "node": ">=14.15"
-  },
-  "dependencies": {
-    "eventemitter3": "^4.0.7",
-    "serialport": "^10.4.0",
-    "tslib": "^2.4.0"
-  }
+	"name": "@loupedeck/node",
+	"version": "0.1.0",
+	"main": "dist/index.js",
+	"typings": "dist/index.d.ts",
+	"license": "MIT",
+	"homepage": "https://github.com/julusian/node-loupedeck#readme",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/julusian/node-loupedeck.git"
+	},
+	"bugs": {
+		"url": "https://github.com/julusian/node-loupedeck/issues"
+	},
+	"author": {
+		"name": "Julian Waller",
+		"email": "git@julusian.co.uk"
+	},
+	"keywords": [
+		"loupedeck",
+		"usb",
+		"hardware",
+		"interface",
+		"controller"
+	],
+	"scripts": {
+		"build": "rimraf dist && yarn build:main",
+		"build:main": "tsc -p tsconfig.build.json"
+	},
+	"files": [
+		"dist"
+	],
+	"engines": {
+		"node": ">=14.15"
+	},
+	"dependencies": {
+		"eventemitter3": "^4.0.7",
+		"serialport": "^10.4.0",
+		"tslib": "^2.4.0"
+	}
 }
