@@ -1,0 +1,29 @@
+{
+  "name": "loupedeck-packages",
+  "private": true,
+  "workspaces": [
+    "packages/*"
+  ],
+  "devDependencies": {
+    "@sofie-automation/code-standard-preset": "^2.0.2",
+    "@types/node": "^16.11.64",
+    "husky": "^7.0.4",
+    "lerna": "^5.6.1",
+    "typescript": "^4.8.4"
+  },
+  "scripts": {
+    "prepare": "husky install",
+    "postinstall": "lerna bootstrap",
+    "build": "yarn lerna exec yarn build",
+    "test": "yarn lint && yarn unit",
+    "unit": "jest",
+    "lint:raw": "eslint --ext .ts --ext .js --ext .tsx --ext .jsx --ignore-pattern dist",
+    "lint": "yarn lint:raw packages",
+    "lint-fix": "yarn lint --fix",
+    "bump": "lerna version --exact --conventional-commits --no-push -m \"chore(release): publish %s\"",
+    "graduate": "yarn bump --conventional-graduate",
+    "publish2": "yarn build && lerna publish from-package --pre-dist-tag next",
+    "validate:dependencies": "yarn audit && yarn license-validate",
+    "license-validate": "yarn sofie-licensecheck --allowPackages \"caniuse-lite@1.0.30001370\""
+  }
+}
