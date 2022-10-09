@@ -8,7 +8,7 @@ import {
 	RGBColor,
 } from '../constants'
 import { LoupedeckSerialConnection } from '../serial'
-import { checkRGBColor, checkRGBValue, createBufferWithHeader, encodeBuffer } from '../util'
+import { checkRGBColor, checkRGBValue, encodeBuffer } from '../util'
 import { LoupedeckDevice } from './interface'
 import { LoupedeckModelId } from '../info'
 import PQueue from 'p-queue'
@@ -130,7 +130,7 @@ export abstract class LoupedeckDeviceBase extends EventEmitter<LoupedeckDeviceEv
 		if (x < 0 || x + width > display.width) throw new Error('x is not valid')
 		if (y < 0 || y + height > display.height) throw new Error('x is not valid')
 
-		const [encoded, padding] = createBufferWithHeader(display.encoded, width, height, x, y)
+		const [encoded, padding] = this.createBufferWithHeader(display, width, height, x, y)
 		encodeBuffer(buffer, encoded, format, padding, width * height)
 
 		await this.runInQueueIfEnabled(async () => {
@@ -161,7 +161,7 @@ export abstract class LoupedeckDeviceBase extends EventEmitter<LoupedeckDeviceEv
 
 		const encodedValue = (Math.round(color.red) << 11) + (Math.round(color.green) << 5) + Math.round(color.blue)
 
-		const [encoded, padding] = createBufferWithHeader(display.encoded, width, height, x, y)
+		const [encoded, padding] = this.createBufferWithHeader(display, width, height, x, y)
 		for (let i = 0; i < width * height; i++) {
 			encoded.writeUint16LE(encodedValue, i * 2 + padding)
 		}
@@ -303,7 +303,7 @@ export abstract class LoupedeckDeviceBase extends EventEmitter<LoupedeckDeviceEv
 		await this.runInQueueIfEnabled(async () => {
 			if (doDisplays) {
 				for (const display of this.displays) {
-					const [payload] = createBufferWithHeader(display.encoded, display.width, display.height, 0, 0)
+					const [payload] = this.createBufferWithHeader(display, display.width, display.height, 0, 0)
 
 					await this.sendAndWaitIfRequired(CommandIds.DrawFramebuffer, payload, true)
 					await this.sendAndWaitIfRequired(CommandIds.RefreshDisplay, display.encoded, true)
@@ -349,6 +349,31 @@ export abstract class LoupedeckDeviceBase extends EventEmitter<LoupedeckDeviceEv
 
 			if (this.options.waitForAcks) await this.waitForTransaction(transactionId)
 		}, skipQueue)
+	}
+
+	/**
+	 * Create a buffer with the header predefined.
+	 * @returns The buffer and the data offset
+	 */
+	protected createBufferWithHeader(
+		display: LoupedeckDisplayDefinition,
+		width: number,
+		height: number,
+		x: number,
+		y: number
+	): [buffer: Buffer, offset: number] {
+		const padding = 10 // header + id
+
+		const pixelCount = width * height
+		const encoded = Buffer.alloc(pixelCount * 2 + padding)
+
+		display.encoded.copy(encoded)
+		encoded.writeUInt16BE(x, 2)
+		encoded.writeUInt16BE(y, 4)
+		encoded.writeUInt16BE(width, 6)
+		encoded.writeUInt16BE(height, 8)
+
+		return [encoded, padding]
 	}
 
 	private send(commandId: number, payload: Buffer | undefined): number {

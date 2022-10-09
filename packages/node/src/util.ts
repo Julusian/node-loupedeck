@@ -26,27 +26,6 @@ export function encodeBuffer(
 	}
 }
 
-export function createBufferWithHeader(
-	id: Buffer,
-	width: number,
-	height: number,
-	x: number,
-	y: number
-): [buffer: Buffer, offset: number] {
-	const padding = 10 // header + id
-
-	const pixelCount = width * height
-	const encoded = Buffer.alloc(pixelCount * 2 + padding)
-
-	id.copy(encoded)
-	encoded.writeUInt16BE(x, 2)
-	encoded.writeUInt16BE(y, 4)
-	encoded.writeUInt16BE(width, 6)
-	encoded.writeUInt16BE(height, 8)
-
-	return [encoded, padding]
-}
-
 export function checkRGBValue(value: number): void {
 	if (value < 0 || value > 255) {
 		throw new TypeError('Expected a valid color RGB value 0 - 255')

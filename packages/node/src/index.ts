@@ -7,7 +7,6 @@ import { LoupedeckDeviceOptions } from './models/base'
 
 export * from './constants'
 export * from './info'
-export { LoupedeckLiveDevice } from './models/live'
 export { LoupedeckControlDefinition, LoupedeckDeviceOptions, LoupedeckDisplayDefinition } from './models/base'
 
 export { LoupedeckDevice }
