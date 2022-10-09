@@ -59,13 +59,14 @@ export class LoupedeckLiveDevice extends LoupedeckDeviceBase {
 		return LoupedeckModelId.LoupedeckLive
 	}
 
-	protected onTouch(event: 'touchmove' | 'touchend' | 'touchstart', buff: Buffer): void {
+	protected override onTouch(event: 'touchmove' | 'touchend' | 'touchstart', buff: Buffer): void {
 		const x = buff.readUInt16BE(1)
 		const y = buff.readUInt16BE(3)
 		const id = buff.readUInt8(5)
 		// Determine target
 
-		const screen = x < 60 ? LoupedeckDisplayId.Left : x >= 420 ? LoupedeckDisplayId.Right : LoupedeckDisplayId.Center
+		const screen =
+			x < 60 ? LoupedeckDisplayId.Left : x >= 420 ? LoupedeckDisplayId.Right : LoupedeckDisplayId.Center
 		let key: number | undefined
 		if (screen === LoupedeckDisplayId.Center) {
 			const column = Math.floor((x - 60) / 90)

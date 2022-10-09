@@ -42,6 +42,20 @@ export interface LoupedeckDevice extends EventEmitter<LoupedeckDeviceEvents> {
 	): Promise<void>
 
 	/**
+	 * Draw a buffer to a key on the display
+	 * @param index Key index (0 top left)
+	 * @param buffer The buffer to draw
+	 * @param format The format of the source buffer
+	 * @param skipRefreshDisplay Skip refreshing the display, to allow for batching draws
+	 */
+	drawKeyBuffer(
+		index: number,
+		buffer: Buffer,
+		format: LoupedeckBufferFormat,
+		skipRefreshDisplay?: boolean
+	): Promise<void>
+
+	/**
 	 * Draw a solid colour to a display
 	 * @param displayId The display to draw to
 	 * @param color The color to draw
@@ -60,13 +74,6 @@ export interface LoupedeckDevice extends EventEmitter<LoupedeckDeviceEvents> {
 		y: number,
 		skipRefreshDisplay?: boolean
 	): Promise<void>
-
-	//  async drawKeyBuffer(index: number, buffer: )
-
-	// // Draw to a specific key index (0-12)
-	// drawKeyBuffer(index, buffer)
-	// // Draw to a specific screen
-	// drawScreenBuffer(id, buffer)
 
 	/**
 	 * Refresh a display to show pending updates in the framebuffer

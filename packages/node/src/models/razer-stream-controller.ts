@@ -59,7 +59,7 @@ export class RazerStreamControllerDevice extends LoupedeckDeviceBase {
 		return LoupedeckModelId.RazerStreamController
 	}
 
-	protected onTouch(event: 'touchmove' | 'touchend' | 'touchstart', buff: Buffer): void {
+	protected override onTouch(event: 'touchmove' | 'touchend' | 'touchstart', buff: Buffer): void {
 		const x = buff.readUInt16BE(1)
 		const y = buff.readUInt16BE(3)
 		const id = buff.readUInt8(5)

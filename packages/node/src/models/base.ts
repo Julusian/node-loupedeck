@@ -120,7 +120,7 @@ export abstract class LoupedeckDeviceBase extends EventEmitter<LoupedeckDeviceEv
 		height: number,
 		x: number,
 		y: number,
-		refreshDisplay = true
+		skipRefreshDisplay?: boolean
 	) {
 		const display = this.displays.find((d) => d.id === displayId)
 		if (!display) throw new Error('Invalid DisplayId')
@@ -136,7 +136,7 @@ export abstract class LoupedeckDeviceBase extends EventEmitter<LoupedeckDeviceEv
 		await this.runInQueueIfEnabled(async () => {
 			// Run in the queue as a single operation
 			await this.sendAndWaitIfRequired(CommandIds.DrawFramebuffer, encoded, true)
-			if (refreshDisplay) await this.sendAndWaitIfRequired(CommandIds.RefreshDisplay, display.encoded, true)
+			if (!skipRefreshDisplay) await this.sendAndWaitIfRequired(CommandIds.RefreshDisplay, display.encoded, true)
 		}, false)
 	}
 
@@ -147,7 +147,7 @@ export abstract class LoupedeckDeviceBase extends EventEmitter<LoupedeckDeviceEv
 		height: number,
 		x: number,
 		y: number,
-		refreshDisplay = true
+		skipRefreshDisplay?: boolean
 	): Promise<void> {
 		const display = this.displays.find((d) => d.id === displayId)
 		if (!display) throw new Error('Invalid DisplayId')
@@ -169,11 +169,20 @@ export abstract class LoupedeckDeviceBase extends EventEmitter<LoupedeckDeviceEv
 		await this.runInQueueIfEnabled(async () => {
 			// Run in the queue as a single operation
 			await this.sendAndWaitIfRequired(CommandIds.DrawFramebuffer, encoded, true)
-			if (refreshDisplay) await this.sendAndWaitIfRequired(CommandIds.RefreshDisplay, display.encoded, true)
+			if (!skipRefreshDisplay) await this.sendAndWaitIfRequired(CommandIds.RefreshDisplay, display.encoded, true)
 		}, false)
 	}
 
-	// public async drawKeyBuffer(index: number, buffer: )
+	public async drawKeyBuffer(
+		index: number,
+		buffer: Buffer,
+		format: LoupedeckBufferFormat,
+		skipRefreshDisplay?: boolean
+	): Promise<void> {
+		const [x, y] = this.convertKeyIndexToCoordinates(index)
+
+		return this.drawBuffer(LoupedeckDisplayId.Center, buffer, format, 90, 90, x, y, skipRefreshDisplay)
+	}
 
 	// // Draw to a specific key index (0-12)
 	// drawKeyBuffer(index, buffer) {
@@ -374,6 +383,14 @@ export abstract class LoupedeckDeviceBase extends EventEmitter<LoupedeckDeviceEv
 		encoded.writeUInt16BE(height, 8)
 
 		return [encoded, padding]
+	}
+	protected convertKeyIndexToCoordinates(index: number): [x: number, y: number] {
+		const width = 90
+		const height = 90
+		const x = (index % 4) * width
+		const y = Math.floor(index / 4) * height
+
+		return [x, y]
 	}
 
 	private send(commandId: number, payload: Buffer | undefined): number {

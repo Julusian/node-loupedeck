@@ -46,7 +46,7 @@ export class LoupedeckLiveSDevice extends LoupedeckDeviceBase {
 		return LoupedeckModelId.LoupedeckLiveS
 	}
 
-	protected onTouch(event: 'touchmove' | 'touchend' | 'touchstart', buff: Buffer): void {
+	protected override onTouch(event: 'touchmove' | 'touchend' | 'touchstart', buff: Buffer): void {
 		const x = buff.readUInt16BE(1)
 		const y = buff.readUInt16BE(3)
 		const id = buff.readUInt8(5)
@@ -71,5 +71,14 @@ export class LoupedeckLiveSDevice extends LoupedeckDeviceBase {
 		}
 
 		this.emit(event, { touches: Object.values(this.touches), changedTouches: [touch] })
+	}
+
+	protected override convertKeyIndexToCoordinates(index: number): [x: number, y: number] {
+		const width = 90
+		const height = 90
+		const x = (index % 5) * width
+		const y = Math.floor(index / 5) * height
+
+		return [x, y]
 	}
 }
