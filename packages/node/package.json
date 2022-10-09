@@ -35,6 +35,7 @@
 	},
 	"dependencies": {
 		"eventemitter3": "^4.0.7",
+		"p-queue": "6",
 		"serialport": "^10.4.0",
 		"tslib": "^2.4.0"
 	}

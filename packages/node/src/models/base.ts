@@ -10,7 +10,8 @@ import {
 import { LoupedeckSerialConnection } from '../serial'
 import { checkRGBColor, checkRGBValue, createBufferWithHeader, encodeBuffer } from '../util'
 import { LoupedeckDevice } from './interface'
-import { LoupedeckModelId } from '..'
+import { LoupedeckModelId } from '../info'
+import PQueue from 'p-queue'
 
 enum CommandIds {
 	SetColour = 0x02,
@@ -62,6 +63,8 @@ export abstract class LoupedeckDeviceBase extends EventEmitter<LoupedeckDeviceEv
 	readonly #pendingTransactions: Record<number, TransactionHandler> = {}
 	#nextTransactionId: number = 0
 
+	#sendQueue: PQueue | undefined
+
 	constructor(
 		connection: LoupedeckSerialConnection,
 		options: LoupedeckDeviceOptions,
@@ -75,15 +78,37 @@ export abstract class LoupedeckDeviceBase extends EventEmitter<LoupedeckDeviceEv
 		this.displays = displays
 		this.controls = controls
 
-		this.#connection.on('error', (err) => this.emit('error', err))
-		this.#connection.on('disconnect', () => this.emit('error', new Error('Connection lost'))) // TODO - not if closed?
+		if (this.options.waitForAcks) {
+			this.#sendQueue = new PQueue({
+				concurrency: 1,
+			})
+		}
+
+		this.#connection.on('error', (err) => {
+			this.cleanupPendingPromises()
+			this.emit('error', err)
+		})
+		this.#connection.on('disconnect', () => {
+			// TODO - not if closed?
+			this.cleanupPendingPromises()
+			this.emit('error', new Error('Connection lost'))
+		})
 		this.#connection.on('message', this.#onMessage.bind(this))
 	}
 
 	public abstract get modelName(): string
 	public abstract get modelId(): LoupedeckModelId
 
+	private cleanupPendingPromises(): void {
+		setImmediate(() => {
+			for (const promise of Object.values(this.#pendingTransactions)) {
+				promise.reject(new Error('Connection closed'))
+			}
+		})
+	}
+
 	public close(): void {
+		this.cleanupPendingPromises()
 		this.#connection.close()
 	}
 
@@ -108,10 +133,11 @@ export abstract class LoupedeckDeviceBase extends EventEmitter<LoupedeckDeviceEv
 		const [encoded, padding] = createBufferWithHeader(display.encoded, width, height, x, y)
 		encodeBuffer(buffer, encoded, format, padding, width * height)
 
-		// Write to frame buffer
-		await this.sendAndWaitIfRequired(CommandIds.DrawFramebuffer, encoded)
-
-		if (refreshDisplay) await this.refreshDisplay(displayId)
+		await this.runInQueueIfEnabled(async () => {
+			// Run in the queue as a single operation
+			await this.sendAndWaitIfRequired(CommandIds.DrawFramebuffer, encoded, true)
+			if (refreshDisplay) await this.sendAndWaitIfRequired(CommandIds.RefreshDisplay, display.encoded, true)
+		}, false)
 	}
 
 	public async drawSolidColour(
@@ -140,10 +166,11 @@ export abstract class LoupedeckDeviceBase extends EventEmitter<LoupedeckDeviceEv
 			encoded.writeUint16LE(encodedValue, i * 2 + padding)
 		}
 
-		// Write to frame buffer
-		await this.sendAndWaitIfRequired(CommandIds.DrawFramebuffer, encoded)
-
-		if (refreshDisplay) await this.refreshDisplay(displayId)
+		await this.runInQueueIfEnabled(async () => {
+			// Run in the queue as a single operation
+			await this.sendAndWaitIfRequired(CommandIds.DrawFramebuffer, encoded, true)
+			if (refreshDisplay) await this.sendAndWaitIfRequired(CommandIds.RefreshDisplay, display.encoded, true)
+		}, false)
 	}
 
 	// public async drawKeyBuffer(index: number, buffer: )
@@ -214,16 +241,12 @@ export abstract class LoupedeckDeviceBase extends EventEmitter<LoupedeckDeviceEv
 	}
 
 	public async getSerialNumber(): Promise<string> {
-		const transactionId = this.send(CommandIds.GetVersion, undefined)
-
-		const buffer = await this.waitForTransaction(transactionId)
+		const buffer = await this.sendAndWaitForResult(CommandIds.GetVersion, undefined)
 
 		return buffer.toString().trim()
 	}
 	public async getFirmwareVersion(): Promise<string> {
-		const transactionId = this.send(CommandIds.GetVersion, undefined)
-
-		const buffer = await this.waitForTransaction(transactionId)
+		const buffer = await this.sendAndWaitForResult(CommandIds.GetVersion, undefined)
 
 		return `${buffer.readUInt8(0)}.${buffer.readUInt8(1)}.${buffer.readUInt8(2)}`
 	}
@@ -276,28 +299,56 @@ export abstract class LoupedeckDeviceBase extends EventEmitter<LoupedeckDeviceEv
 	}
 
 	public async blankDevice(doDisplays = true, doButtons = true): Promise<void> {
-		if (doDisplays) {
-			const black: RGBColor = { red: 0, green: 0, blue: 0 }
-			for (const display of this.displays) {
-				await this.drawSolidColour(display.id, black, display.width, display.height, 0, 0, true)
-			}
-		}
+		// These steps are done manually, so that it is one operation in the queue, otherwise behaviour is a little non-deterministic
+		await this.runInQueueIfEnabled(async () => {
+			if (doDisplays) {
+				for (const display of this.displays) {
+					const [payload] = createBufferWithHeader(display.encoded, display.width, display.height, 0, 0)
 
-		if (doButtons) {
-			const buttonColors: Array<{ id: number; red: number; green: number; blue: number }> = []
-			for (const control of this.controls) {
-				if (control.type === LoupedeckControlType.Button) {
-					buttonColors.push({ id: control.index, red: 0, green: 0, blue: 0 })
+					await this.sendAndWaitIfRequired(CommandIds.DrawFramebuffer, payload, true)
+					await this.sendAndWaitIfRequired(CommandIds.RefreshDisplay, display.encoded, true)
 				}
 			}
-			await this.setButtonColor(...buttonColors)
-		}
+
+			if (doButtons) {
+				const buttons = this.controls.filter((c) => c.type === LoupedeckControlType.Button)
+				const payload = Buffer.alloc(4 * buttons.length)
+				for (let i = 0; i < buttons.length; i++) {
+					payload.writeUInt8(buttons[i].encoded, i * 4)
+				}
+				await this.sendAndWaitIfRequired(CommandIds.SetColour, payload, true)
+			}
+		}, false)
 	}
 
-	private async sendAndWaitIfRequired(commandId: number, payload: Buffer | undefined): Promise<void> {
-		const transactionId = this.send(commandId, payload)
+	private async runInQueueIfEnabled<T>(fn: () => Promise<T>, forceSkipQueue: boolean) {
+		if (this.#sendQueue && !forceSkipQueue) {
+			return this.#sendQueue.add(fn)
+		} else {
+			return fn()
+		}
+	}
+	private async sendAndWaitForResult(
+		commandId: number,
+		payload: Buffer | undefined,
+		skipQueue = false
+	): Promise<Buffer> {
+		return this.runInQueueIfEnabled(async () => {
+			const transactionId = this.send(commandId, payload)
 
-		if (this.options.waitForAcks) await this.waitForTransaction(transactionId)
+			return this.waitForTransaction(transactionId)
+		}, skipQueue)
+	}
+	private async sendAndWaitIfRequired(
+		commandId: number,
+		payload: Buffer | undefined,
+		skipQueue = false
+	): Promise<void> {
+		return this.runInQueueIfEnabled(async () => {
+			const transactionId = this.send(commandId, payload)
+
+			if (this.options.waitForAcks) await this.waitForTransaction(transactionId)
+		}, skipQueue)
 	}
 
 	private send(commandId: number, payload: Buffer | undefined): number {
@@ -321,6 +372,7 @@ export abstract class LoupedeckDeviceBase extends EventEmitter<LoupedeckDeviceEv
 	}
 	private waitForTransaction(transactionID: number): Promise<Buffer> {
 		if (this.#pendingTransactions[transactionID]) throw new Error('Transaction handler already defined')
+		if (!this.#connection.isReady()) throw new Error('Connection is not open')
 
 		const handler: TransactionHandler = {
 			resolve: () => null,
