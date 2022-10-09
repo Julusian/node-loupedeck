@@ -5,14 +5,19 @@ import { LoupedeckModelId } from '..'
 
 export interface LoupedeckDevice extends EventEmitter<LoupedeckDeviceEvents> {
 	/**
+	 * Model of this device
+	 */
+	modelId: LoupedeckModelId
+
+	/**
 	 * A descriptive name for this type of Loupedeck device
 	 */
 	modelName: string
 
 	/**
-	 * Model of this device
+	 * Reset all the displays and buttons on the device to black
 	 */
-	modelId: LoupedeckModelId
+	blankDevice(doDisplays: boolean, doButtons: boolean): Promise<void>
 
 	/**
 	 * Close the device
@@ -46,7 +51,7 @@ export interface LoupedeckDevice extends EventEmitter<LoupedeckDeviceEvents> {
 	 * @param index Key index (0 top left)
 	 * @param buffer The buffer to draw
 	 * @param format The format of the source buffer
-	 * @param skipRefreshDisplay Skip refreshing the display, to allow for batching draws
+	 * @param skipRefreshDisplay Skip refreshing the display, to allow for batching draws`
 	 */
 	drawKeyBuffer(
 		index: number,
@@ -76,10 +81,9 @@ export interface LoupedeckDevice extends EventEmitter<LoupedeckDeviceEvents> {
 	): Promise<void>
 
 	/**
-	 * Refresh a display to show pending updates in the framebuffer
-	 * @param id Display to refresh
+	 * Get the firmware version string
 	 */
-	refreshDisplay(id: LoupedeckDisplayId): Promise<void>
+	getFirmwareVersion(): Promise<string>
 
 	/**
 	 * Get the serial number of the device
@@ -87,9 +91,10 @@ export interface LoupedeckDevice extends EventEmitter<LoupedeckDeviceEvents> {
 	getSerialNumber(): Promise<string>
 
 	/**
-	 * Get the firmware version string
+	 * Refresh a display to show pending updates in the framebuffer
+	 * @param id Display to refresh
 	 */
-	getFirmwareVersion(): Promise<string>
+	refreshDisplay(id: LoupedeckDisplayId): Promise<void>
 
 	/**
 	 * Set the brightness of the displays
@@ -107,9 +112,4 @@ export interface LoupedeckDevice extends EventEmitter<LoupedeckDeviceEvents> {
 	 * @param pattern The pattern to activate
 	 */
 	vibrate(pattern: LoupedeckVibratePattern): Promise<void>
-
-	/**
-	 * Reset all the displays and buttons on the device to black
-	 */
-	blankDevice(doDisplays: boolean, doButtons: boolean): Promise<void>
 }

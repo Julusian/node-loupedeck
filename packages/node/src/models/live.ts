@@ -52,11 +52,11 @@ export class LoupedeckLiveDevice extends LoupedeckDeviceBase {
 		super(connection, options, Displays, Controls)
 	}
 
-	public get modelName(): string {
-		return 'Loupedeck Live'
-	}
 	public get modelId(): LoupedeckModelId {
 		return LoupedeckModelId.LoupedeckLive
+	}
+	public get modelName(): string {
+		return 'Loupedeck Live'
 	}
 
 	protected override onTouch(event: 'touchmove' | 'touchend' | 'touchstart', buff: Buffer): void {

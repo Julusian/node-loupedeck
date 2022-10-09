@@ -52,11 +52,33 @@ export class RazerStreamControllerDevice extends LoupedeckDeviceBase {
 		super(connection, options, Displays, Controls)
 	}
 
+	public get modelId(): LoupedeckModelId {
+		return LoupedeckModelId.RazerStreamController
+	}
 	public get modelName(): string {
 		return 'Razer Stream Controller'
 	}
-	public get modelId(): LoupedeckModelId {
-		return LoupedeckModelId.RazerStreamController
+
+	protected override createBufferWithHeader(
+		display: LoupedeckDisplayDefinition,
+		width: number,
+		height: number,
+		x: number,
+		y: number
+	): [buffer: Buffer, offset: number] {
+		// The Razer Stream Controller only has one screen object, so we need to remap the pixel addresses
+
+		if (display.id === DisplayLeft.id) {
+			// Nothing to do
+		} else if (display.id === DisplayCenter.id) {
+			x += DisplayLeft.width
+		} else if (display.id === DisplayRight.id) {
+			x += DisplayLeft.width + DisplayCenter.width
+		} else {
+			throw new Error('Unknown DisplayId')
+		}
+
+		return super.createBufferWithHeader(display, width, height, x, y)
 	}
 
 	protected override onTouch(event: 'touchmove' | 'touchend' | 'touchstart', buff: Buffer): void {
@@ -87,27 +109,5 @@ export class RazerStreamControllerDevice extends LoupedeckDeviceBase {
 		}
 
 		this.emit(event, { touches: Object.values(this.touches), changedTouches: [touch] })
-	}
-
-	protected override createBufferWithHeader(
-		display: LoupedeckDisplayDefinition,
-		width: number,
-		height: number,
-		x: number,
-		y: number
-	): [buffer: Buffer, offset: number] {
-		// The Razer Stream Controller only has one screen object, so we need to remap the pixel addresses
-
-		if (display.id === DisplayLeft.id) {
-			// Nothing to do
-		} else if (display.id === DisplayCenter.id) {
-			x += DisplayLeft.width
-		} else if (display.id === DisplayRight.id) {
-			x += DisplayLeft.width + DisplayCenter.width
-		} else {
-			throw new Error('Unknown DisplayId')
-		}
-
-		return super.createBufferWithHeader(display, width, height, x, y)
 	}
 }
