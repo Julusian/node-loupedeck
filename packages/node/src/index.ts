@@ -1,88 +1,62 @@
-// import { DEVICE_MODELS, OpenStreamDeckOptions, StreamDeck, VENDOR_ID } from '@elgato-stream-deck/core'
-// import * as HID from 'node-hid'
-// import { NodeHIDDevice, StreamDeckDeviceInfo } from './device'
-// import { encodeJPEG, JPEGEncodeOptions } from './jpeg'
-// import { StreamDeckNode } from './wrapper'
+import { LoupedeckDevice } from './models/interface'
+import { LoupedeckSerialConnection } from './serial'
+import { SerialPort } from 'serialport'
+import { LoupedeckDeviceInfo } from './info'
+import { DEVICE_MODELS } from './models/list'
+import { LoupedeckDeviceOptions } from './models/base'
 
-// export { DeviceModelId, KeyIndex, StreamDeck } from '@elgato-stream-deck/core'
+export * from './constants'
+export * from './info'
+export { LoupedeckLiveDevice } from './models/live'
+export { LoupedeckControlDefinition, LoupedeckDeviceOptions, LoupedeckDisplayDefinition } from './models/base'
 
-// export interface OpenStreamDeckOptionsNode extends OpenStreamDeckOptions {
-// 	jpegOptions?: JPEGEncodeOptions
-// 	resetToLogoOnClose?: boolean
-// }
+export { LoupedeckDevice }
 
-// /**
-//  * Scan for and list detected devices
-//  */
-// export function listStreamDecks(): StreamDeckDeviceInfo[] {
-// 	const devices: StreamDeckDeviceInfo[] = []
-// 	for (const dev of HID.devices()) {
-// 		const info = getStreamDeckDeviceInfo(dev)
-// 		if (info) devices.push(info)
-// 	}
-// 	return devices
-// }
+/**
+ * If the provided device is a loupedeck, get the info about it
+ */
+export function getLoupedeckDeviceInfo(dev: import('@serialport/bindings-cpp').PortInfo): LoupedeckDeviceInfo | null {
+	if (!dev.vendorId || !dev.productId) return null
 
-// /**
-//  * If the provided device is a streamdeck, get the info about it
-//  */
-// export function getStreamDeckDeviceInfo(dev: HID.Device): StreamDeckDeviceInfo | null {
-// 	const model = DEVICE_MODELS.find((m) => m.productId === dev.productId)
+	const vendorId = parseInt(dev.vendorId, 16)
+	const productId = parseInt(dev.productId, 16)
 
-// 	if (model && dev.vendorId === VENDOR_ID && dev.path) {
-// 		return {
-// 			model: model.id,
-// 			path: dev.path,
-// 			serialNumber: dev.serialNumber,
-// 		}
-// 	} else {
-// 		return null
-// 	}
-// }
+	const model = DEVICE_MODELS.find((mod) => mod.vendorId === vendorId && mod.productId === productId)
+	if (!model) return null
 
-// /**
-//  * Get the info of a device if the given path is a streamdeck
-//  */
-// export function getStreamDeckInfo(path: string): StreamDeckDeviceInfo | undefined {
-// 	return listStreamDecks().find((dev) => dev.path === path)
-// }
+	return {
+		model: model.id,
+		path: dev.path,
+		serialNumber: dev.serialNumber,
+	}
+}
 
-// /**
-//  * Open a streamdeck
-//  * @param devicePath The path of the device to open. If not set, the first will be used
-//  * @param userOptions Options to customise the device behvaiour
-//  */
-// export function openStreamDeck(devicePath?: string, userOptions?: OpenStreamDeckOptionsNode): StreamDeck {
-// 	let foundDevices = listStreamDecks()
-// 	if (devicePath) {
-// 		foundDevices = foundDevices.filter((d) => d.path === devicePath)
-// 	}
+/**
+ * Scan for and list detected devices
+ */
+export async function listLoupedecks(): Promise<LoupedeckDeviceInfo[]> {
+	const result: LoupedeckDeviceInfo[] = []
+	for (const dev of await SerialPort.list()) {
+		const info = getLoupedeckDeviceInfo(dev)
+		if (info) result.push(info)
+	}
+	return result
+}
 
-// 	if (foundDevices.length === 0) {
-// 		if (devicePath) {
-// 			throw new Error(`Device "${devicePath}" was not found`)
-// 		} else {
-// 			throw new Error('No Stream Decks are connected.')
-// 		}
-// 	}
+/**
+ * Open a loupedeck
+ * @param path The path of the device to open
+ * @param options Options to customise the device behvaiour
+ */
+export async function openLoupedeck(path: string, options?: LoupedeckDeviceOptions): Promise<LoupedeckDevice> {
+	const devices = await listLoupedecks()
+	const selectedDevice = devices.find((dev) => dev.path === path)
+	if (!selectedDevice) throw new Error('Device path not found')
 
-// 	const model = DEVICE_MODELS.find((m) => m.id === foundDevices[0].model)
-// 	if (!model) {
-// 		throw new Error('Stream Deck is of unexpected type.')
-// 	}
+	const model = DEVICE_MODELS.find((mod) => mod.id === selectedDevice.model)
+	if (!model) throw new Error('Loupedeck is of unexpected type')
 
-// 	// Clone the options, to ensure they dont get changed
-// 	const jpegOptions: JPEGEncodeOptions | undefined = userOptions?.jpegOptions
-// 		? { ...userOptions.jpegOptions }
-// 		: undefined
+	const connection = await LoupedeckSerialConnection.open(selectedDevice.path)
 
-// 	const options: Required<OpenStreamDeckOptions> = {
-// 		useOriginalKeyOrder: false,
-// 		encodeJPEG: async (buffer: Buffer, width: number, height: number) => encodeJPEG(buffer, width, height, jpegOptions),
-// 		...userOptions,
-// 	}
-
-// 	const device = new NodeHIDDevice(foundDevices[0])
-// 	const rawSteamdeck = new model.class(device, options || {})
-// 	return new StreamDeckNode(rawSteamdeck, userOptions?.resetToLogoOnClose ?? false)
-// }
+	return new model.class(connection, options || {})
+}
