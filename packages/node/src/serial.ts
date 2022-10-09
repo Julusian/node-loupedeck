@@ -64,8 +64,8 @@ export class LoupedeckSerialConnection extends EventEmitter<LoupedeckSerialConne
 	}
 
 	public close(): void {
-		if (!this.connection || this.connection.closing) return
-		this.connection.close()
+		if (!this.connection) return
+		if (!this.connection.isOpen) this.connection.close()
 		delete this.connection
 	}
 
