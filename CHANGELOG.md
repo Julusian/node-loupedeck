@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.2.1](https://github.com/Julusian/node-loupedeck/compare/v0.2.0...v0.2.1) (2022-10-10)
+
+### Bug Fixes
+
+- getSerialNumber ([7bb2b41](https://github.com/Julusian/node-loupedeck/commit/7bb2b411193743ae78f0006112d71827f3c9d752))
+
 # [0.2.0](https://github.com/Julusian/node-loupedeck/compare/v0.1.1...v0.2.0) (2022-10-10)
 
 ### Bug Fixes
