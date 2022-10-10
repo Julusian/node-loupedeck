@@ -10,7 +10,7 @@ export function encodeBuffer(
 	if (input.length !== pixelCount * format.length)
 		throw new Error(`Incorrect buffer length ${input.length} expected ${pixelCount * format.length}`)
 	if (output.length !== pixelCount * 2 + outputPadding)
-		throw new Error(`Incorrect buffer length ${input.length} expected ${pixelCount * format.length}`)
+		throw new Error(`Incorrect buffer length ${output.length} expected ${pixelCount * 2 + outputPadding}`)
 
 	switch (format) {
 		case LoupedeckBufferFormat.RGB:

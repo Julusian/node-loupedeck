@@ -277,7 +277,10 @@ export abstract class LoupedeckDeviceBase extends EventEmitter<LoupedeckDeviceEv
 			}
 		} else {
 			const resolver = this.#pendingTransactions[transactionID]
-			if (resolver) resolver.resolve(buff.subarray(5))
+			if (resolver) {
+				resolver.resolve(buff.subarray(5))
+				delete this.#pendingTransactions[transactionID]
+			}
 		}
 	}
 	#onPress(buff: Buffer): void {
