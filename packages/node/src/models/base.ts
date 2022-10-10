@@ -248,7 +248,7 @@ export abstract class LoupedeckDeviceBase extends EventEmitter<LoupedeckDeviceEv
 	}
 
 	public async getSerialNumber(): Promise<string> {
-		const buffer = await this.#sendAndWaitForResult(CommandIds.GetVersion, undefined)
+		const buffer = await this.#sendAndWaitForResult(CommandIds.GetSerialNumber, undefined)
 
 		return buffer.toString().trim()
 	}
