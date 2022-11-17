@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.2.2](https://github.com/julusian/node-loupedeck/compare/v0.2.1...v0.2.2) (2022-11-17)
+
+### Bug Fixes
+
+- live-s button index ([39f8771](https://github.com/julusian/node-loupedeck/commit/39f8771509bc40493597c31178dd54a453b1bf91))
+- live-s display offset ([9952289](https://github.com/julusian/node-loupedeck/commit/9952289c522547eae4658e00a789247194b59f21))
+
 ## [0.2.1](https://github.com/julusian/node-loupedeck/compare/v0.2.0...v0.2.1) (2022-10-10)
 
 ### Bug Fixes
