@@ -98,7 +98,7 @@ export interface LoupedeckDevice extends EventEmitter<LoupedeckDeviceEvents> {
 
 	/**
 	 * Set the brightness of the displays
-	 * @param value 0-10
+	 * @param value 0-1
 	 */
 	setBrightness(value: number): Promise<void>
 

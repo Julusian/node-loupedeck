@@ -28,7 +28,7 @@ for (let i = 0; i < 4; i++) {
 	Controls.push({
 		type: LoupedeckControlType.Button,
 		index: i,
-		encoded: 0x03 + i,
+		encoded: 0x07 + i,
 	})
 }
 
