@@ -45,6 +45,7 @@ export interface LoupedeckDisplayDefinition {
 	width: number
 	height: number
 	encoded: Buffer
+	xPadding: number
 }
 
 export interface LoupedeckDeviceOptions {
@@ -182,12 +183,14 @@ export abstract class LoupedeckDeviceBase extends EventEmitter<LoupedeckDeviceEv
 		const display = this.displays.find((d) => d.id === displayId)
 		if (!display) throw new Error('Invalid DisplayId')
 
-		if (width < 0 || width > display.width) throw new Error('Image width is not valid')
+		const maxWidth = display.width - display.xPadding * 2
+
+		if (width < 0 || width > maxWidth) throw new Error('Image width is not valid')
 		if (height < 0 || height > display.height) throw new Error('Image width is not valid')
-		if (x < 0 || x + width > display.width) throw new Error('x is not valid')
+		if (x < 0 || x + width > maxWidth) throw new Error('x is not valid')
 		if (y < 0 || y + height > display.height) throw new Error('x is not valid')
 
-		const [encoded, padding] = this.createBufferWithHeader(display, width, height, x, y)
+		const [encoded, padding] = this.createBufferWithHeader(display, width, height, x + display.xPadding, y)
 		encodeBuffer(buffer, encoded, format, padding, width * height)
 
 		await this.#runInQueueIfEnabled(async () => {

@@ -14,6 +14,7 @@ const DisplayCenter: LoupedeckDisplayDefinition = {
 	width: 480,
 	height: 270,
 	encoded: Buffer.from([0x00, 0x4d]),
+	xPadding: 15, // There is some deadspace before the first button
 }
 
 const Controls: LoupedeckControlDefinition[] = []
@@ -63,7 +64,7 @@ export class LoupedeckLiveSDevice extends LoupedeckDeviceBase {
 
 		const screen = DisplayCenter.id
 
-		const column = Math.floor((x - 15) / 90)
+		const column = Math.floor((x - DisplayCenter.xPadding) / 90)
 		const row = Math.floor(y / 90)
 		const key = row * 5 + column
 

@@ -14,18 +14,21 @@ const DisplayLeft: LoupedeckDisplayDefinition = {
 	width: 60,
 	height: 270,
 	encoded: Buffer.from([0x00, 0x4d]),
+	xPadding: 0,
 }
 const DisplayCenter: LoupedeckDisplayDefinition = {
 	id: LoupedeckDisplayId.Center,
 	width: 360,
 	height: 270,
 	encoded: Buffer.from([0x00, 0x4d]),
+	xPadding: 0,
 }
 const DisplayRight: LoupedeckDisplayDefinition = {
 	id: LoupedeckDisplayId.Right,
 	width: 60,
 	height: 270,
 	encoded: Buffer.from([0x00, 0x4d]),
+	xPadding: 0,
 }
 const Displays: LoupedeckDisplayDefinition[] = [DisplayLeft, DisplayCenter, DisplayRight]
 
