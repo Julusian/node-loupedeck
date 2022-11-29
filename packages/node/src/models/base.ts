@@ -107,8 +107,8 @@ export abstract class LoupedeckDeviceBase extends EventEmitter<LoupedeckDeviceEv
 				for (const display of this.displays) {
 					const [payload] = this.createBufferWithHeader(display, display.width, display.height, 0, 0)
 
-					await this.#sendAndWaitIfRequired(CommandIds.DrawFramebuffer, payload, true)
-					await this.#sendAndWaitIfRequired(CommandIds.RefreshDisplay, display.encoded, true)
+					this.#sendCommand(CommandIds.DrawFramebuffer, payload)
+					this.#sendCommand(CommandIds.RefreshDisplay, display.encoded)
 				}
 			}
 
@@ -118,7 +118,7 @@ export abstract class LoupedeckDeviceBase extends EventEmitter<LoupedeckDeviceEv
 				for (let i = 0; i < buttons.length; i++) {
 					payload.writeUInt8(buttons[i].encoded, i * 4)
 				}
-				await this.#sendAndWaitIfRequired(CommandIds.SetColour, payload, true)
+				this.#sendCommand(CommandIds.SetColour, payload)
 			}
 		}, false)
 	}
@@ -195,8 +195,8 @@ export abstract class LoupedeckDeviceBase extends EventEmitter<LoupedeckDeviceEv
 
 		await this.#runInQueueIfEnabled(async () => {
 			// Run in the queue as a single operation
-			await this.#sendAndWaitIfRequired(CommandIds.DrawFramebuffer, encoded, true)
-			if (!skipRefreshDisplay) await this.#sendAndWaitIfRequired(CommandIds.RefreshDisplay, display.encoded, true)
+			this.#sendCommand(CommandIds.DrawFramebuffer, encoded)
+			if (!skipRefreshDisplay) this.#sendCommand(CommandIds.RefreshDisplay, display.encoded)
 		}, false)
 	}
 
@@ -230,7 +230,8 @@ export abstract class LoupedeckDeviceBase extends EventEmitter<LoupedeckDeviceEv
 
 		checkRGBColor(color)
 
-		const encodedValue = (Math.round(color.red) << 11) + (Math.round(color.green) << 5) + Math.round(color.blue)
+		const encodedValue =
+			(Math.round(color.red >> 3) << 11) + (Math.round(color.green >> 2) << 5) + Math.round(color.blue >> 3)
 
 		const [encoded, padding] = this.createBufferWithHeader(display, width, height, x, y)
 		for (let i = 0; i < width * height; i++) {
@@ -239,8 +240,8 @@ export abstract class LoupedeckDeviceBase extends EventEmitter<LoupedeckDeviceEv
 
 		await this.#runInQueueIfEnabled(async () => {
 			// Run in the queue as a single operation
-			await this.#sendAndWaitIfRequired(CommandIds.DrawFramebuffer, encoded, true)
-			if (!skipRefreshDisplay) await this.#sendAndWaitIfRequired(CommandIds.RefreshDisplay, display.encoded, true)
+			this.#sendCommand(CommandIds.DrawFramebuffer, encoded)
+			if (!skipRefreshDisplay) this.#sendCommand(CommandIds.RefreshDisplay, display.encoded)
 		}, false)
 	}
 
@@ -308,7 +309,7 @@ export abstract class LoupedeckDeviceBase extends EventEmitter<LoupedeckDeviceEv
 		const display = this.displays.find((d) => d.id === id)
 		if (!display) throw new Error('Invalid DisplayId')
 
-		return this.#sendAndWaitIfRequired(CommandIds.RefreshDisplay, display.encoded)
+		this.#sendCommand(CommandIds.RefreshDisplay, display.encoded)
 	}
 
 	public async setBrightness(value: number): Promise<void> {
@@ -350,7 +351,7 @@ export abstract class LoupedeckDeviceBase extends EventEmitter<LoupedeckDeviceEv
 			payload.writeUInt8(button.blue, offset + 3)
 		}
 
-		return this.#sendAndWaitIfRequired(CommandIds.SetColour, payload)
+		this.#sendCommand(CommandIds.SetColour, payload)
 	}
 
 	public async vibrate(pattern: LoupedeckVibratePattern): Promise<void> {
