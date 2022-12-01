@@ -13,21 +13,21 @@ const DisplayLeft: LoupedeckDisplayDefinition = {
 	id: LoupedeckDisplayId.Left,
 	width: 60,
 	height: 270,
-	encoded: Buffer.from('\x00L'),
+	encoded: Buffer.from([0x00, 0x4d]),
 	xPadding: 0,
 }
 const DisplayCenter: LoupedeckDisplayDefinition = {
 	id: LoupedeckDisplayId.Center,
 	width: 360,
 	height: 270,
-	encoded: Buffer.from('\x00A'),
+	encoded: Buffer.from([0x00, 0x4d]),
 	xPadding: 0,
 }
 const DisplayRight: LoupedeckDisplayDefinition = {
 	id: LoupedeckDisplayId.Right,
 	width: 60,
 	height: 270,
-	encoded: Buffer.from('\x00R'),
+	encoded: Buffer.from([0x00, 0x4d]),
 	xPadding: 0,
 }
 const Displays: LoupedeckDisplayDefinition[] = [DisplayLeft, DisplayCenter, DisplayRight]
@@ -60,6 +60,28 @@ export class LoupedeckLiveDevice extends LoupedeckDeviceBase {
 	}
 	public get modelName(): string {
 		return 'Loupedeck Live'
+	}
+
+	protected override createBufferWithHeader(
+		display: LoupedeckDisplayDefinition,
+		width: number,
+		height: number,
+		x: number,
+		y: number
+	): [buffer: Buffer, offset: number] {
+		// 0.2 firmwares treat the screen as one object, so we need to remap the pixel addresses
+
+		if (display.id === DisplayLeft.id) {
+			// Nothing to do
+		} else if (display.id === DisplayCenter.id) {
+			x += DisplayLeft.width
+		} else if (display.id === DisplayRight.id) {
+			x += DisplayLeft.width + DisplayCenter.width
+		} else {
+			throw new Error('Unknown DisplayId')
+		}
+
+		return super.createBufferWithHeader(display, width, height, x, y)
 	}
 
 	protected override onTouch(event: 'touchmove' | 'touchend' | 'touchstart', buff: Buffer): void {

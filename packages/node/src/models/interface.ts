@@ -33,7 +33,6 @@ export interface LoupedeckDevice extends EventEmitter<LoupedeckDeviceEvents> {
 	 * @param height The height of the buffer
 	 * @param x The x offset of the region
 	 * @param y The y offset of the region
-	 * @param skipRefreshDisplay Skip refreshing the display, to allow for batching draws
 	 */
 	drawBuffer(
 		displayId: LoupedeckDisplayId,
@@ -42,8 +41,7 @@ export interface LoupedeckDevice extends EventEmitter<LoupedeckDeviceEvents> {
 		width: number,
 		height: number,
 		x: number,
-		y: number,
-		skipRefreshDisplay?: boolean
+		y: number
 	): Promise<void>
 
 	/**
@@ -51,14 +49,8 @@ export interface LoupedeckDevice extends EventEmitter<LoupedeckDeviceEvents> {
 	 * @param index Key index (0 top left)
 	 * @param buffer The buffer to draw
 	 * @param format The format of the source buffer
-	 * @param skipRefreshDisplay Skip refreshing the display, to allow for batching draws`
 	 */
-	drawKeyBuffer(
-		index: number,
-		buffer: Buffer,
-		format: LoupedeckBufferFormat,
-		skipRefreshDisplay?: boolean
-	): Promise<void>
+	drawKeyBuffer(index: number, buffer: Buffer, format: LoupedeckBufferFormat): Promise<void>
 
 	/**
 	 * Draw a solid colour to a display
@@ -68,7 +60,6 @@ export interface LoupedeckDevice extends EventEmitter<LoupedeckDeviceEvents> {
 	 * @param height The height of the region
 	 * @param x The x offset of the region
 	 * @param y The y offset of the region
-	 * @param skipRefreshDisplay Skip refreshing the display, to allow for batching draws
 	 */
 	drawSolidColour(
 		displayId: LoupedeckDisplayId,
@@ -76,8 +67,7 @@ export interface LoupedeckDevice extends EventEmitter<LoupedeckDeviceEvents> {
 		width: number,
 		height: number,
 		x: number,
-		y: number,
-		skipRefreshDisplay?: boolean
+		y: number
 	): Promise<void>
 
 	/**
@@ -89,12 +79,6 @@ export interface LoupedeckDevice extends EventEmitter<LoupedeckDeviceEvents> {
 	 * Get the serial number of the device
 	 */
 	getSerialNumber(): Promise<string>
-
-	/**
-	 * Refresh a display to show pending updates in the framebuffer
-	 * @param id Display to refresh
-	 */
-	refreshDisplay(id: LoupedeckDisplayId): Promise<void>
 
 	/**
 	 * Set the brightness of the displays

@@ -18,7 +18,7 @@ enum CommandIds {
 	GetSerialNumber = 0x03,
 	GetVersion = 0x07,
 	SetBrightness = 0x09,
-	RefreshDisplay = 0x0f,
+	// RefreshDisplay = 0x0f,
 	DrawFramebuffer = 0x10,
 	SetVibration = 0x1b,
 
@@ -108,7 +108,6 @@ export abstract class LoupedeckDeviceBase extends EventEmitter<LoupedeckDeviceEv
 					const [payload] = this.createBufferWithHeader(display, display.width, display.height, 0, 0)
 
 					this.#sendCommand(CommandIds.DrawFramebuffer, payload)
-					this.#sendCommand(CommandIds.RefreshDisplay, display.encoded)
 				}
 			}
 
@@ -177,8 +176,7 @@ export abstract class LoupedeckDeviceBase extends EventEmitter<LoupedeckDeviceEv
 		width: number,
 		height: number,
 		x: number,
-		y: number,
-		skipRefreshDisplay?: boolean
+		y: number
 	) {
 		const display = this.displays.find((d) => d.id === displayId)
 		if (!display) throw new Error('Invalid DisplayId')
@@ -196,19 +194,13 @@ export abstract class LoupedeckDeviceBase extends EventEmitter<LoupedeckDeviceEv
 		await this.#runInQueueIfEnabled(async () => {
 			// Run in the queue as a single operation
 			this.#sendCommand(CommandIds.DrawFramebuffer, encoded)
-			if (!skipRefreshDisplay) this.#sendCommand(CommandIds.RefreshDisplay, display.encoded)
 		}, false)
 	}
 
-	public async drawKeyBuffer(
-		index: number,
-		buffer: Buffer,
-		format: LoupedeckBufferFormat,
-		skipRefreshDisplay?: boolean
-	): Promise<void> {
+	public async drawKeyBuffer(index: number, buffer: Buffer, format: LoupedeckBufferFormat): Promise<void> {
 		const [x, y] = this.convertKeyIndexToCoordinates(index)
 
-		return this.drawBuffer(LoupedeckDisplayId.Center, buffer, format, 90, 90, x, y, skipRefreshDisplay)
+		return this.drawBuffer(LoupedeckDisplayId.Center, buffer, format, 90, 90, x, y)
 	}
 
 	public async drawSolidColour(
@@ -217,8 +209,7 @@ export abstract class LoupedeckDeviceBase extends EventEmitter<LoupedeckDeviceEv
 		width: number,
 		height: number,
 		x: number,
-		y: number,
-		skipRefreshDisplay?: boolean
+		y: number
 	): Promise<void> {
 		const display = this.displays.find((d) => d.id === displayId)
 		if (!display) throw new Error('Invalid DisplayId')
@@ -241,7 +232,6 @@ export abstract class LoupedeckDeviceBase extends EventEmitter<LoupedeckDeviceEv
 		await this.#runInQueueIfEnabled(async () => {
 			// Run in the queue as a single operation
 			this.#sendCommand(CommandIds.DrawFramebuffer, encoded)
-			if (!skipRefreshDisplay) this.#sendCommand(CommandIds.RefreshDisplay, display.encoded)
 		}, false)
 	}
 
@@ -304,13 +294,6 @@ export abstract class LoupedeckDeviceBase extends EventEmitter<LoupedeckDeviceEv
 		}
 	}
 	protected abstract onTouch(event: 'touchmove' | 'touchend' | 'touchstart', buff: Buffer): void
-
-	public async refreshDisplay(id: LoupedeckDisplayId): Promise<void> {
-		const display = this.displays.find((d) => d.id === id)
-		if (!display) throw new Error('Invalid DisplayId')
-
-		this.#sendCommand(CommandIds.RefreshDisplay, display.encoded)
-	}
 
 	public async setBrightness(value: number): Promise<void> {
 		const MAX_BRIGHTNESS = 10
