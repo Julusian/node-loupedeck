@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.3.0](https://github.com/Julusian/node-loupedeck/compare/v0.2.2...v0.3.0) (2022-12-01)
+
+### Bug Fixes
+
+- don't wait for acks on display drawing ([f1d2a38](https://github.com/Julusian/node-loupedeck/commit/f1d2a38133b2f27c519d22cf2f6e540b15982746))
+- support for live (v2.00) ([3ed86eb](https://github.com/Julusian/node-loupedeck/commit/3ed86ebb3ce66a8ae466b2211763667588e1f59f))
+
 ## [0.2.3](https://github.com/Julusian/node-loupedeck/compare/v0.2.2...v0.2.3) (2022-11-29)
 
 ### Bug Fixes
