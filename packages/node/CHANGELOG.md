@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.3.1](https://github.com/julusian/node-loupedeck/compare/v0.3.0...v0.3.1) (2022-12-02)
+
+### Reverts
+
+- Revert "fix: don't wait for acks on display drawing" ([98b2cbc](https://github.com/julusian/node-loupedeck/commit/98b2cbc171d0e0a4a78d693ee51686c372409d5e))
+
 # [0.3.0](https://github.com/julusian/node-loupedeck/compare/v0.2.2...v0.3.0) (2022-12-01)
 
 ### Bug Fixes
