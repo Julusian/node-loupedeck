@@ -107,7 +107,7 @@ export abstract class LoupedeckDeviceBase extends EventEmitter<LoupedeckDeviceEv
 				for (const display of this.displays) {
 					const [payload] = this.createBufferWithHeader(display, display.width, display.height, 0, 0)
 
-					this.#sendCommand(CommandIds.DrawFramebuffer, payload)
+					await this.#sendAndWaitIfRequired(CommandIds.DrawFramebuffer, payload, true)
 				}
 			}
 
@@ -117,7 +117,7 @@ export abstract class LoupedeckDeviceBase extends EventEmitter<LoupedeckDeviceEv
 				for (let i = 0; i < buttons.length; i++) {
 					payload.writeUInt8(buttons[i].encoded, i * 4)
 				}
-				this.#sendCommand(CommandIds.SetColour, payload)
+				await this.#sendAndWaitIfRequired(CommandIds.SetColour, payload, true)
 			}
 		}, false)
 	}
@@ -193,7 +193,7 @@ export abstract class LoupedeckDeviceBase extends EventEmitter<LoupedeckDeviceEv
 
 		await this.#runInQueueIfEnabled(async () => {
 			// Run in the queue as a single operation
-			this.#sendCommand(CommandIds.DrawFramebuffer, encoded)
+			await this.#sendAndWaitIfRequired(CommandIds.DrawFramebuffer, encoded, true)
 		}, false)
 	}
 
@@ -221,8 +221,7 @@ export abstract class LoupedeckDeviceBase extends EventEmitter<LoupedeckDeviceEv
 
 		checkRGBColor(color)
 
-		const encodedValue =
-			(Math.round(color.red >> 3) << 11) + (Math.round(color.green >> 2) << 5) + Math.round(color.blue >> 3)
+		const encodedValue = (Math.round(color.red) << 11) + (Math.round(color.green) << 5) + Math.round(color.blue)
 
 		const [encoded, padding] = this.createBufferWithHeader(display, width, height, x, y)
 		for (let i = 0; i < width * height; i++) {
@@ -231,7 +230,7 @@ export abstract class LoupedeckDeviceBase extends EventEmitter<LoupedeckDeviceEv
 
 		await this.#runInQueueIfEnabled(async () => {
 			// Run in the queue as a single operation
-			this.#sendCommand(CommandIds.DrawFramebuffer, encoded)
+			await this.#sendAndWaitIfRequired(CommandIds.DrawFramebuffer, encoded, true)
 		}, false)
 	}
 
@@ -334,7 +333,7 @@ export abstract class LoupedeckDeviceBase extends EventEmitter<LoupedeckDeviceEv
 			payload.writeUInt8(button.blue, offset + 3)
 		}
 
-		this.#sendCommand(CommandIds.SetColour, payload)
+		return this.#sendAndWaitIfRequired(CommandIds.SetColour, payload)
 	}
 
 	public async vibrate(pattern: LoupedeckVibratePattern): Promise<void> {
