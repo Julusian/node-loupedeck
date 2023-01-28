@@ -1,8 +1,13 @@
-import { requestLoupedeck, getLoupedecks, LoupedeckDevice } from '@loupedeck/web'
+import {
+	requestLoupedeck,
+	getLoupedecks,
+	LoupedeckDevice,
+	LoupedeckControlInfo,
+	LoupedeckTouchEventData,
+} from '@loupedeck/web'
 import { Demo } from './demo/demo'
 // import { DomImageDemo } from './demo/dom'
 import { FillWhenPressedDemo } from './demo/fill-when-pressed'
-import { LoupedeckControlInfo, LoupedeckTouchEventData } from '@loupedeck/core/dist/events'
 // import { RapidFillDemo } from './demo/rapid-fill'
 // import { ChaseDemo } from './demo/chase'
 
@@ -33,21 +38,21 @@ async function demoChange() {
 			await currentDemo.stop(device)
 		}
 
-		// switch (demoSelect.value) {
-		// 	case 'rapid-fill':
-		// 		currentDemo = new RapidFillDemo()
-		// 		break
-		// 	case 'dom':
-		// 		currentDemo = new DomImageDemo()
-		// 		break
-		// 	case 'chase':
-		// 		currentDemo = new ChaseDemo()
-		// 		break
-		// 	case 'fill-when-pressed':
-		// 	default:
-		// 		currentDemo = new FillWhenPressedDemo()
-		// 		break
-		// }
+		switch (demoSelect.value) {
+			// 	case 'rapid-fill':
+			// 		currentDemo = new RapidFillDemo()
+			// 		break
+			// 	case 'dom':
+			// 		currentDemo = new DomImageDemo()
+			// 		break
+			// 	case 'chase':
+			// 		currentDemo = new ChaseDemo()
+			// 		break
+			case 'fill-when-pressed':
+			default:
+				currentDemo = new FillWhenPressedDemo()
+				break
+		}
 
 		if (device) {
 			await currentDemo.start(device)

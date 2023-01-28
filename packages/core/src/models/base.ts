@@ -62,7 +62,7 @@ export abstract class LoupedeckDeviceBase extends EventEmitter<LoupedeckDeviceEv
 	protected readonly controls: LoupedeckControlDefinition[]
 
 	readonly #pendingTransactions: Record<number, TransactionHandler> = {}
-	#nextTransactionId: number = 0
+	#nextTransactionId = 0
 
 	readonly #sendQueue: PQueue | undefined
 
@@ -132,7 +132,7 @@ export abstract class LoupedeckDeviceBase extends EventEmitter<LoupedeckDeviceEv
 
 	public async close(): Promise<void> {
 		this.#cleanupPendingPromises()
-		this.#connection.close()
+		await this.#connection.close()
 	}
 
 	protected convertKeyIndexToCoordinates(index: number): [x: number, y: number] {
@@ -177,7 +177,7 @@ export abstract class LoupedeckDeviceBase extends EventEmitter<LoupedeckDeviceEv
 		height: number,
 		x: number,
 		y: number
-	) {
+	): Promise<void> {
 		const display = this.displays.find((d) => d.id === displayId)
 		if (!display) throw new Error('Invalid DisplayId')
 
@@ -353,20 +353,20 @@ export abstract class LoupedeckDeviceBase extends EventEmitter<LoupedeckDeviceEv
 
 	async #sendAndWaitIfRequired(commandId: number, payload: Buffer | undefined, skipQueue = false): Promise<void> {
 		return this.#runInQueueIfEnabled(async () => {
-			const transactionId = this.#sendCommand(commandId, payload)
+			const transactionId = await this.#sendCommand(commandId, payload)
 
 			if (this.options.waitForAcks) await this.#waitForTransaction(transactionId)
 		}, skipQueue)
 	}
 	async #sendAndWaitForResult(commandId: number, payload: Buffer | undefined, skipQueue = false): Promise<Buffer> {
 		return this.#runInQueueIfEnabled(async () => {
-			const transactionId = this.#sendCommand(commandId, payload)
+			const transactionId = await this.#sendCommand(commandId, payload)
 
 			return this.#waitForTransaction(transactionId)
 		}, skipQueue)
 	}
 
-	#sendCommand(commandId: number, payload: Buffer | undefined): number {
+	async #sendCommand(commandId: number, payload: Buffer | undefined): Promise<number> {
 		if (!this.#connection.isReady()) throw new Error('Not connected!')
 
 		this.#nextTransactionId = (this.#nextTransactionId + 1) % 256
@@ -381,11 +381,11 @@ export abstract class LoupedeckDeviceBase extends EventEmitter<LoupedeckDeviceEv
 			payload.copy(packet, 3)
 		}
 
-		this.#connection.send(packet)
+		await this.#connection.send(packet)
 
 		return this.#nextTransactionId
 	}
-	#waitForTransaction(transactionID: number): Promise<Buffer> {
+	async #waitForTransaction(transactionID: number): Promise<Buffer> {
 		if (this.#pendingTransactions[transactionID]) throw new Error('Transaction handler already defined')
 		if (!this.#connection.isReady()) throw new Error('Connection is not open')
 

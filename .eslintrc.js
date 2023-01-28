@@ -1,6 +1,11 @@
 module.exports = {
 	extends: './node_modules/@sofie-automation/code-standard-preset/eslint/main',
 	root: true,
+	settings: {
+		jest: {
+			version: 'latest',
+		},
+	},
 	overrides: [
 		{
 			files: ['*.ts'],

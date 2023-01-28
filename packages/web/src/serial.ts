@@ -50,6 +50,7 @@ export class LoupedeckWebSerialConnection extends LoupedeckSerialConnection {
 					delimiter: 0x82,
 				})
 
+				// eslint-disable-next-line no-constant-condition
 				while (true) {
 					const { value, done } = await reader.read()
 					if (value) {
@@ -143,7 +144,7 @@ export class LoupedeckWebSerialConnection extends LoupedeckSerialConnection {
 				readComplete = true
 
 				// If the write failed, abort the read
-				reader?.cancel('Aborted')
+				reader?.cancel('Aborted').catch(() => null)
 
 				// Forward the error onwards
 				throw e

@@ -1,6 +1,12 @@
-import { LoupedeckBufferFormat, LoupedeckDevice, LoupedeckDisplayId, RGBColor } from '@loupedeck/web'
+import {
+	LoupedeckBufferFormat,
+	LoupedeckControlInfo,
+	LoupedeckDevice,
+	LoupedeckDisplayId,
+	LoupedeckTouchEventData,
+	RGBColor,
+} from '@loupedeck/web'
 import { Demo } from './demo'
-import { LoupedeckControlInfo, LoupedeckTouchEventData } from '@loupedeck/core/dist/events'
 
 function stringifyInfo(info: LoupedeckControlInfo): string {
 	return `${info.type}-${info.index}`

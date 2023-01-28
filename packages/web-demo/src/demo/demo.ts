@@ -1,5 +1,4 @@
-import { LoupedeckControlInfo, LoupedeckTouchEventData } from '@loupedeck/core/dist/events'
-import { LoupedeckDevice } from '@loupedeck/web'
+import { LoupedeckControlInfo, LoupedeckDevice, LoupedeckTouchEventData } from '@loupedeck/web'
 
 export interface Demo {
 	start(device: LoupedeckDevice): Promise<void>
