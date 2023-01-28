@@ -20,7 +20,7 @@
     "build": "rimraf dist && cross-env NODE_ENV=production webpack --progress"
   },
 	"engines": {
-		"node": ">=14.15"
+		"node": ">=14.18"
 	},
   "dependencies": {
     "@loupedeck/web": "0.3.1",

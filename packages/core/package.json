@@ -31,11 +31,11 @@
 		"dist"
 	],
 	"engines": {
-		"node": ">=14.15"
+		"node": ">=14.18"
 	},
 	"dependencies": {
 		"eventemitter3": "^4.0.7",
 		"p-queue": "^6.6.2",
-		"tslib": "^2.4.0"
+		"tslib": "^2.5.0"
 	}
 }

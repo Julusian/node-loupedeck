@@ -31,11 +31,11 @@
 		"dist"
 	],
 	"engines": {
-		"node": ">=14.15"
+		"node": ">=14.18"
 	},
 	"dependencies": {
-    "@loupedeck/core": "0.3.1",
-		"serialport": "^10.4.0",
-		"tslib": "^2.4.0"
+		"@loupedeck/core": "0.3.1",
+		"serialport": "^10.5.0",
+		"tslib": "^2.5.0"
 	}
 }
