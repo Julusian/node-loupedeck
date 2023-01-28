@@ -78,11 +78,10 @@ jobs:
     continue-on-error: true
     timeout-minutes: 15
 
-    # only run for master TODO - enable
-    # if: github.ref == 'refs/heads/master'
+    if: github.ref == 'refs/heads/main'
 
-    needs:
-      - test
+    # needs:
+    #   - test
 
     steps:
       - uses: actions/checkout@v2
