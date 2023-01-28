@@ -123,14 +123,14 @@ export abstract class LoupedeckDeviceBase extends EventEmitter<LoupedeckDeviceEv
 	}
 
 	#cleanupPendingPromises(): void {
-		setImmediate(() => {
+		setTimeout(() => {
 			for (const promise of Object.values(this.#pendingTransactions)) {
 				promise.reject(new Error('Connection closed'))
 			}
-		})
+		}, 0)
 	}
 
-	public close(): void {
+	public async close(): Promise<void> {
 		this.#cleanupPendingPromises()
 		this.#connection.close()
 	}

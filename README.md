@@ -18,8 +18,8 @@ This library has nothing to do with the official Loupedeck software. There is no
 
 Check one of the installable packages for installation and usage instructions:
 
-- [`@loupedeck/node`](https://npm.im/@loupedeck/node)
-<!-- -   [`@loupedeck/webhid`](https://npm.im/@loupedeck/webhid) -->
+-   [`@loupedeck/node`](https://npm.im/@loupedeck/node)
+-   [`@loupedeck/web`](https://npm.im/@loupedeck/web)
 
 ### Have another target you wish to use?
 
@@ -29,9 +29,9 @@ It is intended that this library will be split into a platform agnostic 'core' l
 
 This is largly based on the prior works:
 
-- https://github.com/foxxyz/loupedeck
-- https://github.com/CommandPost/CommandPost/blob/develop/src/extensions/hs/loupedeck/init.lua
-- https://github.com/bitfocus/loupedeck-ct
+-   https://github.com/foxxyz/loupedeck
+-   https://github.com/CommandPost/CommandPost/blob/develop/src/extensions/hs/loupedeck/init.lua
+-   https://github.com/bitfocus/loupedeck-ct
 
 ## Contributing
 

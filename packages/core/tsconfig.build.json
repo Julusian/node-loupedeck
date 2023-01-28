@@ -1,14 +1,15 @@
 {
 	"extends": "@sofie-automation/code-standard-preset/ts/tsconfig.lib",
 	"exclude": ["node_modules/**", "src/**/*spec.ts", "src/**/__tests__/*", "src/**/__mocks__/*"],
-	"include": ["scripts/**/*"],
+	"include": ["src/**/*"],
 	"compilerOptions": {
-		"baseUrl": "./packages",
+		"outDir": "./dist",
+		"baseUrl": "./",
 		"paths": {
 			"*": ["./node_modules/*"],
-			"@loupedeck/core": ["core/src"],
-			"@loupedeck/node": ["node/src"],
-			"@loupedeck/web": ["web/src"]
-		}
+			"@loupedeck/core": ["./src/index.ts"]
+		},
+		"types": ["node"],
+		"importHelpers": false
 	}
 }

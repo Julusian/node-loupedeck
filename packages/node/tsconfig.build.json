@@ -7,7 +7,7 @@
 		"baseUrl": "./",
 		"paths": {
 			"*": ["./node_modules/*"],
-			"@elgato-stream-deck/node": ["./src/index.ts"]
+			"@loupedeck/node": ["./src/index.ts"]
 		},
 		"types": ["node"],
 		"importHelpers": false

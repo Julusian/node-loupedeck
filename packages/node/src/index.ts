@@ -1,15 +1,8 @@
-import { LoupedeckDevice } from './models/interface'
-import { LoupedeckSerialConnection } from './serial'
+import { LoupedeckDevice, LoupedeckDeviceInfo, LoupedeckDeviceOptions } from '@loupedeck/core'
+import { DEVICE_MODELS } from '@loupedeck/core/dist/internal'
 import { SerialPort } from 'serialport'
-import { LoupedeckDeviceInfo } from './info'
-import { DEVICE_MODELS } from './models/list'
-import { LoupedeckDeviceOptions } from './models/base'
-
-export * from './constants'
-export * from './info'
-export { LoupedeckControlDefinition, LoupedeckDeviceOptions, LoupedeckDisplayDefinition } from './models/base'
-
-export { LoupedeckDevice }
+import { LoupedeckNodeSerialConnection } from './serial'
+export * from '@loupedeck/core'
 
 /**
  * If the provided device is a loupedeck, get the info about it
@@ -55,7 +48,7 @@ export async function openLoupedeck(path: string, options?: LoupedeckDeviceOptio
 	const model = DEVICE_MODELS.find((mod) => mod.id === selectedDevice.model)
 	if (!model) throw new Error('Loupedeck is of unexpected type')
 
-	const connection = await LoupedeckSerialConnection.open(selectedDevice.path)
+	const connection = await LoupedeckNodeSerialConnection.open(selectedDevice.path)
 
 	return new model.class(connection, options || {})
 }

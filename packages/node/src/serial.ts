@@ -1,22 +1,8 @@
-import { EventEmitter } from 'eventemitter3'
 import { SerialPort, PacketLengthParser } from 'serialport'
+import { LoupedeckSerialConnection } from '@loupedeck/core'
+import { WS_UPGRADE_RESPONSE, WS_UPGRADE_HEADER } from '@loupedeck/core/dist/internal'
 
-const WS_UPGRADE_HEADER = Buffer.from(`GET /index.html
-HTTP/1.1
-Connection: Upgrade
-Upgrade: websocket
-Sec-WebSocket-Key: 123abc
-
-`)
-const WS_UPGRADE_RESPONSE = 'HTTP/1.1'
-
-type LoupedeckSerialConnectionEvents = {
-	disconnect: []
-	error: [err: Error]
-	message: [msg: Buffer]
-}
-
-export class LoupedeckSerialConnection extends EventEmitter<LoupedeckSerialConnectionEvents> {
+export class LoupedeckNodeSerialConnection extends LoupedeckSerialConnection {
 	private connection: SerialPort | undefined
 
 	private constructor(connection: SerialPort) {
@@ -60,20 +46,20 @@ export class LoupedeckSerialConnection extends EventEmitter<LoupedeckSerialConne
 			}, 5000)
 		})
 
-		return new LoupedeckSerialConnection(connection)
+		return new LoupedeckNodeSerialConnection(connection)
 	}
 
-	public close(): void {
+	public override async close(): Promise<void> {
 		if (!this.connection) return
 		if (!this.connection.isOpen) this.connection.close()
 		delete this.connection
 	}
 
-	public isReady(): boolean {
+	public override isReady(): boolean {
 		return this.connection !== undefined && this.connection.isOpen
 	}
 
-	public send(buff: Buffer, raw = false): void {
+	public override async send(buff: Buffer, raw = false): Promise<void> {
 		if (!this.connection) throw new Error('Not connected!')
 
 		if (!raw) {

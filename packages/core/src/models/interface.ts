@@ -22,7 +22,7 @@ export interface LoupedeckDevice extends EventEmitter<LoupedeckDeviceEvents> {
 	/**
 	 * Close the device
 	 */
-	close(): void
+	close(): Promise<void>
 
 	/**
 	 * Draw a buffer to a display

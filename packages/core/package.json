@@ -1,5 +1,5 @@
 {
-	"name": "@loupedeck/node",
+	"name": "@loupedeck/core",
 	"version": "0.3.1",
 	"main": "dist/index.js",
 	"typings": "dist/index.d.ts",
@@ -34,10 +34,5 @@
 		"node": ">=14.15"
 	},
 	"dependencies": {
-    "@loupedeck/core": "0.3.1",
-		"eventemitter3": "^4.0.7",
-		"p-queue": "^6.6.2",
-		"serialport": "^10.4.0",
-		"tslib": "^2.4.0"
 	}
 }
