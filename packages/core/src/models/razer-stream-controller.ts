@@ -1,13 +1,9 @@
 import { LoupedeckTouchObject } from '../events'
 import { LoupedeckControlType, LoupedeckDisplayId } from '../constants'
 import { LoupedeckSerialConnection } from '../serial'
-import {
-	LoupedeckControlDefinition,
-	LoupedeckDisplayDefinition,
-	LoupedeckDeviceBase,
-	LoupedeckDeviceOptions,
-} from './base'
-import { LoupedeckModelId } from '..'
+import { LoupedeckDisplayDefinition, LoupedeckDeviceBase, LoupedeckDeviceOptions } from './base'
+import { LoupedeckModelId } from '../info'
+import { LoupedeckControlDefinition } from './interface'
 
 const DisplayLeft: LoupedeckDisplayDefinition = {
 	id: LoupedeckDisplayId.Left,
@@ -62,6 +58,13 @@ export class RazerStreamControllerDevice extends LoupedeckDeviceBase {
 		return 'Razer Stream Controller'
 	}
 
+	public get lcdKeyColumns(): number {
+		return 4
+	}
+	public get lcdKeyRows(): number {
+		return 3
+	}
+
 	protected override createBufferWithHeader(
 		display: LoupedeckDisplayDefinition,
 		width: number,
@@ -94,9 +97,9 @@ export class RazerStreamControllerDevice extends LoupedeckDeviceBase {
 			x < 60 ? LoupedeckDisplayId.Left : x >= 420 ? LoupedeckDisplayId.Right : LoupedeckDisplayId.Center
 		let key: number | undefined
 		if (screen === LoupedeckDisplayId.Center) {
-			const column = Math.floor((x - 60) / 90)
-			const row = Math.floor(y / 90)
-			key = row * 4 + column
+			const column = Math.floor((x - 60) / this.lcdKeySize)
+			const row = Math.floor(y / this.lcdKeySize)
+			key = row * this.lcdKeyColumns + column
 		}
 
 		// Create touch

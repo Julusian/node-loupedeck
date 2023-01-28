@@ -1,13 +1,9 @@
 import { LoupedeckTouchObject } from '../events'
 import { LoupedeckControlType, LoupedeckDisplayId } from '../constants'
 import { LoupedeckSerialConnection } from '../serial'
-import {
-	LoupedeckControlDefinition,
-	LoupedeckDisplayDefinition,
-	LoupedeckDeviceBase,
-	LoupedeckDeviceOptions,
-} from './base'
-import { LoupedeckModelId } from '..'
+import { LoupedeckDisplayDefinition, LoupedeckDeviceBase, LoupedeckDeviceOptions } from './base'
+import { LoupedeckControlDefinition } from './interface'
+import { LoupedeckModelId } from '../info'
 
 const DisplayCenter: LoupedeckDisplayDefinition = {
 	id: LoupedeckDisplayId.Center,
@@ -47,11 +43,20 @@ export class LoupedeckLiveSDevice extends LoupedeckDeviceBase {
 		return 'Loupedeck Live S'
 	}
 
+	public get lcdKeyColumns(): number {
+		return 5
+	}
+	public get lcdKeyRows(): number {
+		return 3
+	}
+
 	protected override convertKeyIndexToCoordinates(index: number): [x: number, y: number] {
-		const width = 90
-		const height = 90
-		const x = (index % 5) * width
-		const y = Math.floor(index / 5) * height
+		const cols = this.lcdKeyColumns
+
+		const width = this.lcdKeySize
+		const height = this.lcdKeySize
+		const x = (index % cols) * width
+		const y = Math.floor(index / cols) * height
 
 		return [x, y]
 	}
@@ -64,9 +69,9 @@ export class LoupedeckLiveSDevice extends LoupedeckDeviceBase {
 
 		const screen = DisplayCenter.id
 
-		const column = Math.floor((x - DisplayCenter.xPadding) / 90)
-		const row = Math.floor(y / 90)
-		const key = row * 5 + column
+		const column = Math.floor((x - DisplayCenter.xPadding) / this.lcdKeySize)
+		const row = Math.floor(y / this.lcdKeySize)
+		const key = row * this.lcdKeyColumns + column
 
 		// Create touch
 		const touch: LoupedeckTouchObject = { x, y, id, target: { screen, key } }

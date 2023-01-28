@@ -1,7 +1,19 @@
 import EventEmitter = require('eventemitter3')
 import { LoupedeckDeviceEvents } from '../events'
-import { LoupedeckBufferFormat, LoupedeckDisplayId, LoupedeckVibratePattern, RGBColor } from '../constants'
+import {
+	LoupedeckBufferFormat,
+	LoupedeckControlType,
+	LoupedeckDisplayId,
+	LoupedeckVibratePattern,
+	RGBColor,
+} from '../constants'
 import { LoupedeckModelId } from '..'
+
+export interface LoupedeckControlDefinition {
+	type: LoupedeckControlType
+	index: number
+	encoded: number
+}
 
 export interface LoupedeckDevice extends EventEmitter<LoupedeckDeviceEvents> {
 	/**
@@ -13,6 +25,24 @@ export interface LoupedeckDevice extends EventEmitter<LoupedeckDeviceEvents> {
 	 * A descriptive name for this type of Loupedeck device
 	 */
 	modelName: string
+
+	/**
+	 * Number of columns in LCD button grid
+	 */
+	lcdKeyColumns: number
+	/**
+	 * Number of rows in LCD button grid
+	 */
+	lcdKeyRows: number
+	/**
+	 * Pixel size of key on LCD button grid
+	 */
+	lcdKeySize: number
+
+	/**
+	 * List of controls available
+	 */
+	controls: LoupedeckControlDefinition[]
 
 	/**
 	 * Reset all the displays and buttons on the device to black

@@ -15,9 +15,6 @@ function stringifyInfo(info: LoupedeckControlInfo): string {
 const colorRed: RGBColor = { red: 255, green: 0, blue: 0 }
 const colorBlack: RGBColor = { red: 0, green: 0, blue: 0 }
 
-const redBuffer = Buffer.alloc(90 * 90 * 3, Buffer.from([255, 0, 0]))
-const blackBuffer = Buffer.alloc(90 * 90 * 3)
-
 export class FillWhenPressedDemo implements Demo {
 	private pressed: string[] = []
 	private touchBoxes = new Set<number>()
@@ -55,6 +52,10 @@ export class FillWhenPressedDemo implements Demo {
 	}
 	public async touchMove(device: LoupedeckDevice, event: LoupedeckTouchEventData): Promise<void> {
 		const ps: Array<Promise<void>> = []
+
+		const size = device.lcdKeySize
+		const redBuffer = Buffer.alloc(size * size * 3, Buffer.from([255, 0, 0]))
+		const blackBuffer = Buffer.alloc(size * size * 3)
 
 		const newIds = new Set<number>()
 

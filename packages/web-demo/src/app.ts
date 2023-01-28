@@ -8,7 +8,7 @@ import {
 import { Demo } from './demo/demo'
 // import { DomImageDemo } from './demo/dom'
 import { FillWhenPressedDemo } from './demo/fill-when-pressed'
-// import { RapidFillDemo } from './demo/rapid-fill'
+import { RapidFillDemo } from './demo/rapid-fill'
 // import { ChaseDemo } from './demo/chase'
 
 declare const LIB_VERSION: any
@@ -39,9 +39,9 @@ async function demoChange() {
 		}
 
 		switch (demoSelect.value) {
-			// 	case 'rapid-fill':
-			// 		currentDemo = new RapidFillDemo()
-			// 		break
+			case 'rapid-fill':
+				currentDemo = new RapidFillDemo()
+				break
 			// 	case 'dom':
 			// 		currentDemo = new DomImageDemo()
 			// 		break

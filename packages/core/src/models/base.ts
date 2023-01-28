@@ -9,7 +9,7 @@ import {
 } from '../constants'
 import { LoupedeckSerialConnection } from '../serial'
 import { checkRGBColor, checkRGBValue, encodeBuffer } from '../util'
-import { LoupedeckDevice } from './interface'
+import { LoupedeckControlDefinition, LoupedeckDevice } from './interface'
 import { LoupedeckModelId } from '../info'
 import PQueue from 'p-queue'
 
@@ -35,11 +35,6 @@ interface TransactionHandler {
 	reject: (error: Error) => void
 }
 
-export interface LoupedeckControlDefinition {
-	type: LoupedeckControlType
-	index: number
-	encoded: number
-}
 export interface LoupedeckDisplayDefinition {
 	id: LoupedeckDisplayId
 	width: number
@@ -59,7 +54,7 @@ export abstract class LoupedeckDeviceBase extends EventEmitter<LoupedeckDeviceEv
 
 	protected readonly options: LoupedeckDeviceOptions
 	protected readonly displays: LoupedeckDisplayDefinition[]
-	protected readonly controls: LoupedeckControlDefinition[]
+	public readonly controls: LoupedeckControlDefinition[]
 
 	readonly #pendingTransactions: Record<number, TransactionHandler> = {}
 	#nextTransactionId = 0
@@ -100,6 +95,12 @@ export abstract class LoupedeckDeviceBase extends EventEmitter<LoupedeckDeviceEv
 	public abstract get modelId(): LoupedeckModelId
 	public abstract get modelName(): string
 
+	public abstract get lcdKeyColumns(): number
+	public abstract get lcdKeyRows(): number
+	get lcdKeySize(): number {
+		return 90
+	}
+
 	public async blankDevice(doDisplays = true, doButtons = true): Promise<void> {
 		// These steps are done manually, so that it is one operation in the queue, otherwise behaviour is a little non-deterministic
 		await this.#runInQueueIfEnabled(async () => {
@@ -136,8 +137,8 @@ export abstract class LoupedeckDeviceBase extends EventEmitter<LoupedeckDeviceEv
 	}
 
 	protected convertKeyIndexToCoordinates(index: number): [x: number, y: number] {
-		const width = 90
-		const height = 90
+		const width = this.lcdKeySize
+		const height = this.lcdKeySize
 		const x = (index % 4) * width
 		const y = Math.floor(index / 4) * height
 
@@ -200,7 +201,8 @@ export abstract class LoupedeckDeviceBase extends EventEmitter<LoupedeckDeviceEv
 	public async drawKeyBuffer(index: number, buffer: Buffer, format: LoupedeckBufferFormat): Promise<void> {
 		const [x, y] = this.convertKeyIndexToCoordinates(index)
 
-		return this.drawBuffer(LoupedeckDisplayId.Center, buffer, format, 90, 90, x, y)
+		const size = this.lcdKeySize
+		return this.drawBuffer(LoupedeckDisplayId.Center, buffer, format, size, size, x, y)
 	}
 
 	public async drawSolidColour(
@@ -214,16 +216,21 @@ export abstract class LoupedeckDeviceBase extends EventEmitter<LoupedeckDeviceEv
 		const display = this.displays.find((d) => d.id === displayId)
 		if (!display) throw new Error('Invalid DisplayId')
 
-		if (width < 0 || width > display.width) throw new Error('Image width is not valid')
+		const maxWidth = display.width - display.xPadding * 2
+
+		if (width < 0 || width > maxWidth) throw new Error('Image width is not valid')
 		if (height < 0 || height > display.height) throw new Error('Image width is not valid')
-		if (x < 0 || x + width > display.width) throw new Error('x is not valid')
+		if (x < 0 || x + width > maxWidth) throw new Error('x is not valid')
 		if (y < 0 || y + height > display.height) throw new Error('x is not valid')
 
 		checkRGBColor(color)
 
-		const encodedValue = (Math.round(color.red) << 11) + (Math.round(color.green) << 5) + Math.round(color.blue)
+		const encodedValue =
+			((Math.round(color.red) & 0b11111) << 11) +
+			((Math.round(color.green) & 0b111111) << 5) +
+			(Math.round(color.blue) & 0b11111)
 
-		const [encoded, padding] = this.createBufferWithHeader(display, width, height, x, y)
+		const [encoded, padding] = this.createBufferWithHeader(display, width, height, x + display.xPadding, y)
 		for (let i = 0; i < width * height; i++) {
 			encoded.writeUint16LE(encodedValue, i * 2 + padding)
 		}
