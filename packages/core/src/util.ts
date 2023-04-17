@@ -1,12 +1,54 @@
 import { LoupedeckBufferFormat, RGBColor } from './constants'
+import { LoupedeckDisplayDefinition } from './models/base'
+
+export type CanDrawPixelFn = (x: number, y: number) => boolean
+export type CanDrawRowFn = (y: number) => boolean
+
+export function createCanDrawPixel(
+	drawX: number,
+	drawY: number,
+	lcdKeySize: number,
+	displayInfo: Pick<LoupedeckDisplayDefinition, 'rowGap' | 'columnGap'>
+): [CanDrawPixelFn, CanDrawRowFn] {
+	const roundY = lcdKeySize + displayInfo.rowGap
+	const roundX = lcdKeySize + displayInfo.columnGap
+
+	const canDrawPixel = (x: number, y: number) => {
+		if (displayInfo.rowGap > 0 && (drawY + y) % roundY >= lcdKeySize) {
+			// Skip blanked rows
+			return false
+		}
+
+		if (displayInfo.columnGap > 0 && (drawX + x) % roundX >= lcdKeySize) {
+			// Skip blanked rows
+			return false
+		}
+
+		return true
+	}
+	const canDrawRow = (y: number) => {
+		if (displayInfo.rowGap > 0 && (drawY + y) % roundY >= lcdKeySize) {
+			// Skip blanked rows
+			return false
+		}
+
+		return true
+	}
+
+	return [canDrawPixel, canDrawRow]
+}
 
 export function encodeBuffer(
 	input: Buffer,
 	output: Buffer,
 	format: LoupedeckBufferFormat,
 	outputPadding: number,
-	pixelCount: number
+	width: number,
+	height: number,
+	canDrawPixel: CanDrawPixelFn,
+	canDrawRow: CanDrawRowFn
 ): void {
+	const pixelCount = width * height
 	if (input.length !== pixelCount * format.length)
 		throw new Error(`Incorrect buffer length ${input.length} expected ${pixelCount * format.length}`)
 	if (output.length !== pixelCount * 2 + outputPadding)
@@ -14,11 +56,18 @@ export function encodeBuffer(
 
 	switch (format) {
 		case LoupedeckBufferFormat.RGB:
-			for (let i = 0; i < pixelCount; i++) {
-				const r = input.readUInt8(i * 3 + 0) >> 3
-				const g = input.readUInt8(i * 3 + 1) >> 2
-				const b = input.readUInt8(i * 3 + 2) >> 3
-				output.writeUint16LE((r << 11) + (g << 5) + b, outputPadding + i * 2)
+			for (let y = 0; y < height; y++) {
+				if (!canDrawRow(y)) continue
+
+				for (let x = 0; x < width; x++) {
+					if (!canDrawPixel(x, y)) continue
+
+					const i = y * width + x
+					const r = input.readUInt8(i * 3 + 0) >> 3
+					const g = input.readUInt8(i * 3 + 1) >> 2
+					const b = input.readUInt8(i * 3 + 2) >> 3
+					output.writeUint16LE((r << 11) + (g << 5) + b, outputPadding + i * 2)
+				}
 			}
 			break
 		default:

@@ -8,7 +8,7 @@ import {
 	RGBColor,
 } from '../constants'
 import { LoupedeckSerialConnection } from '../serial'
-import { checkRGBColor, checkRGBValue, encodeBuffer } from '../util'
+import { checkRGBColor, checkRGBValue, createCanDrawPixel, encodeBuffer } from '../util'
 import { LoupedeckControlDefinition, LoupedeckDevice } from './interface'
 import { LoupedeckModelId } from '../info'
 import PQueue from 'p-queue'
@@ -163,8 +163,6 @@ export abstract class LoupedeckDeviceBase extends EventEmitter<LoupedeckDeviceEv
 	): [buffer: Buffer, offset: number] {
 		const padding = 10 // header + id
 
-		console.log('drawing', x, y)
-
 		const pixelCount = width * height
 		const encoded = Buffer.alloc(pixelCount * 2 + padding)
 
@@ -198,8 +196,8 @@ export abstract class LoupedeckDeviceBase extends EventEmitter<LoupedeckDeviceEv
 
 		const [encoded, padding] = this.createBufferWithHeader(display, width, height, x + display.xPadding, y)
 
-		// TODO - blank dead zones in encoded buffer
-		encodeBuffer(buffer, encoded, format, padding, width * height)
+		const [canDrawPixel, canDrawRow] = createCanDrawPixel(x, y, this.lcdKeySize, display)
+		encodeBuffer(buffer, encoded, format, padding, width, height, canDrawPixel, canDrawRow)
 
 		await this.#runInQueueIfEnabled(async () => {
 			// Run in the queue as a single operation
@@ -242,9 +240,18 @@ export abstract class LoupedeckDeviceBase extends EventEmitter<LoupedeckDeviceEv
 			((Math.round(color.green) & 0b111111) << 5) +
 			(Math.round(color.blue) & 0b11111)
 
+		const [canDrawPixel, canDrawRow] = createCanDrawPixel(x, y, this.lcdKeySize, display)
+
 		const [encoded, padding] = this.createBufferWithHeader(display, width, height, x + display.xPadding, y)
-		for (let i = 0; i < width * height; i++) {
-			encoded.writeUint16LE(encodedValue, i * 2 + padding)
+		for (let y = 0; y < height; y++) {
+			if (!canDrawRow(y)) continue
+
+			for (let x = 0; x < width; x++) {
+				if (canDrawPixel(x, y)) {
+					const i = y * width + x
+					encoded.writeUint16LE(encodedValue, i * 2 + padding)
+				}
+			}
 		}
 
 		await this.#runInQueueIfEnabled(async () => {
