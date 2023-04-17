@@ -3,6 +3,7 @@ import {
 	LoupedeckControlInfo,
 	LoupedeckDevice,
 	LoupedeckDisplayId,
+	LoupedeckModelId,
 	LoupedeckTouchEventData,
 	RGBColor,
 } from '@loupedeck/web'
@@ -14,6 +15,9 @@ function stringifyInfo(info: LoupedeckControlInfo): string {
 
 const colorRed: RGBColor = { red: 255, green: 0, blue: 0 }
 const colorBlack: RGBColor = { red: 0, green: 0, blue: 0 }
+
+const bufferRed = Buffer.alloc(80 * 80 * 3, Buffer.from([255, 0, 0]))
+const bufferBlack = Buffer.alloc(80 * 80 * 3)
 
 export class FillWhenPressedDemo implements Demo {
 	private pressed: string[] = []
@@ -30,7 +34,11 @@ export class FillWhenPressedDemo implements Demo {
 		if (this.pressed.indexOf(id) === -1) {
 			this.pressed.push(id)
 
-			await device.setButtonColor({ id: info.index, ...colorRed })
+			if (device.modelId === LoupedeckModelId.RazerStreamControllerX) {
+				await device.drawKeyBuffer(info.index, bufferRed, LoupedeckBufferFormat.RGB)
+			} else {
+				await device.setButtonColor({ id: info.index, ...colorRed })
+			}
 		}
 	}
 	public async controlUp(device: LoupedeckDevice, info: LoupedeckControlInfo): Promise<void> {
@@ -39,7 +47,11 @@ export class FillWhenPressedDemo implements Demo {
 		if (index !== -1) {
 			this.pressed.splice(index, 1)
 
-			await device.setButtonColor({ id: info.index, ...colorBlack })
+			if (device.modelId === LoupedeckModelId.RazerStreamControllerX) {
+				await device.drawKeyBuffer(info.index, bufferBlack, LoupedeckBufferFormat.RGB)
+			} else {
+				await device.setButtonColor({ id: info.index, ...colorBlack })
+			}
 		}
 	}
 

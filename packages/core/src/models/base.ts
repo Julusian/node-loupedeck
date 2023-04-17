@@ -41,6 +41,8 @@ export interface LoupedeckDisplayDefinition {
 	height: number
 	encoded: Buffer
 	xPadding: number
+	columnGap?: number // TODO make required
+	rowGap?: number // TODO make required
 }
 
 export interface LoupedeckDeviceOptions {
@@ -136,11 +138,14 @@ export abstract class LoupedeckDeviceBase extends EventEmitter<LoupedeckDeviceEv
 		await this.#connection.close()
 	}
 
-	protected convertKeyIndexToCoordinates(index: number): [x: number, y: number] {
-		const width = this.lcdKeySize
-		const height = this.lcdKeySize
-		const x = (index % 4) * width
-		const y = Math.floor(index / 4) * height
+	private convertKeyIndexToCoordinates(index: number, display: LoupedeckDisplayDefinition): [x: number, y: number] {
+		const cols = this.lcdKeyColumns
+
+		const width = this.lcdKeySize + (display.columnGap ?? 0)
+		const height = this.lcdKeySize + (display.rowGap ?? 0)
+
+		const x = (index % cols) * width
+		const y = Math.floor(index / cols) * height
 
 		return [x, y]
 	}
@@ -157,6 +162,8 @@ export abstract class LoupedeckDeviceBase extends EventEmitter<LoupedeckDeviceEv
 		y: number
 	): [buffer: Buffer, offset: number] {
 		const padding = 10 // header + id
+
+		console.log('drawing', x, y)
 
 		const pixelCount = width * height
 		const encoded = Buffer.alloc(pixelCount * 2 + padding)
@@ -190,6 +197,8 @@ export abstract class LoupedeckDeviceBase extends EventEmitter<LoupedeckDeviceEv
 		if (y < 0 || y + height > display.height) throw new Error('x is not valid')
 
 		const [encoded, padding] = this.createBufferWithHeader(display, width, height, x + display.xPadding, y)
+
+		// TODO - blank dead zones in encoded buffer
 		encodeBuffer(buffer, encoded, format, padding, width * height)
 
 		await this.#runInQueueIfEnabled(async () => {
@@ -199,7 +208,10 @@ export abstract class LoupedeckDeviceBase extends EventEmitter<LoupedeckDeviceEv
 	}
 
 	public async drawKeyBuffer(index: number, buffer: Buffer, format: LoupedeckBufferFormat): Promise<void> {
-		const [x, y] = this.convertKeyIndexToCoordinates(index)
+		const display = this.displays.find((d) => d.id === LoupedeckDisplayId.Center)
+		if (!display) throw new Error('Invalid DisplayId')
+
+		const [x, y] = this.convertKeyIndexToCoordinates(index, display)
 
 		const size = this.lcdKeySize
 		return this.drawBuffer(LoupedeckDisplayId.Center, buffer, format, size, size, x, y)
