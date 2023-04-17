@@ -1,5 +1,5 @@
 import { LoupedeckBufferFormat, RGBColor } from './constants'
-import { LoupedeckDisplayDefinition } from './models/base'
+import { LoupedeckDisplayDefinition } from './models/interface'
 
 export type CanDrawPixelFn = (x: number, y: number) => boolean
 export type CanDrawRowFn = (y: number) => boolean

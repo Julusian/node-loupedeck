@@ -40,7 +40,7 @@ export enum LoupedeckVibratePattern {
 	VERY_LONG = 0x76,
 }
 
-export enum LoupedeckDisplayId { // TODO - I don't like this existing when its not always valid
+export enum LoupedeckDisplayId {
 	Left = 'left',
 	Center = 'center',
 	Right = 'right',

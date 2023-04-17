@@ -80,15 +80,15 @@ async function openDevice(device: LoupedeckDevice): Promise<void> {
 		currentDemo.controlRotate(device, info, delta).catch(console.error)
 	})
 	device.on('touchstart', (evt: LoupedeckTouchEventData) => {
-		appendLog(`Touch start ${'TODO'}`)
+		appendLog(`Touch start ${JSON.stringify(evt)}`)
 		currentDemo.touchStart(device, evt).catch(console.error)
 	})
 	device.on('touchmove', (evt: LoupedeckTouchEventData) => {
-		appendLog(`Touch move ${'TODO'}`)
+		appendLog(`Touch move ${JSON.stringify(evt)}`)
 		currentDemo.touchMove(device, evt).catch(console.error)
 	})
 	device.on('touchend', (evt: LoupedeckTouchEventData) => {
-		appendLog(`Touch end ${'TODO'}`)
+		appendLog(`Touch end ${JSON.stringify(evt)}`)
 		currentDemo.touchEnd(device, evt).catch(console.error)
 	})
 

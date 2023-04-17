@@ -28,11 +28,35 @@ export class RapidFillDemo implements Demo {
 					}
 					console.log('Filling with rgb(%d, %d, %d)', color.red, color.green, color.blue)
 
-					const width = device.lcdKeySize * device.lcdKeyColumns
-					const height = device.lcdKeySize * device.lcdKeyRows
-
 					this.running = Promise.all([
-						device.drawSolidColour(LoupedeckDisplayId.Center, color, width, height, 0, 0),
+						device.drawSolidColour(
+							LoupedeckDisplayId.Center,
+							color,
+							device.displayMain.width,
+							device.displayMain.height,
+							0,
+							0
+						),
+						device.displayLeftStrip
+							? device.drawSolidColour(
+									LoupedeckDisplayId.Left,
+									color,
+									device.displayLeftStrip.width,
+									device.displayLeftStrip.height,
+									0,
+									0
+							  )
+							: undefined,
+						device.displayRightStrip
+							? device.drawSolidColour(
+									LoupedeckDisplayId.Right,
+									color,
+									device.displayRightStrip.width,
+									device.displayRightStrip.height,
+									0,
+									0
+							  )
+							: undefined,
 						// TODO fix
 						// device.setButtonColor(
 						// 	...(device.controls

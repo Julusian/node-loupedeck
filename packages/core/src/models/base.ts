@@ -1,5 +1,5 @@
 import { EventEmitter } from 'eventemitter3'
-import { LoupedeckDeviceEvents } from '../events'
+import { LoupedeckDeviceEvents, LoupedeckTouchObject } from '../events'
 import {
 	DisplayCenterEncodedId,
 	LoupedeckBufferFormat,
@@ -10,7 +10,7 @@ import {
 } from '../constants'
 import { LoupedeckSerialConnection } from '../serial'
 import { checkRGBColor, checkRGBValue, createCanDrawPixel, encodeBuffer } from '../util'
-import { LoupedeckControlDefinition, LoupedeckDevice } from './interface'
+import { LoupedeckControlDefinition, LoupedeckDevice, LoupedeckDisplayDefinition } from './interface'
 import { LoupedeckModelId } from '../info'
 import PQueue from 'p-queue'
 
@@ -36,17 +36,6 @@ interface TransactionHandler {
 	reject: (error: Error) => void
 }
 
-export interface LoupedeckDisplayDefinition {
-	// id: LoupedeckDisplayId
-	/** Total physical width of the display */ // TODO _ make usable
-	width: number
-	height: number
-	xPadding: number
-	yPadding: number
-	columnGap: number
-	rowGap: number
-}
-
 export interface ModelSpec {
 	controls: LoupedeckControlDefinition[]
 	displayMain: Readonly<LoupedeckDisplayDefinition>
@@ -63,11 +52,12 @@ export interface ModelSpec {
 
 export interface LoupedeckDeviceOptions {
 	/**
-	 * Experimental option to wait for acks before sending the next message
+	 * Legacy option to disable waiting for acks before sending the next message
 	 */
-	waitForAcks?: boolean
+	skipWaitForAcks?: boolean
 }
 export abstract class LoupedeckDeviceBase extends EventEmitter<LoupedeckDeviceEvents> implements LoupedeckDevice {
+	readonly #touches: Record<number, LoupedeckTouchObject> = {}
 	readonly #connection: LoupedeckSerialConnection
 
 	protected readonly options: LoupedeckDeviceOptions
@@ -78,13 +68,13 @@ export abstract class LoupedeckDeviceBase extends EventEmitter<LoupedeckDeviceEv
 		return this.modelSpec.controls
 	}
 
-	protected get displayMain(): Readonly<LoupedeckDisplayDefinition> {
+	public get displayMain(): Readonly<LoupedeckDisplayDefinition> {
 		return this.modelSpec.displayMain
 	}
-	protected get displayLeftStrip(): Readonly<LoupedeckDisplayDefinition> | undefined {
+	public get displayLeftStrip(): Readonly<LoupedeckDisplayDefinition> | undefined {
 		return this.modelSpec.displayLeftStrip
 	}
-	protected get displayRightStrip(): Readonly<LoupedeckDisplayDefinition> | undefined {
+	public get displayRightStrip(): Readonly<LoupedeckDisplayDefinition> | undefined {
 		return this.modelSpec.displayRightStrip
 	}
 
@@ -100,7 +90,7 @@ export abstract class LoupedeckDeviceBase extends EventEmitter<LoupedeckDeviceEv
 		this.options = { ...options }
 		this.modelSpec = modelSpec
 
-		if (this.options.waitForAcks) {
+		if (!this.options.skipWaitForAcks) {
 			this.#sendQueue = new PQueue({
 				concurrency: 1,
 			})
@@ -159,7 +149,7 @@ export abstract class LoupedeckDeviceBase extends EventEmitter<LoupedeckDeviceEv
 						const [payload] = this.createBufferWithHeader(
 							displayId,
 							display.width + display.xPadding * 2,
-							display.height,
+							display.height + display.yPadding * 2,
 							0,
 							0
 						)
@@ -210,12 +200,22 @@ export abstract class LoupedeckDeviceBase extends EventEmitter<LoupedeckDeviceEv
 	 * @returns The buffer and the data offset
 	 */
 	protected createBufferWithHeader(
-		_displayId: LoupedeckDisplayId,
+		displayId: LoupedeckDisplayId,
 		width: number,
 		height: number,
 		x: number,
 		y: number
 	): [buffer: Buffer, offset: number] {
+		if (displayId === LoupedeckDisplayId.Left) {
+			// Nothing to do
+		} else if (displayId === LoupedeckDisplayId.Center) {
+			x += this.displayLeftStrip?.width ?? 0
+		} else if (displayId === LoupedeckDisplayId.Right) {
+			x += (this.displayLeftStrip?.width ?? 0) + (this.displayMain.width + this.displayMain.xPadding * 2)
+		} else {
+			throw new Error('Unknown DisplayId')
+		}
+
 		const padding = 10 // header + id
 
 		const pixelCount = width * height
@@ -242,13 +242,10 @@ export abstract class LoupedeckDeviceBase extends EventEmitter<LoupedeckDeviceEv
 		const display = this.#getDisplay(displayId)
 		if (!display) throw new Error('Invalid DisplayId')
 
-		const maxWidth = display.width - display.xPadding * 2
-		const maxHeight = display.height - display.yPadding * 2
-
-		if (width < 0 || width > maxWidth) throw new Error('Image width is not valid')
-		if (height < 0 || height > maxHeight) throw new Error('Image width is not valid')
-		if (x < 0 || x + width > maxWidth) throw new Error('x is not valid')
-		if (y < 0 || y + height > maxHeight) throw new Error('x is not valid')
+		if (width < 0 || width > display.width) throw new Error('Image width is not valid')
+		if (height < 0 || height > display.height) throw new Error('Image width is not valid')
+		if (x < 0 || x + width > display.width) throw new Error('x is not valid')
+		if (y < 0 || y + height > display.height) throw new Error('x is not valid')
 
 		const [encoded, padding] = this.createBufferWithHeader(
 			displayId,
@@ -285,20 +282,17 @@ export abstract class LoupedeckDeviceBase extends EventEmitter<LoupedeckDeviceEv
 		const display = this.#getDisplay(displayId)
 		if (!display) throw new Error('Invalid DisplayId')
 
-		const maxWidth = display.width - display.xPadding * 2
-		const maxHeight = display.height - display.yPadding * 2
-
-		if (width < 0 || width > maxWidth) throw new Error('Image width is not valid')
-		if (height < 0 || height > maxHeight) throw new Error('Image height is not valid')
-		if (x < 0 || x + width > maxWidth) throw new Error('x is not valid')
-		if (y < 0 || y + height > maxHeight) throw new Error('y is not valid')
+		if (width < 0 || width > display.width) throw new Error('Image width is not valid')
+		if (height < 0 || height > display.height) throw new Error('Image height is not valid')
+		if (x < 0 || x + width > display.width) throw new Error('x is not valid')
+		if (y < 0 || y + height > display.height) throw new Error('y is not valid')
 
 		checkRGBColor(color)
 
 		const encodedValue =
-			((Math.round(color.red) & 0b11111) << 11) +
-			((Math.round(color.green) & 0b111111) << 5) +
-			(Math.round(color.blue) & 0b11111)
+			(((Math.round(color.red) >> 3) & 0b11111) << 11) +
+			(((Math.round(color.green) >> 2) & 0b111111) << 5) +
+			((Math.round(color.blue) >> 3) & 0b11111)
 
 		const [canDrawPixel, canDrawRow] = createCanDrawPixel(x, y, this.lcdKeySize, display)
 
@@ -333,33 +327,37 @@ export abstract class LoupedeckDeviceBase extends EventEmitter<LoupedeckDeviceEv
 	}
 
 	#onMessage(buff: Buffer): void {
-		const length = buff.readUint8(2)
-		if (length + 2 !== buff.length) return
-		const header = buff.readUInt8(3)
+		try {
+			const length = buff.readUint8(2)
+			if (length + 2 !== buff.length) return
+			const header = buff.readUInt8(3)
 
-		const transactionID = buff.readUInt8(4)
+			const transactionID = buff.readUInt8(4)
 
-		if (transactionID === 0) {
-			switch (header) {
-				case 0x00: // Press
-					this.#onPress(buff.subarray(5))
-					break
-				case 0x01: // Rotate
-					this.#onRotate(buff.subarray(5))
-					break
-				case 0x4d: // touchmove
-					this.onTouch('touchmove', buff.subarray(5))
-					break
-				case 0x6d: // touchend
-					this.onTouch('touchend', buff.subarray(5))
-					break
+			if (transactionID === 0) {
+				switch (header) {
+					case 0x00: // Press
+						this.#onPress(buff.subarray(5))
+						break
+					case 0x01: // Rotate
+						this.#onRotate(buff.subarray(5))
+						break
+					case 0x4d: // touchmove
+						this.onTouch('touchmove', buff.subarray(5))
+						break
+					case 0x6d: // touchend
+						this.onTouch('touchend', buff.subarray(5))
+						break
+				}
+			} else {
+				const resolver = this.#pendingTransactions[transactionID]
+				if (resolver) {
+					resolver.resolve(buff.subarray(5))
+					delete this.#pendingTransactions[transactionID]
+				}
 			}
-		} else {
-			const resolver = this.#pendingTransactions[transactionID]
-			if (resolver) {
-				resolver.resolve(buff.subarray(5))
-				delete this.#pendingTransactions[transactionID]
-			}
+		} catch (e) {
+			console.error('Unhandled error in serial message handler:', e)
 		}
 	}
 	#onPress(buff: Buffer): void {
@@ -378,7 +376,57 @@ export abstract class LoupedeckDeviceBase extends EventEmitter<LoupedeckDeviceEv
 			this.emit('rotate', { type: control.type, index: control.index }, delta)
 		}
 	}
-	protected abstract onTouch(event: 'touchmove' | 'touchend' | 'touchstart', buff: Buffer): void
+	// protected abstract onTouch(event: 'touchmove' | 'touchend' | 'touchstart', buff: Buffer): void
+	protected onTouch(event: 'touchmove' | 'touchend' | 'touchstart', buff: Buffer): void {
+		// Parse buffer
+		let x = buff.readUInt16BE(1)
+		let y = buff.readUInt16BE(3)
+		const id = buff.readUInt8(5)
+
+		const mainFullWidth = this.displayMain.width + this.displayMain.xPadding * 2
+		const leftWidth = this.displayLeftStrip?.width ?? 0
+
+		// Figure out which screen was touched
+		let screen: LoupedeckDisplayId = LoupedeckDisplayId.Center
+		const rightX = (this.displayLeftStrip?.width ?? 0) + mainFullWidth
+		if (this.displayLeftStrip && x < leftWidth) {
+			screen = LoupedeckDisplayId.Left
+		} else if (this.displayRightStrip && x >= rightX) {
+			screen = LoupedeckDisplayId.Right
+			x -= rightX
+		} else {
+			// else center
+			x -= leftWidth + this.displayMain.xPadding
+			y -= this.displayMain.yPadding
+		}
+
+		let key: number | undefined
+		if (screen === LoupedeckDisplayId.Center) {
+			// Pad by half the gap, to make the maths simpler
+			const xPadded = x + this.displayMain.columnGap / 2
+			const yPadded = y + this.displayMain.rowGap / 2
+
+			// Find the column, including the gap as evenly distributed
+			const column = Math.floor(xPadded / (this.lcdKeySize + this.displayMain.columnGap))
+			const row = Math.floor(yPadded / (this.lcdKeySize + this.displayMain.rowGap))
+
+			key = row * this.lcdKeyColumns + column
+		}
+
+		// Create touch
+		const touch: LoupedeckTouchObject = { x, y, id, target: { screen, key } }
+
+		// End touch, remove from local cache
+		if (event === 'touchend') {
+			delete this.#touches[touch.id]
+		} else {
+			// First time seeing this touch, emit touchstart instead of touchmove
+			if (!this.#touches[touch.id]) event = 'touchstart'
+			this.#touches[touch.id] = touch
+		}
+
+		this.emit(event, { touches: Object.values<LoupedeckTouchObject>(this.#touches), changedTouches: [touch] })
+	}
 
 	public async setBrightness(value: number): Promise<void> {
 		const MAX_BRIGHTNESS = 10
@@ -441,7 +489,7 @@ export abstract class LoupedeckDeviceBase extends EventEmitter<LoupedeckDeviceEv
 		return this.#runInQueueIfEnabled(async () => {
 			const transactionId = await this.#sendCommand(commandId, payload)
 
-			if (this.options.waitForAcks) await this.#waitForTransaction(transactionId)
+			if (!this.options.skipWaitForAcks) await this.#waitForTransaction(transactionId)
 		}, skipQueue)
 	}
 	async #sendAndWaitForResult(commandId: number, payload: Buffer | undefined, skipQueue = false): Promise<Buffer> {

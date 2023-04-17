@@ -15,6 +15,21 @@ export interface LoupedeckControlDefinition {
 	encoded: number
 }
 
+export interface LoupedeckDisplayDefinition {
+	/** Total usable width of the display */
+	width: number
+	/** Total usable height of the display */
+	height: number
+	/** Deadspace to the left and right of the display */
+	xPadding: number
+	/** Deadspace to the top and bottom of the display */
+	yPadding: number
+	/** Deadspace between each button column */
+	columnGap: number
+	/** Deadspace between each button row */
+	rowGap: number
+}
+
 export interface LoupedeckDevice extends EventEmitter<LoupedeckDeviceEvents> {
 	/**
 	 * Model of this device
@@ -43,6 +58,10 @@ export interface LoupedeckDevice extends EventEmitter<LoupedeckDeviceEvents> {
 	 * List of controls available
 	 */
 	controls: ReadonlyArray<Readonly<LoupedeckControlDefinition>>
+
+	displayMain: Readonly<LoupedeckDisplayDefinition>
+	displayLeftStrip: Readonly<LoupedeckDisplayDefinition> | undefined
+	displayRightStrip: Readonly<LoupedeckDisplayDefinition> | undefined
 
 	/**
 	 * Reset all the displays and buttons on the device to black

@@ -22,6 +22,8 @@ const bufferBlack = Buffer.alloc(80 * 80 * 3)
 export class FillWhenPressedDemo implements Demo {
 	private pressed: string[] = []
 	private touchBoxes = new Set<number>()
+	private touchingLeft = false
+	private touchingRight = false
 
 	public async start(device: LoupedeckDevice): Promise<void> {
 		await device.blankDevice(true, false)
@@ -65,11 +67,9 @@ export class FillWhenPressedDemo implements Demo {
 	public async touchMove(device: LoupedeckDevice, event: LoupedeckTouchEventData): Promise<void> {
 		const ps: Array<Promise<void>> = []
 
-		const size = device.lcdKeySize
-		const redBuffer = Buffer.alloc(size * size * 3, Buffer.from([255, 0, 0]))
-		const blackBuffer = Buffer.alloc(size * size * 3)
-
 		const newIds = new Set<number>()
+		let leftPercent = 0
+		let rightPercent = 0
 
 		for (const touch of event.touches) {
 			if (touch.target.screen === LoupedeckDisplayId.Center && touch.target.key !== undefined) {
@@ -78,8 +78,14 @@ export class FillWhenPressedDemo implements Demo {
 				if (!this.touchBoxes.has(touch.target.key)) {
 					this.touchBoxes.add(touch.target.key)
 
-					ps.push(device.drawKeyBuffer(touch.target.key, redBuffer, LoupedeckBufferFormat.RGB))
+					ps.push(device.drawKeyBuffer(touch.target.key, bufferRed, LoupedeckBufferFormat.RGB))
 				}
+			} else if (touch.target.screen === LoupedeckDisplayId.Left && device.displayLeftStrip) {
+				const percent = touch.y / device.displayLeftStrip.height
+				leftPercent = Math.max(leftPercent, percent)
+			} else if (touch.target.screen === LoupedeckDisplayId.Right && device.displayRightStrip) {
+				const percent = touch.y / device.displayRightStrip.height
+				rightPercent = Math.max(rightPercent, percent)
 			}
 		}
 
@@ -87,8 +93,38 @@ export class FillWhenPressedDemo implements Demo {
 			if (!newIds.has(key)) {
 				this.touchBoxes.delete(key)
 
-				ps.push(device.drawKeyBuffer(key, blackBuffer, LoupedeckBufferFormat.RGB))
+				ps.push(device.drawKeyBuffer(key, bufferBlack, LoupedeckBufferFormat.RGB))
 			}
+		}
+
+		if (device.displayLeftStrip && (leftPercent > 0 || this.touchingLeft)) {
+			this.touchingLeft = leftPercent > 0
+
+			ps.push(
+				device.drawSolidColour(
+					LoupedeckDisplayId.Left,
+					{ red: Math.round(255 * leftPercent), green: 0, blue: 0 },
+					device.displayLeftStrip.width,
+					device.displayLeftStrip.height,
+					0,
+					0
+				)
+			)
+		}
+
+		if (device.displayRightStrip && (rightPercent > 0 || this.touchingRight)) {
+			this.touchingRight = rightPercent > 0
+
+			ps.push(
+				device.drawSolidColour(
+					LoupedeckDisplayId.Right,
+					{ red: Math.round(255 * rightPercent), green: 0, blue: 0 },
+					device.displayRightStrip.width,
+					device.displayRightStrip.height,
+					0,
+					0
+				)
+			)
 		}
 
 		await Promise.allSettled(ps)
