@@ -1,9 +1,6 @@
-import { LoupedeckDevice } from './models/interface'
-
 export * from './constants'
 export * from './events'
 export * from './info'
 export * from './serial'
-export { LoupedeckControlDefinition, LoupedeckDeviceOptions, LoupedeckDisplayDefinition } from './models/base'
-
-export { LoupedeckDevice }
+export { LoupedeckDeviceOptions, LoupedeckDisplayDefinition } from './models/base'
+export { LoupedeckDevice, LoupedeckControlDefinition } from './models/interface'

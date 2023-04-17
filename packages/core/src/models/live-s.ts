@@ -85,6 +85,6 @@ export class LoupedeckLiveSDevice extends LoupedeckDeviceBase {
 			this.touches[touch.id] = touch
 		}
 
-		this.emit(event, { touches: Object.values(this.touches), changedTouches: [touch] })
+		this.emit(event, { touches: Object.values<LoupedeckTouchObject>(this.touches), changedTouches: [touch] })
 	}
 }
