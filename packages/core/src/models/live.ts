@@ -11,6 +11,7 @@ const DisplayLeft: LoupedeckDisplayDefinition = {
 	height: 270,
 	encoded: Buffer.from([0x00, 0x4d]),
 	xPadding: 0,
+	yPadding: 0,
 	columnGap: 0,
 	rowGap: 0,
 }
@@ -19,9 +20,10 @@ const DisplayCenter: LoupedeckDisplayDefinition = {
 	width: 360,
 	height: 270,
 	encoded: Buffer.from([0x00, 0x4d]),
-	xPadding: 0,
-	columnGap: 0, // TODO
-	rowGap: 0, // TODO
+	xPadding: 5,
+	yPadding: 5,
+	columnGap: 10,
+	rowGap: 10,
 }
 const DisplayRight: LoupedeckDisplayDefinition = {
 	id: LoupedeckDisplayId.Right,
@@ -29,6 +31,7 @@ const DisplayRight: LoupedeckDisplayDefinition = {
 	height: 270,
 	encoded: Buffer.from([0x00, 0x4d]),
 	xPadding: 0,
+	yPadding: 0,
 	columnGap: 0,
 	rowGap: 0,
 }
@@ -62,6 +65,10 @@ export class LoupedeckLiveDevice extends LoupedeckDeviceBase {
 	}
 	public get modelName(): string {
 		return 'Loupedeck Live'
+	}
+
+	public get lcdKeySize(): number {
+		return 80
 	}
 
 	public get lcdKeyColumns(): number {

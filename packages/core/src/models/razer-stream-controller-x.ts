@@ -10,6 +10,7 @@ const DisplayCenter: LoupedeckDisplayDefinition = {
 	height: 270,
 	encoded: Buffer.from([0x00, 0x4d]),
 	xPadding: 5,
+	yPadding: 0,
 	columnGap: 20,
 	rowGap: 18,
 }

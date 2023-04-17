@@ -10,9 +10,10 @@ const DisplayCenter: LoupedeckDisplayDefinition = {
 	width: 480,
 	height: 270,
 	encoded: Buffer.from([0x00, 0x4d]),
-	xPadding: 15, // There is some deadspace before the first button
-	columnGap: 0, // TODO
-	rowGap: 0, // TODO
+	xPadding: 18, // There is some deadspace before the first button
+	yPadding: 5,
+	columnGap: 10, // TODO
+	rowGap: 10, // TODO
 }
 
 const Controls: LoupedeckControlDefinition[] = []
@@ -43,6 +44,10 @@ export class LoupedeckLiveSDevice extends LoupedeckDeviceBase {
 	}
 	public get modelName(): string {
 		return 'Loupedeck Live S'
+	}
+
+	public override get lcdKeySize(): number {
+		return 80
 	}
 
 	public get lcdKeyColumns(): number {

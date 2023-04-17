@@ -41,6 +41,7 @@ export interface LoupedeckDisplayDefinition {
 	height: number
 	encoded: Buffer
 	xPadding: number
+	yPadding: number
 	columnGap: number
 	rowGap: number
 }
@@ -99,9 +100,7 @@ export abstract class LoupedeckDeviceBase extends EventEmitter<LoupedeckDeviceEv
 
 	public abstract get lcdKeyColumns(): number
 	public abstract get lcdKeyRows(): number
-	get lcdKeySize(): number {
-		return 90
-	}
+	public abstract get lcdKeySize(): number
 
 	public async blankDevice(doDisplays = true, doButtons = true): Promise<void> {
 		// These steps are done manually, so that it is one operation in the queue, otherwise behaviour is a little non-deterministic
@@ -188,13 +187,20 @@ export abstract class LoupedeckDeviceBase extends EventEmitter<LoupedeckDeviceEv
 		if (!display) throw new Error('Invalid DisplayId')
 
 		const maxWidth = display.width - display.xPadding * 2
+		const maxHeight = display.height - display.yPadding * 2
 
 		if (width < 0 || width > maxWidth) throw new Error('Image width is not valid')
-		if (height < 0 || height > display.height) throw new Error('Image width is not valid')
+		if (height < 0 || height > maxHeight) throw new Error('Image width is not valid')
 		if (x < 0 || x + width > maxWidth) throw new Error('x is not valid')
-		if (y < 0 || y + height > display.height) throw new Error('x is not valid')
+		if (y < 0 || y + height > maxHeight) throw new Error('x is not valid')
 
-		const [encoded, padding] = this.createBufferWithHeader(display, width, height, x + display.xPadding, y)
+		const [encoded, padding] = this.createBufferWithHeader(
+			display,
+			width,
+			height,
+			x + display.xPadding,
+			y + display.yPadding
+		)
 
 		const [canDrawPixel, canDrawRow] = createCanDrawPixel(x, y, this.lcdKeySize, display)
 		encodeBuffer(buffer, encoded, format, padding, width, height, canDrawPixel, canDrawRow)
@@ -229,9 +235,9 @@ export abstract class LoupedeckDeviceBase extends EventEmitter<LoupedeckDeviceEv
 		const maxWidth = display.width - display.xPadding * 2
 
 		if (width < 0 || width > maxWidth) throw new Error('Image width is not valid')
-		if (height < 0 || height > display.height) throw new Error('Image width is not valid')
+		if (height < 0 || height > display.height) throw new Error('Image height is not valid')
 		if (x < 0 || x + width > maxWidth) throw new Error('x is not valid')
-		if (y < 0 || y + height > display.height) throw new Error('x is not valid')
+		if (y < 0 || y + height > display.height) throw new Error('y is not valid')
 
 		checkRGBColor(color)
 
