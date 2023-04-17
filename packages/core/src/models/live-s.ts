@@ -11,6 +11,8 @@ const DisplayCenter: LoupedeckDisplayDefinition = {
 	height: 270,
 	encoded: Buffer.from([0x00, 0x4d]),
 	xPadding: 15, // There is some deadspace before the first button
+	columnGap: 0, // TODO
+	rowGap: 0, // TODO
 }
 
 const Controls: LoupedeckControlDefinition[] = []
@@ -48,17 +50,6 @@ export class LoupedeckLiveSDevice extends LoupedeckDeviceBase {
 	}
 	public get lcdKeyRows(): number {
 		return 3
-	}
-
-	protected override convertKeyIndexToCoordinates(index: number): [x: number, y: number] {
-		const cols = this.lcdKeyColumns
-
-		const width = this.lcdKeySize
-		const height = this.lcdKeySize
-		const x = (index % cols) * width
-		const y = Math.floor(index / cols) * height
-
-		return [x, y]
 	}
 
 	protected override onTouch(event: 'touchmove' | 'touchend' | 'touchstart', buff: Buffer): void {

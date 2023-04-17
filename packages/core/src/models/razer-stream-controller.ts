@@ -11,6 +11,8 @@ const DisplayLeft: LoupedeckDisplayDefinition = {
 	height: 270,
 	encoded: Buffer.from([0x00, 0x4d]),
 	xPadding: 0,
+	columnGap: 0,
+	rowGap: 0,
 }
 const DisplayCenter: LoupedeckDisplayDefinition = {
 	id: LoupedeckDisplayId.Center,
@@ -18,6 +20,8 @@ const DisplayCenter: LoupedeckDisplayDefinition = {
 	height: 270,
 	encoded: Buffer.from([0x00, 0x4d]),
 	xPadding: 0,
+	columnGap: 0, // TODO
+	rowGap: 0, // TODO
 }
 const DisplayRight: LoupedeckDisplayDefinition = {
 	id: LoupedeckDisplayId.Right,
@@ -25,6 +29,8 @@ const DisplayRight: LoupedeckDisplayDefinition = {
 	height: 270,
 	encoded: Buffer.from([0x00, 0x4d]),
 	xPadding: 0,
+	columnGap: 0,
+	rowGap: 0,
 }
 const Displays: LoupedeckDisplayDefinition[] = [DisplayLeft, DisplayCenter, DisplayRight]
 

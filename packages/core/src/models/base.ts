@@ -41,8 +41,8 @@ export interface LoupedeckDisplayDefinition {
 	height: number
 	encoded: Buffer
 	xPadding: number
-	columnGap?: number // TODO make required
-	rowGap?: number // TODO make required
+	columnGap: number
+	rowGap: number
 }
 
 export interface LoupedeckDeviceOptions {
