@@ -1,31 +1,41 @@
 import { LoupedeckTouchObject } from '../events'
 import { LoupedeckControlType, LoupedeckDisplayId } from '../constants'
 import { LoupedeckSerialConnection } from '../serial'
-import { LoupedeckDisplayDefinition, LoupedeckDeviceBase, LoupedeckDeviceOptions } from './base'
-import { LoupedeckControlDefinition } from './interface'
+import { LoupedeckDisplayDefinition, LoupedeckDeviceBase, LoupedeckDeviceOptions, ModelSpec } from './base'
 import { LoupedeckModelId } from '../info'
 
 const DisplayCenter: LoupedeckDisplayDefinition = {
-	id: LoupedeckDisplayId.Center,
-	width: 480,
+	width: 480 - 18 * 2,
 	height: 270,
-	encoded: Buffer.from([0x00, 0x4d]),
 	xPadding: 18, // There is some deadspace before the first button
 	yPadding: 5,
-	columnGap: 10, // TODO
-	rowGap: 10, // TODO
+	columnGap: 10,
+	rowGap: 10,
 }
 
-const Controls: LoupedeckControlDefinition[] = []
+const modelSpec: ModelSpec = {
+	controls: [],
+
+	displayMain: DisplayCenter,
+	displayLeftStrip: undefined,
+	displayRightStrip: undefined,
+
+	modelId: LoupedeckModelId.LoupedeckLiveS,
+	modelName: 'Loupedeck Live S',
+	lcdKeySize: 80,
+	lcdKeyColumns: 5,
+	lcdKeyRows: 3,
+}
+
 for (let i = 0; i < 2; i++) {
-	Controls.push({
+	modelSpec.controls.push({
 		type: LoupedeckControlType.Rotary,
 		index: i,
 		encoded: 0x01 + i,
 	})
 }
 for (let i = 0; i < 4; i++) {
-	Controls.push({
+	modelSpec.controls.push({
 		type: LoupedeckControlType.Button,
 		index: i,
 		encoded: 0x07 + i,
@@ -36,25 +46,7 @@ export class LoupedeckLiveSDevice extends LoupedeckDeviceBase {
 	private readonly touches: Record<number, LoupedeckTouchObject> = {}
 
 	constructor(connection: LoupedeckSerialConnection, options: LoupedeckDeviceOptions) {
-		super(connection, options, [DisplayCenter], Controls)
-	}
-
-	public get modelId(): LoupedeckModelId {
-		return LoupedeckModelId.LoupedeckLiveS
-	}
-	public get modelName(): string {
-		return 'Loupedeck Live S'
-	}
-
-	public override get lcdKeySize(): number {
-		return 80
-	}
-
-	public get lcdKeyColumns(): number {
-		return 5
-	}
-	public get lcdKeyRows(): number {
-		return 3
+		super(connection, options, modelSpec)
 	}
 
 	protected override onTouch(event: 'touchmove' | 'touchend' | 'touchstart', buff: Buffer): void {
@@ -63,7 +55,7 @@ export class LoupedeckLiveSDevice extends LoupedeckDeviceBase {
 		const id = buff.readUInt8(5)
 		// Determine target
 
-		const screen = DisplayCenter.id
+		const screen = LoupedeckDisplayId.Center
 
 		const column = Math.floor((x - DisplayCenter.xPadding) / this.lcdKeySize)
 		const row = Math.floor(y / this.lcdKeySize)

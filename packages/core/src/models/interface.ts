@@ -42,7 +42,7 @@ export interface LoupedeckDevice extends EventEmitter<LoupedeckDeviceEvents> {
 	/**
 	 * List of controls available
 	 */
-	controls: LoupedeckControlDefinition[]
+	controls: ReadonlyArray<Readonly<LoupedeckControlDefinition>>
 
 	/**
 	 * Reset all the displays and buttons on the device to black

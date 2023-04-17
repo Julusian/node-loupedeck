@@ -1,52 +1,57 @@
 import { LoupedeckTouchObject } from '../events'
 import { LoupedeckControlType, LoupedeckDisplayId } from '../constants'
 import { LoupedeckSerialConnection } from '../serial'
-import { LoupedeckDisplayDefinition, LoupedeckDeviceBase, LoupedeckDeviceOptions } from './base'
+import { LoupedeckDisplayDefinition, LoupedeckDeviceBase, LoupedeckDeviceOptions, ModelSpec } from './base'
 import { LoupedeckModelId } from '../info'
-import { LoupedeckControlDefinition } from './interface'
 
 const DisplayLeft: LoupedeckDisplayDefinition = {
-	id: LoupedeckDisplayId.Left,
 	width: 60,
 	height: 270,
-	encoded: Buffer.from([0x00, 0x4d]),
 	xPadding: 0,
 	yPadding: 0,
 	columnGap: 0,
 	rowGap: 0,
 }
 const DisplayCenter: LoupedeckDisplayDefinition = {
-	id: LoupedeckDisplayId.Center,
 	width: 360,
 	height: 270,
-	encoded: Buffer.from([0x00, 0x4d]),
 	xPadding: 5,
 	yPadding: 5,
 	columnGap: 10,
 	rowGap: 10,
 }
 const DisplayRight: LoupedeckDisplayDefinition = {
-	id: LoupedeckDisplayId.Right,
 	width: 60,
 	height: 270,
-	encoded: Buffer.from([0x00, 0x4d]),
 	xPadding: 0,
 	yPadding: 0,
 	columnGap: 0,
 	rowGap: 0,
 }
-const Displays: LoupedeckDisplayDefinition[] = [DisplayLeft, DisplayCenter, DisplayRight]
 
-const Controls: LoupedeckControlDefinition[] = []
+const modelSpec: ModelSpec = {
+	controls: [],
+
+	displayMain: DisplayCenter,
+	displayLeftStrip: DisplayLeft,
+	displayRightStrip: DisplayRight,
+
+	modelId: LoupedeckModelId.RazerStreamController,
+	modelName: 'Razer Stream Controller',
+	lcdKeySize: 80,
+	lcdKeyColumns: 4,
+	lcdKeyRows: 3,
+}
+
 for (let i = 0; i < 8; i++) {
-	Controls.push({
+	modelSpec.controls.push({
 		type: LoupedeckControlType.Button,
 		index: i,
 		encoded: 0x07 + i,
 	})
 }
 for (let i = 0; i < 6; i++) {
-	Controls.push({
+	modelSpec.controls.push({
 		type: LoupedeckControlType.Rotary,
 		index: i,
 		encoded: 0x01 + i,
@@ -57,29 +62,11 @@ export class RazerStreamControllerDevice extends LoupedeckDeviceBase {
 	private readonly touches: Record<number, LoupedeckTouchObject> = {}
 
 	constructor(connection: LoupedeckSerialConnection, options: LoupedeckDeviceOptions) {
-		super(connection, options, Displays, Controls)
-	}
-
-	public get modelId(): LoupedeckModelId {
-		return LoupedeckModelId.RazerStreamController
-	}
-	public get modelName(): string {
-		return 'Razer Stream Controller'
-	}
-
-	public get lcdKeySize(): number {
-		return 80
-	}
-
-	public get lcdKeyColumns(): number {
-		return 4
-	}
-	public get lcdKeyRows(): number {
-		return 3
+		super(connection, options, modelSpec)
 	}
 
 	protected override createBufferWithHeader(
-		display: LoupedeckDisplayDefinition,
+		displayId: LoupedeckDisplayId,
 		width: number,
 		height: number,
 		x: number,
@@ -87,17 +74,17 @@ export class RazerStreamControllerDevice extends LoupedeckDeviceBase {
 	): [buffer: Buffer, offset: number] {
 		// The Razer Stream Controller only has one screen object, so we need to remap the pixel addresses
 
-		if (display.id === DisplayLeft.id) {
+		if (displayId === LoupedeckDisplayId.Left) {
 			// Nothing to do
-		} else if (display.id === DisplayCenter.id) {
+		} else if (displayId === LoupedeckDisplayId.Center) {
 			x += DisplayLeft.width
-		} else if (display.id === DisplayRight.id) {
+		} else if (displayId === LoupedeckDisplayId.Right) {
 			x += DisplayLeft.width + DisplayCenter.width
 		} else {
 			throw new Error('Unknown DisplayId')
 		}
 
-		return super.createBufferWithHeader(display, width, height, x, y)
+		return super.createBufferWithHeader(displayId, width, height, x, y)
 	}
 
 	protected override onTouch(event: 'touchmove' | 'touchend' | 'touchstart', buff: Buffer): void {

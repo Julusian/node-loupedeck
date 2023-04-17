@@ -1,6 +1,7 @@
 import { EventEmitter } from 'eventemitter3'
 import { LoupedeckDeviceEvents } from '../events'
 import {
+	DisplayCenterEncodedId,
 	LoupedeckBufferFormat,
 	LoupedeckControlType,
 	LoupedeckDisplayId,
@@ -36,14 +37,28 @@ interface TransactionHandler {
 }
 
 export interface LoupedeckDisplayDefinition {
-	id: LoupedeckDisplayId
+	// id: LoupedeckDisplayId
+	/** Total physical width of the display */ // TODO _ make usable
 	width: number
 	height: number
-	encoded: Buffer
 	xPadding: number
 	yPadding: number
 	columnGap: number
 	rowGap: number
+}
+
+export interface ModelSpec {
+	controls: LoupedeckControlDefinition[]
+	displayMain: Readonly<LoupedeckDisplayDefinition>
+	displayLeftStrip: Readonly<LoupedeckDisplayDefinition> | undefined
+	displayRightStrip: Readonly<LoupedeckDisplayDefinition> | undefined
+
+	modelId: LoupedeckModelId
+	modelName: string
+
+	lcdKeyColumns: number
+	lcdKeyRows: number
+	lcdKeySize: number
 }
 
 export interface LoupedeckDeviceOptions {
@@ -56,26 +71,34 @@ export abstract class LoupedeckDeviceBase extends EventEmitter<LoupedeckDeviceEv
 	readonly #connection: LoupedeckSerialConnection
 
 	protected readonly options: LoupedeckDeviceOptions
-	protected readonly displays: LoupedeckDisplayDefinition[]
-	public readonly controls: LoupedeckControlDefinition[]
+	protected readonly modelSpec: ModelSpec
+	// protected readonly displays: LoupedeckDisplayDefinition[]
+
+	public get controls(): ReadonlyArray<Readonly<LoupedeckControlDefinition>> {
+		return this.modelSpec.controls
+	}
+
+	protected get displayMain(): Readonly<LoupedeckDisplayDefinition> {
+		return this.modelSpec.displayMain
+	}
+	protected get displayLeftStrip(): Readonly<LoupedeckDisplayDefinition> | undefined {
+		return this.modelSpec.displayLeftStrip
+	}
+	protected get displayRightStrip(): Readonly<LoupedeckDisplayDefinition> | undefined {
+		return this.modelSpec.displayRightStrip
+	}
 
 	readonly #pendingTransactions: Record<number, TransactionHandler> = {}
 	#nextTransactionId = 0
 
 	readonly #sendQueue: PQueue | undefined
 
-	constructor(
-		connection: LoupedeckSerialConnection,
-		options: LoupedeckDeviceOptions,
-		displays: LoupedeckDisplayDefinition[],
-		controls: LoupedeckControlDefinition[]
-	) {
+	constructor(connection: LoupedeckSerialConnection, options: LoupedeckDeviceOptions, modelSpec: ModelSpec) {
 		super()
 
 		this.#connection = connection
 		this.options = { ...options }
-		this.displays = displays
-		this.controls = controls
+		this.modelSpec = modelSpec
 
 		if (this.options.waitForAcks) {
 			this.#sendQueue = new PQueue({
@@ -95,21 +118,54 @@ export abstract class LoupedeckDeviceBase extends EventEmitter<LoupedeckDeviceEv
 		this.#connection.on('message', this.#onMessage.bind(this))
 	}
 
-	public abstract get modelId(): LoupedeckModelId
-	public abstract get modelName(): string
+	public get modelId(): LoupedeckModelId {
+		return this.modelSpec.modelId
+	}
+	public get modelName(): string {
+		return this.modelSpec.modelName
+	}
 
-	public abstract get lcdKeyColumns(): number
-	public abstract get lcdKeyRows(): number
-	public abstract get lcdKeySize(): number
+	public get lcdKeyColumns(): number {
+		return this.modelSpec.lcdKeyColumns
+	}
+	public get lcdKeyRows(): number {
+		return this.modelSpec.lcdKeyRows
+	}
+	public get lcdKeySize(): number {
+		return this.modelSpec.lcdKeySize
+	}
+
+	#getDisplay(displayId: LoupedeckDisplayId): LoupedeckDisplayDefinition | undefined {
+		switch (displayId) {
+			case LoupedeckDisplayId.Center:
+				return this.displayMain
+			case LoupedeckDisplayId.Left:
+				return this.displayLeftStrip
+			case LoupedeckDisplayId.Right:
+				return this.displayRightStrip
+			default:
+				// TODO Unreachable
+				return undefined
+		}
+	}
 
 	public async blankDevice(doDisplays = true, doButtons = true): Promise<void> {
 		// These steps are done manually, so that it is one operation in the queue, otherwise behaviour is a little non-deterministic
 		await this.#runInQueueIfEnabled(async () => {
 			if (doDisplays) {
-				for (const display of this.displays) {
-					const [payload] = this.createBufferWithHeader(display, display.width, display.height, 0, 0)
+				for (const displayId of Object.values<LoupedeckDisplayId>(LoupedeckDisplayId)) {
+					const display = this.#getDisplay(displayId)
+					if (display) {
+						const [payload] = this.createBufferWithHeader(
+							displayId,
+							display.width + display.xPadding * 2,
+							display.height,
+							0,
+							0
+						)
 
-					await this.#sendAndWaitIfRequired(CommandIds.DrawFramebuffer, payload, true)
+						await this.#sendAndWaitIfRequired(CommandIds.DrawFramebuffer, payload, true)
+					}
 				}
 			}
 
@@ -154,7 +210,7 @@ export abstract class LoupedeckDeviceBase extends EventEmitter<LoupedeckDeviceEv
 	 * @returns The buffer and the data offset
 	 */
 	protected createBufferWithHeader(
-		display: LoupedeckDisplayDefinition,
+		_displayId: LoupedeckDisplayId,
 		width: number,
 		height: number,
 		x: number,
@@ -165,7 +221,7 @@ export abstract class LoupedeckDeviceBase extends EventEmitter<LoupedeckDeviceEv
 		const pixelCount = width * height
 		const encoded = Buffer.alloc(pixelCount * 2 + padding)
 
-		display.encoded.copy(encoded)
+		DisplayCenterEncodedId.copy(encoded, 0)
 		encoded.writeUInt16BE(x, 2)
 		encoded.writeUInt16BE(y, 4)
 		encoded.writeUInt16BE(width, 6)
@@ -183,7 +239,7 @@ export abstract class LoupedeckDeviceBase extends EventEmitter<LoupedeckDeviceEv
 		x: number,
 		y: number
 	): Promise<void> {
-		const display = this.displays.find((d) => d.id === displayId)
+		const display = this.#getDisplay(displayId)
 		if (!display) throw new Error('Invalid DisplayId')
 
 		const maxWidth = display.width - display.xPadding * 2
@@ -195,7 +251,7 @@ export abstract class LoupedeckDeviceBase extends EventEmitter<LoupedeckDeviceEv
 		if (y < 0 || y + height > maxHeight) throw new Error('x is not valid')
 
 		const [encoded, padding] = this.createBufferWithHeader(
-			display,
+			displayId,
 			width,
 			height,
 			x + display.xPadding,
@@ -212,10 +268,7 @@ export abstract class LoupedeckDeviceBase extends EventEmitter<LoupedeckDeviceEv
 	}
 
 	public async drawKeyBuffer(index: number, buffer: Buffer, format: LoupedeckBufferFormat): Promise<void> {
-		const display = this.displays.find((d) => d.id === LoupedeckDisplayId.Center)
-		if (!display) throw new Error('Invalid DisplayId')
-
-		const [x, y] = this.convertKeyIndexToCoordinates(index, display)
+		const [x, y] = this.convertKeyIndexToCoordinates(index, this.displayMain)
 
 		const size = this.lcdKeySize
 		return this.drawBuffer(LoupedeckDisplayId.Center, buffer, format, size, size, x, y)
@@ -229,15 +282,16 @@ export abstract class LoupedeckDeviceBase extends EventEmitter<LoupedeckDeviceEv
 		x: number,
 		y: number
 	): Promise<void> {
-		const display = this.displays.find((d) => d.id === displayId)
+		const display = this.#getDisplay(displayId)
 		if (!display) throw new Error('Invalid DisplayId')
 
 		const maxWidth = display.width - display.xPadding * 2
+		const maxHeight = display.height - display.yPadding * 2
 
 		if (width < 0 || width > maxWidth) throw new Error('Image width is not valid')
-		if (height < 0 || height > display.height) throw new Error('Image height is not valid')
+		if (height < 0 || height > maxHeight) throw new Error('Image height is not valid')
 		if (x < 0 || x + width > maxWidth) throw new Error('x is not valid')
-		if (y < 0 || y + height > display.height) throw new Error('y is not valid')
+		if (y < 0 || y + height > maxHeight) throw new Error('y is not valid')
 
 		checkRGBColor(color)
 
@@ -248,7 +302,7 @@ export abstract class LoupedeckDeviceBase extends EventEmitter<LoupedeckDeviceEv
 
 		const [canDrawPixel, canDrawRow] = createCanDrawPixel(x, y, this.lcdKeySize, display)
 
-		const [encoded, padding] = this.createBufferWithHeader(display, width, height, x + display.xPadding, y)
+		const [encoded, padding] = this.createBufferWithHeader(displayId, width, height, x + display.xPadding, y)
 		for (let y = 0; y < height; y++) {
 			if (!canDrawRow(y)) continue
 

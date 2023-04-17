@@ -46,6 +46,8 @@ export enum LoupedeckDisplayId { // TODO - I don't like this existing when its n
 	Right = 'right',
 }
 
+export const DisplayCenterEncodedId = Buffer.from([0x00, 0x4d])
+
 export interface RGBColor {
 	red: number
 	green: number
