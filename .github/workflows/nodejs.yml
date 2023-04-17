@@ -7,9 +7,9 @@ jobs:
     name: lint
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v3
       - name: Setup Node.js
-        uses: actions/setup-node@v1
+        uses: actions/setup-node@v3
         with:
           node-version: 16.x
       - run: yarn install
@@ -25,9 +25,9 @@ jobs:
     name: audit
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v3
       - name: Setup Node.js
-        uses: actions/setup-node@v1
+        uses: actions/setup-node@v3
         with:
           node-version: 16.x
       - run: yarn install
@@ -49,14 +49,14 @@ jobs:
   #       os: [ubuntu-latest, windows-latest, macos-latest]
 
   #   steps:
-  #     - uses: actions/checkout@v1
+  #     - uses: actions/checkout@v3
   #     - name: Install linux dependencies
   #       if: runner.os == 'Linux'
   #       run: |
   #         sudo apt-get update
   #         sudo apt-get install -y yasm libudev-dev libusb-1.0-0-dev
   #     - name: Use Node.js ${{ matrix.node-version }}
-  #       uses: actions/setup-node@v1
+  #       uses: actions/setup-node@v3
   #       with:
   #         node-version: ${{ matrix.node-version }}
   #     - run: yarn install
@@ -84,9 +84,9 @@ jobs:
     #   - test
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Setup Node.js
-        uses: actions/setup-node@v1
+        uses: actions/setup-node@v3
         with:
           node-version: 16.x
       - name: Prepare build
