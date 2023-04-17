@@ -3168,8 +3168,8 @@ function stringifyInfo(info) {
 }
 const colorRed = { red: 255, green: 0, blue: 0 };
 const colorBlack = { red: 0, green: 0, blue: 0 };
-const redBuffer = Buffer.alloc(90 * 90 * 3, Buffer.from([255, 0, 0]));
-const blackBuffer = Buffer.alloc(90 * 90 * 3);
+const bufferRed = Buffer.alloc(80 * 80 * 3, Buffer.from([255, 0, 0]));
+const bufferBlack = Buffer.alloc(80 * 80 * 3);
 class FillWhenPressedDemo {
     constructor() {
         this.pressed = [];
@@ -3185,7 +3185,12 @@ class FillWhenPressedDemo {
         const id = stringifyInfo(info);
         if (this.pressed.indexOf(id) === -1) {
             this.pressed.push(id);
-            await device.setButtonColor({ id: info.index, ...colorRed });
+            if (device.modelId === web_1.LoupedeckModelId.RazerStreamControllerX) {
+                await device.drawKeyBuffer(info.index, bufferRed, web_1.LoupedeckBufferFormat.RGB);
+            }
+            else {
+                await device.setButtonColor({ id: info.index, ...colorRed });
+            }
         }
     }
     async controlUp(device, info) {
@@ -3193,7 +3198,12 @@ class FillWhenPressedDemo {
         const index = this.pressed.indexOf(id);
         if (index !== -1) {
             this.pressed.splice(index, 1);
-            await device.setButtonColor({ id: info.index, ...colorBlack });
+            if (device.modelId === web_1.LoupedeckModelId.RazerStreamControllerX) {
+                await device.drawKeyBuffer(info.index, bufferBlack, web_1.LoupedeckBufferFormat.RGB);
+            }
+            else {
+                await device.setButtonColor({ id: info.index, ...colorBlack });
+            }
         }
     }
     async controlRotate(_device, _info, _delta) {
@@ -3204,6 +3214,9 @@ class FillWhenPressedDemo {
     }
     async touchMove(device, event) {
         const ps = [];
+        const size = device.lcdKeySize;
+        const redBuffer = Buffer.alloc(size * size * 3, Buffer.from([255, 0, 0]));
+        const blackBuffer = Buffer.alloc(size * size * 3);
         const newIds = new Set();
         for (const touch of event.touches) {
             if (touch.target.screen === web_1.LoupedeckDisplayId.Center && touch.target.key !== undefined) {
@@ -3227,6 +3240,92 @@ class FillWhenPressedDemo {
     }
 }
 exports.FillWhenPressedDemo = FillWhenPressedDemo;
+
+
+/***/ }),
+
+/***/ 283:
+/***/ ((__unused_webpack_module, exports, __webpack_require__) => {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.RapidFillDemo = void 0;
+const web_1 = __webpack_require__(660);
+function getRandomIntInclusive(min, max) {
+    min = Math.ceil(min);
+    max = Math.floor(max);
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+class RapidFillDemo {
+    async start(device) {
+        if (!this.interval) {
+            const doThing = async () => {
+                if (!this.running) {
+                    const color = {
+                        red: getRandomIntInclusive(0, 255),
+                        green: getRandomIntInclusive(0, 255),
+                        blue: getRandomIntInclusive(0, 255),
+                    };
+                    console.log('Filling with rgb(%d, %d, %d)', color.red, color.green, color.blue);
+                    const width = device.lcdKeySize * device.lcdKeyColumns;
+                    const height = device.lcdKeySize * device.lcdKeyRows;
+                    this.running = Promise.all([
+                        device.drawSolidColour(web_1.LoupedeckDisplayId.Center, color, width, height, 0, 0),
+                        // TODO fix
+                        // device.setButtonColor(
+                        // 	...(device.controls
+                        // 		.map((control) => {
+                        // 			if (control.type === LoupedeckControlType.Button) {
+                        // 				return { id: control.index, ...color }
+                        // 			} else {
+                        // 				return undefined
+                        // 			}
+                        // 		})
+                        // 		.filter((c) => !!c) as any[])
+                        // ),
+                    ]);
+                    try {
+                        await this.running;
+                    }
+                    finally {
+                        this.running = undefined;
+                    }
+                }
+            };
+            this.interval = window.setInterval(() => {
+                doThing().catch((e) => console.log(e));
+            }, 1000 / 5);
+        }
+    }
+    async stop(device) {
+        if (this.interval) {
+            window.clearInterval(this.interval);
+            this.interval = undefined;
+        }
+        await this.running;
+        await device.blankDevice(true, true);
+    }
+    async controlDown(_device, _info) {
+        // Nothing to do
+    }
+    async controlUp(_device, _info) {
+        // Nothing to do
+    }
+    async controlRotate(_device, _info, _delta) {
+        // Nothing to do
+    }
+    async touchStart(_device, _event) {
+        // Nothing to do
+    }
+    async touchMove(_device, _event) {
+        // Nothing to do
+    }
+    async touchEnd(_device, _event) {
+        // Nothing to do
+    }
+}
+exports.RapidFillDemo = RapidFillDemo;
 
 
 /***/ }),
@@ -3343,6 +3442,7 @@ var LoupedeckModelId;
     LoupedeckModelId["LoupedeckLive"] = "loupedeck-live";
     LoupedeckModelId["LoupedeckLiveS"] = "loupedeck-live-s";
     LoupedeckModelId["RazerStreamController"] = "razer-stream-controller";
+    LoupedeckModelId["RazerStreamControllerX"] = "razer-stream-controller-x";
 })(LoupedeckModelId = exports.LoupedeckModelId || (exports.LoupedeckModelId = {}));
 //# sourceMappingURL=info.js.map
 
@@ -3461,11 +3561,12 @@ class LoupedeckDeviceBase extends eventemitter3_1.EventEmitter {
         __classPrivateFieldGet(this, _LoupedeckDeviceBase_instances, "m", _LoupedeckDeviceBase_cleanupPendingPromises).call(this);
         await __classPrivateFieldGet(this, _LoupedeckDeviceBase_connection, "f").close();
     }
-    convertKeyIndexToCoordinates(index) {
-        const width = 90;
-        const height = 90;
-        const x = (index % 4) * width;
-        const y = Math.floor(index / 4) * height;
+    convertKeyIndexToCoordinates(index, display) {
+        const cols = this.lcdKeyColumns;
+        const width = this.lcdKeySize + (display.columnGap ?? 0);
+        const height = this.lcdKeySize + (display.rowGap ?? 0);
+        const x = (index % cols) * width;
+        const y = Math.floor(index / cols) * height;
         return [x, y];
     }
     /**
@@ -3488,42 +3589,59 @@ class LoupedeckDeviceBase extends eventemitter3_1.EventEmitter {
         if (!display)
             throw new Error('Invalid DisplayId');
         const maxWidth = display.width - display.xPadding * 2;
+        const maxHeight = display.height - display.yPadding * 2;
         if (width < 0 || width > maxWidth)
             throw new Error('Image width is not valid');
-        if (height < 0 || height > display.height)
+        if (height < 0 || height > maxHeight)
             throw new Error('Image width is not valid');
         if (x < 0 || x + width > maxWidth)
             throw new Error('x is not valid');
-        if (y < 0 || y + height > display.height)
+        if (y < 0 || y + height > maxHeight)
             throw new Error('x is not valid');
-        const [encoded, padding] = this.createBufferWithHeader(display, width, height, x + display.xPadding, y);
-        (0, util_1.encodeBuffer)(buffer, encoded, format, padding, width * height);
+        const [encoded, padding] = this.createBufferWithHeader(display, width, height, x + display.xPadding, y + display.yPadding);
+        const [canDrawPixel, canDrawRow] = (0, util_1.createCanDrawPixel)(x, y, this.lcdKeySize, display);
+        (0, util_1.encodeBuffer)(buffer, encoded, format, padding, width, height, canDrawPixel, canDrawRow);
         await __classPrivateFieldGet(this, _LoupedeckDeviceBase_instances, "m", _LoupedeckDeviceBase_runInQueueIfEnabled).call(this, async () => {
             // Run in the queue as a single operation
             await __classPrivateFieldGet(this, _LoupedeckDeviceBase_instances, "m", _LoupedeckDeviceBase_sendAndWaitIfRequired).call(this, CommandIds.DrawFramebuffer, encoded, true);
         }, false);
     }
     async drawKeyBuffer(index, buffer, format) {
-        const [x, y] = this.convertKeyIndexToCoordinates(index);
-        return this.drawBuffer(constants_1.LoupedeckDisplayId.Center, buffer, format, 90, 90, x, y);
+        const display = this.displays.find((d) => d.id === constants_1.LoupedeckDisplayId.Center);
+        if (!display)
+            throw new Error('Invalid DisplayId');
+        const [x, y] = this.convertKeyIndexToCoordinates(index, display);
+        const size = this.lcdKeySize;
+        return this.drawBuffer(constants_1.LoupedeckDisplayId.Center, buffer, format, size, size, x, y);
     }
     async drawSolidColour(displayId, color, width, height, x, y) {
         const display = this.displays.find((d) => d.id === displayId);
         if (!display)
             throw new Error('Invalid DisplayId');
-        if (width < 0 || width > display.width)
+        const maxWidth = display.width - display.xPadding * 2;
+        if (width < 0 || width > maxWidth)
             throw new Error('Image width is not valid');
         if (height < 0 || height > display.height)
-            throw new Error('Image width is not valid');
-        if (x < 0 || x + width > display.width)
+            throw new Error('Image height is not valid');
+        if (x < 0 || x + width > maxWidth)
             throw new Error('x is not valid');
         if (y < 0 || y + height > display.height)
-            throw new Error('x is not valid');
+            throw new Error('y is not valid');
         (0, util_1.checkRGBColor)(color);
-        const encodedValue = (Math.round(color.red) << 11) + (Math.round(color.green) << 5) + Math.round(color.blue);
-        const [encoded, padding] = this.createBufferWithHeader(display, width, height, x, y);
-        for (let i = 0; i < width * height; i++) {
-            encoded.writeUint16LE(encodedValue, i * 2 + padding);
+        const encodedValue = ((Math.round(color.red) & 0b11111) << 11) +
+            ((Math.round(color.green) & 0b111111) << 5) +
+            (Math.round(color.blue) & 0b11111);
+        const [canDrawPixel, canDrawRow] = (0, util_1.createCanDrawPixel)(x, y, this.lcdKeySize, display);
+        const [encoded, padding] = this.createBufferWithHeader(display, width, height, x + display.xPadding, y);
+        for (let y = 0; y < height; y++) {
+            if (!canDrawRow(y))
+                continue;
+            for (let x = 0; x < width; x++) {
+                if (canDrawPixel(x, y)) {
+                    const i = y * width + x;
+                    encoded.writeUint16LE(encodedValue, i * 2 + padding);
+                }
+            }
         }
         await __classPrivateFieldGet(this, _LoupedeckDeviceBase_instances, "m", _LoupedeckDeviceBase_runInQueueIfEnabled).call(this, async () => {
             // Run in the queue as a single operation
@@ -3695,6 +3813,7 @@ const info_1 = __webpack_require__(970);
 const live_1 = __webpack_require__(158);
 const razer_stream_controller_1 = __webpack_require__(348);
 const live_s_1 = __webpack_require__(149);
+const razer_stream_controller_x_1 = __webpack_require__(722);
 /** List of all the known models, and the classes to use them */
 exports.DEVICE_MODELS = [
     {
@@ -3715,6 +3834,12 @@ exports.DEVICE_MODELS = [
         productId: 0x0d06,
         class: razer_stream_controller_1.RazerStreamControllerDevice,
     },
+    {
+        id: info_1.LoupedeckModelId.RazerStreamControllerX,
+        vendorId: constants_1.VendorIdRazer,
+        productId: 0x0d09,
+        class: razer_stream_controller_x_1.RazerStreamControllerDeviceX,
+    },
 ];
 //# sourceMappingURL=list.js.map
 
@@ -3730,13 +3855,16 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.LoupedeckLiveSDevice = void 0;
 const constants_1 = __webpack_require__(843);
 const base_1 = __webpack_require__(576);
-const __1 = __webpack_require__(613);
+const info_1 = __webpack_require__(970);
 const DisplayCenter = {
     id: constants_1.LoupedeckDisplayId.Center,
     width: 480,
     height: 270,
     encoded: Buffer.from([0x00, 0x4d]),
-    xPadding: 15, // There is some deadspace before the first button
+    xPadding: 18,
+    yPadding: 5,
+    columnGap: 10,
+    rowGap: 10, // TODO
 };
 const Controls = [];
 for (let i = 0; i < 2; i++) {
@@ -3759,17 +3887,19 @@ class LoupedeckLiveSDevice extends base_1.LoupedeckDeviceBase {
         this.touches = {};
     }
     get modelId() {
-        return __1.LoupedeckModelId.LoupedeckLiveS;
+        return info_1.LoupedeckModelId.LoupedeckLiveS;
     }
     get modelName() {
         return 'Loupedeck Live S';
     }
-    convertKeyIndexToCoordinates(index) {
-        const width = 90;
-        const height = 90;
-        const x = (index % 5) * width;
-        const y = Math.floor(index / 5) * height;
-        return [x, y];
+    get lcdKeySize() {
+        return 80;
+    }
+    get lcdKeyColumns() {
+        return 5;
+    }
+    get lcdKeyRows() {
+        return 3;
     }
     onTouch(event, buff) {
         const x = buff.readUInt16BE(1);
@@ -3777,9 +3907,9 @@ class LoupedeckLiveSDevice extends base_1.LoupedeckDeviceBase {
         const id = buff.readUInt8(5);
         // Determine target
         const screen = DisplayCenter.id;
-        const column = Math.floor((x - DisplayCenter.xPadding) / 90);
-        const row = Math.floor(y / 90);
-        const key = row * 5 + column;
+        const column = Math.floor((x - DisplayCenter.xPadding) / this.lcdKeySize);
+        const row = Math.floor(y / this.lcdKeySize);
+        const key = row * this.lcdKeyColumns + column;
         // Create touch
         const touch = { x, y, id, target: { screen, key } };
         // End touch, remove from local cache
@@ -3810,20 +3940,26 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.LoupedeckLiveDevice = void 0;
 const constants_1 = __webpack_require__(843);
 const base_1 = __webpack_require__(576);
-const __1 = __webpack_require__(613);
+const info_1 = __webpack_require__(970);
 const DisplayLeft = {
     id: constants_1.LoupedeckDisplayId.Left,
     width: 60,
     height: 270,
     encoded: Buffer.from([0x00, 0x4d]),
     xPadding: 0,
+    yPadding: 0,
+    columnGap: 0,
+    rowGap: 0,
 };
 const DisplayCenter = {
     id: constants_1.LoupedeckDisplayId.Center,
     width: 360,
     height: 270,
     encoded: Buffer.from([0x00, 0x4d]),
-    xPadding: 0,
+    xPadding: 5,
+    yPadding: 5,
+    columnGap: 10,
+    rowGap: 10,
 };
 const DisplayRight = {
     id: constants_1.LoupedeckDisplayId.Right,
@@ -3831,6 +3967,9 @@ const DisplayRight = {
     height: 270,
     encoded: Buffer.from([0x00, 0x4d]),
     xPadding: 0,
+    yPadding: 0,
+    columnGap: 0,
+    rowGap: 0,
 };
 const Displays = [DisplayLeft, DisplayCenter, DisplayRight];
 const Controls = [];
@@ -3854,10 +3993,19 @@ class LoupedeckLiveDevice extends base_1.LoupedeckDeviceBase {
         this.touches = {};
     }
     get modelId() {
-        return __1.LoupedeckModelId.LoupedeckLive;
+        return info_1.LoupedeckModelId.LoupedeckLive;
     }
     get modelName() {
         return 'Loupedeck Live';
+    }
+    get lcdKeySize() {
+        return 80;
+    }
+    get lcdKeyColumns() {
+        return 4;
+    }
+    get lcdKeyRows() {
+        return 3;
     }
     createBufferWithHeader(display, width, height, x, y) {
         // 0.2 firmwares treat the screen as one object, so we need to remap the pixel addresses
@@ -3883,9 +4031,9 @@ class LoupedeckLiveDevice extends base_1.LoupedeckDeviceBase {
         const screen = x < 60 ? constants_1.LoupedeckDisplayId.Left : x >= 420 ? constants_1.LoupedeckDisplayId.Right : constants_1.LoupedeckDisplayId.Center;
         let key;
         if (screen === constants_1.LoupedeckDisplayId.Center) {
-            const column = Math.floor((x - 60) / 90);
-            const row = Math.floor(y / 90);
-            key = row * 4 + column;
+            const column = Math.floor((x - 60) / this.lcdKeySize);
+            const row = Math.floor(y / this.lcdKeySize);
+            key = row * this.lcdKeyColumns + column;
         }
         // Create touch
         const touch = { x, y, id, target: { screen, key } };
@@ -3907,6 +4055,71 @@ exports.LoupedeckLiveDevice = LoupedeckLiveDevice;
 
 /***/ }),
 
+/***/ 722:
+/***/ ((__unused_webpack_module, exports, __webpack_require__) => {
+
+"use strict";
+/* provided dependency */ var Buffer = __webpack_require__(291)["lW"];
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.RazerStreamControllerDeviceX = void 0;
+const constants_1 = __webpack_require__(843);
+const base_1 = __webpack_require__(576);
+const info_1 = __webpack_require__(970);
+const DisplayCenter = {
+    id: constants_1.LoupedeckDisplayId.Center,
+    width: 480,
+    height: 270,
+    encoded: Buffer.from([0x00, 0x4d]),
+    xPadding: 5,
+    yPadding: 0,
+    columnGap: 20,
+    rowGap: 18,
+};
+const Displays = [DisplayCenter];
+const Controls = [];
+for (let i = 0; i < 15; i++) {
+    Controls.push({
+        type: constants_1.LoupedeckControlType.Button,
+        index: i,
+        encoded: 0x1b + i,
+    });
+}
+class RazerStreamControllerDeviceX extends base_1.LoupedeckDeviceBase {
+    constructor(connection, options) {
+        super(connection, options, Displays, Controls);
+    }
+    get modelId() {
+        return info_1.LoupedeckModelId.RazerStreamControllerX;
+    }
+    get modelName() {
+        return 'Razer Stream Controller X';
+    }
+    get lcdKeySize() {
+        return 78;
+    }
+    get lcdKeyColumns() {
+        return 5;
+    }
+    get lcdKeyRows() {
+        return 3;
+    }
+    createBufferWithHeader(display, width, height, x, y) {
+        // The Razer Stream Controller X only has one screen object
+        if (display.id !== DisplayCenter.id) {
+            throw new Error('Unknown DisplayId');
+        }
+        return super.createBufferWithHeader(display, width, height, x, y);
+    }
+    onTouch(_event, _buff) {
+        // Not supported by device
+    }
+}
+exports.RazerStreamControllerDeviceX = RazerStreamControllerDeviceX;
+//# sourceMappingURL=razer-stream-controller-x.js.map
+
+/***/ }),
+
 /***/ 348:
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
@@ -3917,20 +4130,26 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.RazerStreamControllerDevice = void 0;
 const constants_1 = __webpack_require__(843);
 const base_1 = __webpack_require__(576);
-const __1 = __webpack_require__(613);
+const info_1 = __webpack_require__(970);
 const DisplayLeft = {
     id: constants_1.LoupedeckDisplayId.Left,
     width: 60,
     height: 270,
     encoded: Buffer.from([0x00, 0x4d]),
     xPadding: 0,
+    yPadding: 0,
+    columnGap: 0,
+    rowGap: 0,
 };
 const DisplayCenter = {
     id: constants_1.LoupedeckDisplayId.Center,
     width: 360,
     height: 270,
     encoded: Buffer.from([0x00, 0x4d]),
-    xPadding: 0,
+    xPadding: 5,
+    yPadding: 5,
+    columnGap: 10,
+    rowGap: 10,
 };
 const DisplayRight = {
     id: constants_1.LoupedeckDisplayId.Right,
@@ -3938,6 +4157,9 @@ const DisplayRight = {
     height: 270,
     encoded: Buffer.from([0x00, 0x4d]),
     xPadding: 0,
+    yPadding: 0,
+    columnGap: 0,
+    rowGap: 0,
 };
 const Displays = [DisplayLeft, DisplayCenter, DisplayRight];
 const Controls = [];
@@ -3961,10 +4183,19 @@ class RazerStreamControllerDevice extends base_1.LoupedeckDeviceBase {
         this.touches = {};
     }
     get modelId() {
-        return __1.LoupedeckModelId.RazerStreamController;
+        return info_1.LoupedeckModelId.RazerStreamController;
     }
     get modelName() {
         return 'Razer Stream Controller';
+    }
+    get lcdKeySize() {
+        return 80;
+    }
+    get lcdKeyColumns() {
+        return 4;
+    }
+    get lcdKeyRows() {
+        return 3;
     }
     createBufferWithHeader(display, width, height, x, y) {
         // The Razer Stream Controller only has one screen object, so we need to remap the pixel addresses
@@ -3990,9 +4221,9 @@ class RazerStreamControllerDevice extends base_1.LoupedeckDeviceBase {
         const screen = x < 60 ? constants_1.LoupedeckDisplayId.Left : x >= 420 ? constants_1.LoupedeckDisplayId.Right : constants_1.LoupedeckDisplayId.Center;
         let key;
         if (screen === constants_1.LoupedeckDisplayId.Center) {
-            const column = Math.floor((x - 60) / 90);
-            const row = Math.floor(y / 90);
-            key = row * 4 + column;
+            const column = Math.floor((x - 60) / this.lcdKeySize);
+            const row = Math.floor(y / this.lcdKeySize);
+            key = row * this.lcdKeyColumns + column;
         }
         // Create touch
         const touch = { x, y, id, target: { screen, key } };
@@ -4035,20 +4266,52 @@ exports.LoupedeckSerialConnection = LoupedeckSerialConnection;
 "use strict";
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.checkRGBColor = exports.checkRGBValue = exports.encodeBuffer = void 0;
+exports.checkRGBColor = exports.checkRGBValue = exports.encodeBuffer = exports.createCanDrawPixel = void 0;
 const constants_1 = __webpack_require__(843);
-function encodeBuffer(input, output, format, outputPadding, pixelCount) {
+function createCanDrawPixel(drawX, drawY, lcdKeySize, displayInfo) {
+    const roundY = lcdKeySize + displayInfo.rowGap;
+    const roundX = lcdKeySize + displayInfo.columnGap;
+    const canDrawPixel = (x, y) => {
+        if (displayInfo.rowGap > 0 && (drawY + y) % roundY >= lcdKeySize) {
+            // Skip blanked rows
+            return false;
+        }
+        if (displayInfo.columnGap > 0 && (drawX + x) % roundX >= lcdKeySize) {
+            // Skip blanked rows
+            return false;
+        }
+        return true;
+    };
+    const canDrawRow = (y) => {
+        if (displayInfo.rowGap > 0 && (drawY + y) % roundY >= lcdKeySize) {
+            // Skip blanked rows
+            return false;
+        }
+        return true;
+    };
+    return [canDrawPixel, canDrawRow];
+}
+exports.createCanDrawPixel = createCanDrawPixel;
+function encodeBuffer(input, output, format, outputPadding, width, height, canDrawPixel, canDrawRow) {
+    const pixelCount = width * height;
     if (input.length !== pixelCount * format.length)
         throw new Error(`Incorrect buffer length ${input.length} expected ${pixelCount * format.length}`);
     if (output.length !== pixelCount * 2 + outputPadding)
         throw new Error(`Incorrect buffer length ${output.length} expected ${pixelCount * 2 + outputPadding}`);
     switch (format) {
         case constants_1.LoupedeckBufferFormat.RGB:
-            for (let i = 0; i < pixelCount; i++) {
-                const r = input.readUInt8(i * 3 + 0) >> 3;
-                const g = input.readUInt8(i * 3 + 1) >> 2;
-                const b = input.readUInt8(i * 3 + 2) >> 3;
-                output.writeUint16LE((r << 11) + (g << 5) + b, outputPadding + i * 2);
+            for (let y = 0; y < height; y++) {
+                if (!canDrawRow(y))
+                    continue;
+                for (let x = 0; x < width; x++) {
+                    if (!canDrawPixel(x, y))
+                        continue;
+                    const i = y * width + x;
+                    const r = input.readUInt8(i * 3 + 0) >> 3;
+                    const g = input.readUInt8(i * 3 + 1) >> 2;
+                    const b = input.readUInt8(i * 3 + 2) >> 3;
+                    output.writeUint16LE((r << 11) + (g << 5) + b, outputPadding + i * 2);
+                }
             }
             break;
         default:
@@ -4427,6 +4690,7 @@ __webpack_unused_export__ = ({ value: true });
 const web_1 = __webpack_require__(660);
 // import { DomImageDemo } from './demo/dom'
 const fill_when_pressed_1 = __webpack_require__(306);
+const rapid_fill_1 = __webpack_require__(283);
 if (true) {
     const elm = document.querySelector('#version_str');
     if (elm) {
@@ -4450,9 +4714,9 @@ async function demoChange() {
             await currentDemo.stop(device);
         }
         switch (demoSelect.value) {
-            // 	case 'rapid-fill':
-            // 		currentDemo = new RapidFillDemo()
-            // 		break
+            case 'rapid-fill':
+                currentDemo = new rapid_fill_1.RapidFillDemo();
+                break;
             // 	case 'dom':
             // 		currentDemo = new DomImageDemo()
             // 		break
