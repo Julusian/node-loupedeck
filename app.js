@@ -4658,7 +4658,7 @@ const rapid_fill_1 = __webpack_require__(283);
 if (true) {
     const elm = document.querySelector('#version_str');
     if (elm) {
-        elm.innerHTML = `v${"0.3.1"}`;
+        elm.innerHTML = `v${"0.4.0"}`;
     }
 }
 function appendLog(str) {
