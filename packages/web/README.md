@@ -6,11 +6,18 @@
 [![license](https://img.shields.io/npm/l/@loupedeck/node.svg)](https://npm.im/@loupedeck/node)
 
 [@loupedeck](https://www.npmjs.com/org/loupedeck) is a collection of libraries for interfacing with the various models of the [Loupedeck](https://loupedeck.com/uk/).  
-Not many models are supported yet, due to lack of access to devices for testing.
 
 ## Intended use
 
 This library has nothing to do with the official loupedeck software. There is nothing here to install and run. This is a library to help developers make alternatives to that software
+
+## Device Support
+
+-   [ ] Loupedeck CT (No access to hardware to implement)
+-   [x] Loupedeck Live (firmware v0.2)
+-   [x] Loupedeck Live S
+-   [x] Razer Stream controller
+-   [x] Razer Stream controller X
 
 ## Install
 
