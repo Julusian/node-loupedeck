@@ -46,7 +46,8 @@ export function encodeBuffer(
 	width: number,
 	height: number,
 	canDrawPixel: CanDrawPixelFn,
-	canDrawRow: CanDrawRowFn
+	canDrawRow: CanDrawRowFn,
+	endianness: 'LE' | 'BE' | undefined
 ): void {
 	const pixelCount = width * height
 	if (input.length !== pixelCount * format.length)
@@ -66,7 +67,11 @@ export function encodeBuffer(
 					const r = input.readUInt8(i * 3 + 0) >> 3
 					const g = input.readUInt8(i * 3 + 1) >> 2
 					const b = input.readUInt8(i * 3 + 2) >> 3
-					output.writeUint16LE((r << 11) + (g << 5) + b, outputPadding + i * 2)
+					if (endianness === 'BE') {
+						output.writeUint16BE((r << 11) + (g << 5) + b, outputPadding + i * 2)
+					} else {
+						output.writeUint16LE((r << 11) + (g << 5) + b, outputPadding + i * 2)
+					}
 				}
 			}
 			break

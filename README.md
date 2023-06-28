@@ -6,7 +6,7 @@
 
 ## Device Support
 
--   [ ] Loupedeck CT (No access to hardware to implement)
+-   [x] Loupedeck CT
 -   [x] Loupedeck Live (firmware v0.2)
 -   [x] Loupedeck Live S
 -   [x] Razer Stream controller
