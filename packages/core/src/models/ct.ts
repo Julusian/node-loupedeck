@@ -28,7 +28,7 @@ const DisplayRight: LoupedeckDisplayDefinition = {
 	columnGap: 0,
 	rowGap: 0,
 }
-const DisplayKnob: LoupedeckDisplayDefinition = {
+const DisplayWheel: LoupedeckDisplayDefinition = {
 	width: 240,
 	height: 240,
 	xPadding: 0,
@@ -44,7 +44,7 @@ const modelSpec: ModelSpec = {
 	displayMain: DisplayCenter,
 	displayLeftStrip: DisplayLeft,
 	displayRightStrip: DisplayRight,
-	displayKnob: DisplayKnob,
+	displayWheel: DisplayWheel,
 
 	modelId: LoupedeckModelId.LoupedeckCt,
 	modelName: 'Loupedeck CT',
@@ -77,7 +77,7 @@ for (let i = 0; i < 6; i++) {
 		encoded: 0x01 + i,
 	})
 }
-// big knob encoders
+// big wheel encoder
 modelSpec.controls.push({
 	type: LoupedeckControlType.Rotary,
 	index: 6,

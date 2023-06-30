@@ -44,11 +44,11 @@ export enum LoupedeckDisplayId {
 	Left = 'left',
 	Center = 'center',
 	Right = 'right',
-	Knob = 'knob',
+	Wheel = 'wheel',
 }
 
 export const DisplayCenterEncodedId = Buffer.from([0x00, 0x4d])
-export const DisplayKnobEncodedId = Buffer.from([0x00, 0x57])
+export const DisplayWheelEncodedId = Buffer.from([0x00, 0x57])
 
 export interface RGBColor {
 	red: number

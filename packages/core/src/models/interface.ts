@@ -64,7 +64,7 @@ export interface LoupedeckDevice extends EventEmitter<LoupedeckDeviceEvents> {
 	displayMain: Readonly<LoupedeckDisplayDefinition>
 	displayLeftStrip: Readonly<LoupedeckDisplayDefinition> | undefined
 	displayRightStrip: Readonly<LoupedeckDisplayDefinition> | undefined
-	displayKnob: Readonly<LoupedeckDisplayDefinition> | undefined
+	displayWheel: Readonly<LoupedeckDisplayDefinition> | undefined
 
 	/**
 	 * Reset all the displays and buttons on the device to black

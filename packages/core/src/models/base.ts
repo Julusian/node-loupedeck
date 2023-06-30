@@ -2,7 +2,7 @@ import { EventEmitter } from 'eventemitter3'
 import { LoupedeckDeviceEvents, LoupedeckTouchObject } from '../events'
 import {
 	DisplayCenterEncodedId,
-	DisplayKnobEncodedId,
+	DisplayWheelEncodedId,
 	LoupedeckBufferFormat,
 	LoupedeckControlType,
 	LoupedeckDisplayId,
@@ -42,7 +42,7 @@ export interface ModelSpec {
 	displayMain: Readonly<LoupedeckDisplayDefinition>
 	displayLeftStrip: Readonly<LoupedeckDisplayDefinition> | undefined
 	displayRightStrip: Readonly<LoupedeckDisplayDefinition> | undefined
-	displayKnob?: Readonly<LoupedeckDisplayDefinition> | undefined
+	displayWheel?: Readonly<LoupedeckDisplayDefinition> | undefined
 
 	modelId: LoupedeckModelId
 	modelName: string
@@ -79,8 +79,8 @@ export abstract class LoupedeckDeviceBase extends EventEmitter<LoupedeckDeviceEv
 	public get displayRightStrip(): Readonly<LoupedeckDisplayDefinition> | undefined {
 		return this.modelSpec.displayRightStrip
 	}
-	public get displayKnob(): Readonly<LoupedeckDisplayDefinition> | undefined {
-		return this.modelSpec.displayKnob
+	public get displayWheel(): Readonly<LoupedeckDisplayDefinition> | undefined {
+		return this.modelSpec.displayWheel
 	}
 
 	readonly #pendingTransactions: Record<number, TransactionHandler> = {}
@@ -138,8 +138,8 @@ export abstract class LoupedeckDeviceBase extends EventEmitter<LoupedeckDeviceEv
 				return this.displayLeftStrip
 			case LoupedeckDisplayId.Right:
 				return this.displayRightStrip
-			case LoupedeckDisplayId.Knob:
-				return this.displayKnob
+			case LoupedeckDisplayId.Wheel:
+				return this.displayWheel
 			default:
 				// TODO Unreachable
 				return undefined
@@ -213,7 +213,7 @@ export abstract class LoupedeckDeviceBase extends EventEmitter<LoupedeckDeviceEv
 		x: number,
 		y: number
 	): [buffer: Buffer, offset: number] {
-		if (displayId === LoupedeckDisplayId.Left || displayId === LoupedeckDisplayId.Knob) {
+		if (displayId === LoupedeckDisplayId.Left || displayId === LoupedeckDisplayId.Wheel) {
 			// Nothing to do
 		} else if (displayId === LoupedeckDisplayId.Center) {
 			x += this.displayLeftStrip?.width ?? 0
@@ -228,8 +228,8 @@ export abstract class LoupedeckDeviceBase extends EventEmitter<LoupedeckDeviceEv
 		const pixelCount = width * height
 		const encoded = Buffer.alloc(pixelCount * 2 + padding)
 
-		if (displayId === LoupedeckDisplayId.Knob) {
-			DisplayKnobEncodedId.copy(encoded, 0)
+		if (displayId === LoupedeckDisplayId.Wheel) {
+			DisplayWheelEncodedId.copy(encoded, 0)
 		} else {
 			DisplayCenterEncodedId.copy(encoded, 0)
 		}
@@ -362,11 +362,11 @@ export abstract class LoupedeckDeviceBase extends EventEmitter<LoupedeckDeviceEv
 					case 0x6d: // touchend
 						this.onTouch('touchend', buff.subarray(5))
 						break
-					case 0x52: // knob touchmove
-						this.onKnobTouch('touchmove', buff.subarray(5))
+					case 0x52: // wheel touchmove
+						this.onWheelTouch('touchmove', buff.subarray(5))
 						break
-					case 0x72: // knob touchend
-						this.onKnobTouch('touchend', buff.subarray(5))
+					case 0x72: // wheel touchend
+						this.onWheelTouch('touchend', buff.subarray(5))
 						break
 					default:
 						console.warn('unhandled incoming message', buff)
@@ -462,13 +462,13 @@ export abstract class LoupedeckDeviceBase extends EventEmitter<LoupedeckDeviceEv
 		this.#createTouch(event, x, y, id, screen, key)
 	}
 
-	protected onKnobTouch(event: 'touchmove' | 'touchend' | 'touchstart', buff: Buffer): void {
+	protected onWheelTouch(event: 'touchmove' | 'touchend' | 'touchstart', buff: Buffer): void {
 		// Parse buffer
 		const x = buff.readUInt16BE(1)
 		const y = buff.readUInt16BE(3)
 		const id = buff.readUInt8(5)
 
-		const screen: LoupedeckDisplayId = LoupedeckDisplayId.Knob
+		const screen: LoupedeckDisplayId = LoupedeckDisplayId.Wheel
 		const key = undefined
 
 		this.#createTouch(event, x, y, id, screen, key)
