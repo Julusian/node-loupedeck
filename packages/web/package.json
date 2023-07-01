@@ -36,6 +36,6 @@
 	"dependencies": {
 		"@loupedeck/core": "0.4.0",
 		"@types/w3c-web-serial": "^1.0.3",
-		"tslib": "^2.5.0"
+		"tslib": "^2.6.0"
 	}
 }

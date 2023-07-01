@@ -5,19 +5,19 @@
     "packages/*"
   ],
   "devDependencies": {
-    "@sofie-automation/code-standard-preset": "^2.4.1",
+    "@sofie-automation/code-standard-preset": "^2.4.7",
     "@types/node": "^16.11.64",
-    "concurrently": "^8.0.1",
+    "concurrently": "^8.2.0",
     "copy-webpack-plugin": "^11.0.0",
     "cross-env": "^7.0.3",
     "husky": "^8.0.3",
     "lerna": "^6.6.1",
-    "ts-loader": "^9.4.2",
+    "ts-loader": "^9.4.4",
     "ts-node": "^10.9.1",
-    "typescript": "^5.0.4",
-    "webpack": "^5.79.0",
-    "webpack-cli": "^5.0.1",
-    "webpack-dev-server": "^4.13.3"
+    "typescript": "~5.0",
+    "webpack": "^5.88.1",
+    "webpack-cli": "^5.1.4",
+    "webpack-dev-server": "^4.15.1"
   },
   "scripts": {
     "prepare": "husky install",
