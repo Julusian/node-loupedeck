@@ -3358,7 +3358,7 @@ exports.RapidFillDemo = RapidFillDemo;
 /* provided dependency */ var Buffer = __webpack_require__(291)["lW"];
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.LoupedeckBufferFormat = exports.DisplayCenterEncodedId = exports.LoupedeckDisplayId = exports.LoupedeckVibratePattern = exports.LoupedeckControlType = exports.VendorIdRazer = exports.VendorIdLoupedeck = void 0;
+exports.LoupedeckBufferFormat = exports.DisplayWheelEncodedId = exports.DisplayCenterEncodedId = exports.LoupedeckDisplayId = exports.LoupedeckVibratePattern = exports.LoupedeckControlType = exports.VendorIdRazer = exports.VendorIdLoupedeck = void 0;
 exports.VendorIdLoupedeck = 0x2ec2;
 exports.VendorIdRazer = 0x1532;
 var LoupedeckControlType;
@@ -3405,8 +3405,10 @@ var LoupedeckDisplayId;
     LoupedeckDisplayId["Left"] = "left";
     LoupedeckDisplayId["Center"] = "center";
     LoupedeckDisplayId["Right"] = "right";
+    LoupedeckDisplayId["Wheel"] = "wheel";
 })(LoupedeckDisplayId = exports.LoupedeckDisplayId || (exports.LoupedeckDisplayId = {}));
 exports.DisplayCenterEncodedId = Buffer.from([0x00, 0x4d]);
+exports.DisplayWheelEncodedId = Buffer.from([0x00, 0x57]);
 var LoupedeckBufferFormat;
 (function (LoupedeckBufferFormat) {
     LoupedeckBufferFormat["RGB"] = "rgb";
@@ -3462,6 +3464,7 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.LoupedeckModelId = void 0;
 var LoupedeckModelId;
 (function (LoupedeckModelId) {
+    LoupedeckModelId["LoupedeckCt"] = "loupedeck-ct";
     LoupedeckModelId["LoupedeckLive"] = "loupedeck-live";
     LoupedeckModelId["LoupedeckLiveS"] = "loupedeck-live-s";
     LoupedeckModelId["RazerStreamController"] = "razer-stream-controller";
@@ -3510,7 +3513,7 @@ var __classPrivateFieldGet = (this && this.__classPrivateFieldGet) || function (
     if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot read private member from an object whose class did not declare it");
     return kind === "m" ? f : kind === "a" ? f.call(receiver) : f ? f.value : state.get(receiver);
 };
-var _LoupedeckDeviceBase_instances, _LoupedeckDeviceBase_touches, _LoupedeckDeviceBase_connection, _LoupedeckDeviceBase_pendingTransactions, _LoupedeckDeviceBase_nextTransactionId, _LoupedeckDeviceBase_sendQueue, _LoupedeckDeviceBase_getDisplay, _LoupedeckDeviceBase_cleanupPendingPromises, _LoupedeckDeviceBase_onMessage, _LoupedeckDeviceBase_onPress, _LoupedeckDeviceBase_onRotate, _LoupedeckDeviceBase_runInQueueIfEnabled, _LoupedeckDeviceBase_sendAndWaitIfRequired, _LoupedeckDeviceBase_sendAndWaitForResult, _LoupedeckDeviceBase_sendCommand, _LoupedeckDeviceBase_waitForTransaction;
+var _LoupedeckDeviceBase_instances, _LoupedeckDeviceBase_touches, _LoupedeckDeviceBase_connection, _LoupedeckDeviceBase_pendingTransactions, _LoupedeckDeviceBase_nextTransactionId, _LoupedeckDeviceBase_sendQueue, _LoupedeckDeviceBase_getDisplay, _LoupedeckDeviceBase_cleanupPendingPromises, _LoupedeckDeviceBase_onMessage, _LoupedeckDeviceBase_onPress, _LoupedeckDeviceBase_onRotate, _LoupedeckDeviceBase_createTouch, _LoupedeckDeviceBase_runInQueueIfEnabled, _LoupedeckDeviceBase_sendAndWaitIfRequired, _LoupedeckDeviceBase_sendAndWaitForResult, _LoupedeckDeviceBase_sendCommand, _LoupedeckDeviceBase_waitForTransaction;
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.LoupedeckDeviceBase = void 0;
 const eventemitter3_1 = __webpack_require__(399);
@@ -3546,6 +3549,9 @@ class LoupedeckDeviceBase extends eventemitter3_1.EventEmitter {
     }
     get displayRightStrip() {
         return this.modelSpec.displayRightStrip;
+    }
+    get displayWheel() {
+        return this.modelSpec.displayWheel;
     }
     constructor(connection, options, modelSpec) {
         super();
@@ -3628,7 +3634,7 @@ class LoupedeckDeviceBase extends eventemitter3_1.EventEmitter {
      * @returns The buffer and the data offset
      */
     createBufferWithHeader(displayId, width, height, x, y) {
-        if (displayId === constants_1.LoupedeckDisplayId.Left) {
+        if (displayId === constants_1.LoupedeckDisplayId.Left || displayId === constants_1.LoupedeckDisplayId.Wheel) {
             // Nothing to do
         }
         else if (displayId === constants_1.LoupedeckDisplayId.Center) {
@@ -3643,7 +3649,12 @@ class LoupedeckDeviceBase extends eventemitter3_1.EventEmitter {
         const padding = 10; // header + id
         const pixelCount = width * height;
         const encoded = Buffer.alloc(pixelCount * 2 + padding);
-        constants_1.DisplayCenterEncodedId.copy(encoded, 0);
+        if (displayId === constants_1.LoupedeckDisplayId.Wheel) {
+            constants_1.DisplayWheelEncodedId.copy(encoded, 0);
+        }
+        else {
+            constants_1.DisplayCenterEncodedId.copy(encoded, 0);
+        }
         encoded.writeUInt16BE(x, 2);
         encoded.writeUInt16BE(y, 4);
         encoded.writeUInt16BE(width, 6);
@@ -3664,7 +3675,7 @@ class LoupedeckDeviceBase extends eventemitter3_1.EventEmitter {
             throw new Error('x is not valid');
         const [encoded, padding] = this.createBufferWithHeader(displayId, width, height, x + display.xPadding, y + display.yPadding);
         const [canDrawPixel, canDrawRow] = (0, util_1.createCanDrawPixel)(x, y, this.lcdKeySize, display);
-        (0, util_1.encodeBuffer)(buffer, encoded, format, padding, width, height, canDrawPixel, canDrawRow);
+        (0, util_1.encodeBuffer)(buffer, encoded, format, padding, width, height, canDrawPixel, canDrawRow, display.endianness);
         await __classPrivateFieldGet(this, _LoupedeckDeviceBase_instances, "m", _LoupedeckDeviceBase_runInQueueIfEnabled).call(this, async () => {
             // Run in the queue as a single operation
             await __classPrivateFieldGet(this, _LoupedeckDeviceBase_instances, "m", _LoupedeckDeviceBase_sendAndWaitIfRequired).call(this, CommandIds.DrawFramebuffer, encoded, true);
@@ -3699,7 +3710,12 @@ class LoupedeckDeviceBase extends eventemitter3_1.EventEmitter {
             for (let x = 0; x < width; x++) {
                 if (canDrawPixel(x, y)) {
                     const i = y * width + x;
-                    encoded.writeUint16LE(encodedValue, i * 2 + padding);
+                    if (display.endianness === 'BE') {
+                        encoded.writeUint16BE(encodedValue, i * 2 + padding);
+                    }
+                    else {
+                        encoded.writeUint16LE(encodedValue, i * 2 + padding);
+                    }
                 }
             }
         }
@@ -3716,7 +3732,6 @@ class LoupedeckDeviceBase extends eventemitter3_1.EventEmitter {
         const buffer = await __classPrivateFieldGet(this, _LoupedeckDeviceBase_instances, "m", _LoupedeckDeviceBase_sendAndWaitForResult).call(this, CommandIds.GetSerialNumber, undefined);
         return buffer.toString().trim();
     }
-    // protected abstract onTouch(event: 'touchmove' | 'touchend' | 'touchstart', buff: Buffer): void
     onTouch(event, buff) {
         // Parse buffer
         let x = buff.readUInt16BE(1);
@@ -3724,7 +3739,7 @@ class LoupedeckDeviceBase extends eventemitter3_1.EventEmitter {
         const id = buff.readUInt8(5);
         const mainFullWidth = this.displayMain.width + this.displayMain.xPadding * 2;
         const leftWidth = this.displayLeftStrip?.width ?? 0;
-        // Figure out which screen was touched
+        // Figure out which subscreen was touched
         let screen = constants_1.LoupedeckDisplayId.Center;
         const rightX = (this.displayLeftStrip?.width ?? 0) + mainFullWidth;
         if (this.displayLeftStrip && x < leftWidth) {
@@ -3749,19 +3764,16 @@ class LoupedeckDeviceBase extends eventemitter3_1.EventEmitter {
             const row = Math.floor(yPadded / (this.lcdKeySize + this.displayMain.rowGap));
             key = row * this.lcdKeyColumns + column;
         }
-        // Create touch
-        const touch = { x, y, id, target: { screen, key } };
-        // End touch, remove from local cache
-        if (event === 'touchend') {
-            delete __classPrivateFieldGet(this, _LoupedeckDeviceBase_touches, "f")[touch.id];
-        }
-        else {
-            // First time seeing this touch, emit touchstart instead of touchmove
-            if (!__classPrivateFieldGet(this, _LoupedeckDeviceBase_touches, "f")[touch.id])
-                event = 'touchstart';
-            __classPrivateFieldGet(this, _LoupedeckDeviceBase_touches, "f")[touch.id] = touch;
-        }
-        this.emit(event, { touches: Object.values(__classPrivateFieldGet(this, _LoupedeckDeviceBase_touches, "f")), changedTouches: [touch] });
+        __classPrivateFieldGet(this, _LoupedeckDeviceBase_instances, "m", _LoupedeckDeviceBase_createTouch).call(this, event, x, y, id, screen, key);
+    }
+    onWheelTouch(event, buff) {
+        // Parse buffer
+        const x = buff.readUInt16BE(1);
+        const y = buff.readUInt16BE(3);
+        const id = buff.readUInt8(5);
+        const screen = constants_1.LoupedeckDisplayId.Wheel;
+        const key = undefined;
+        __classPrivateFieldGet(this, _LoupedeckDeviceBase_instances, "m", _LoupedeckDeviceBase_createTouch).call(this, event, x, y, id, screen, key);
     }
     async setBrightness(value) {
         const MAX_BRIGHTNESS = 10;
@@ -3812,6 +3824,8 @@ _LoupedeckDeviceBase_touches = new WeakMap(), _LoupedeckDeviceBase_connection = 
             return this.displayLeftStrip;
         case constants_1.LoupedeckDisplayId.Right:
             return this.displayRightStrip;
+        case constants_1.LoupedeckDisplayId.Wheel:
+            return this.displayWheel;
         default:
             // TODO Unreachable
             return undefined;
@@ -3843,6 +3857,15 @@ _LoupedeckDeviceBase_touches = new WeakMap(), _LoupedeckDeviceBase_connection = 
                 case 0x6d: // touchend
                     this.onTouch('touchend', buff.subarray(5));
                     break;
+                case 0x52: // wheel touchmove
+                    this.onWheelTouch('touchmove', buff.subarray(5));
+                    break;
+                case 0x72: // wheel touchend
+                    this.onWheelTouch('touchend', buff.subarray(5));
+                    break;
+                default:
+                    console.warn('unhandled incoming message', buff);
+                    break;
             }
         }
         else {
@@ -3870,6 +3893,20 @@ _LoupedeckDeviceBase_touches = new WeakMap(), _LoupedeckDeviceBase_connection = 
         const delta = buff.readInt8(1);
         this.emit('rotate', { type: control.type, index: control.index }, delta);
     }
+}, _LoupedeckDeviceBase_createTouch = function _LoupedeckDeviceBase_createTouch(event, x, y, id, screen, key) {
+    // Create touch
+    const touch = { x, y, id, target: { screen, key } };
+    // End touch, remove from local cache
+    if (event === 'touchend') {
+        delete __classPrivateFieldGet(this, _LoupedeckDeviceBase_touches, "f")[touch.id];
+    }
+    else {
+        // First time seeing this touch, emit touchstart instead of touchmove
+        if (!__classPrivateFieldGet(this, _LoupedeckDeviceBase_touches, "f")[touch.id])
+            event = 'touchstart';
+        __classPrivateFieldGet(this, _LoupedeckDeviceBase_touches, "f")[touch.id] = touch;
+    }
+    this.emit(event, { touches: Object.values(__classPrivateFieldGet(this, _LoupedeckDeviceBase_touches, "f")), changedTouches: [touch] });
 }, _LoupedeckDeviceBase_runInQueueIfEnabled = async function _LoupedeckDeviceBase_runInQueueIfEnabled(fn, forceSkipQueue) {
     if (__classPrivateFieldGet(this, _LoupedeckDeviceBase_sendQueue, "f") && !forceSkipQueue) {
         return __classPrivateFieldGet(this, _LoupedeckDeviceBase_sendQueue, "f").add(fn);
@@ -3925,6 +3962,101 @@ _LoupedeckDeviceBase_touches = new WeakMap(), _LoupedeckDeviceBase_connection = 
 
 /***/ }),
 
+/***/ 139:
+/***/ ((__unused_webpack_module, exports, __webpack_require__) => {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.LoupedeckCtDevice = void 0;
+const constants_1 = __webpack_require__(843);
+const base_1 = __webpack_require__(576);
+const info_1 = __webpack_require__(970);
+const DisplayLeft = {
+    width: 60,
+    height: 270,
+    xPadding: 0,
+    yPadding: 0,
+    columnGap: 0,
+    rowGap: 0,
+};
+const DisplayCenter = {
+    width: 360 - 5 * 2,
+    height: 270 - 5 * 2,
+    xPadding: 5,
+    yPadding: 5,
+    columnGap: 10,
+    rowGap: 10,
+};
+const DisplayRight = {
+    width: 60,
+    height: 270,
+    xPadding: 0,
+    yPadding: 0,
+    columnGap: 0,
+    rowGap: 0,
+};
+const DisplayWheel = {
+    width: 240,
+    height: 240,
+    xPadding: 0,
+    yPadding: 0,
+    columnGap: 0,
+    rowGap: 0,
+    endianness: 'BE',
+};
+const modelSpec = {
+    controls: [],
+    displayMain: DisplayCenter,
+    displayLeftStrip: DisplayLeft,
+    displayRightStrip: DisplayRight,
+    displayWheel: DisplayWheel,
+    modelId: info_1.LoupedeckModelId.LoupedeckCt,
+    modelName: 'Loupedeck CT',
+    lcdKeySize: 80,
+    lcdKeyColumns: 4,
+    lcdKeyRows: 3,
+};
+for (let i = 0; i < 8; i++) {
+    // round buttons
+    modelSpec.controls.push({
+        type: constants_1.LoupedeckControlType.Button,
+        index: i,
+        encoded: 0x07 + i,
+    });
+}
+for (let i = 0; i < 12; i++) {
+    // square buttons
+    modelSpec.controls.push({
+        type: constants_1.LoupedeckControlType.Button,
+        index: i + 8,
+        encoded: 0x0f + i,
+    });
+}
+for (let i = 0; i < 6; i++) {
+    // small rotary encoders
+    modelSpec.controls.push({
+        type: constants_1.LoupedeckControlType.Rotary,
+        index: i,
+        encoded: 0x01 + i,
+    });
+}
+// big wheel encoder
+modelSpec.controls.push({
+    type: constants_1.LoupedeckControlType.Rotary,
+    index: 6,
+    encoded: 0x00,
+});
+class LoupedeckCtDevice extends base_1.LoupedeckDeviceBase {
+    constructor(connection, options) {
+        super(connection, options, modelSpec);
+    }
+}
+exports.LoupedeckCtDevice = LoupedeckCtDevice;
+//# sourceMappingURL=ct.js.map
+
+/***/ }),
+
 /***/ 113:
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
@@ -3937,9 +4069,16 @@ const info_1 = __webpack_require__(970);
 const live_1 = __webpack_require__(158);
 const razer_stream_controller_1 = __webpack_require__(348);
 const live_s_1 = __webpack_require__(149);
+const ct_1 = __webpack_require__(139);
 const razer_stream_controller_x_1 = __webpack_require__(722);
 /** List of all the known models, and the classes to use them */
 exports.DEVICE_MODELS = [
+    {
+        id: info_1.LoupedeckModelId.LoupedeckCt,
+        vendorId: constants_1.VendorIdLoupedeck,
+        productId: 0x0007,
+        class: ct_1.LoupedeckCtDevice,
+    },
     {
         id: info_1.LoupedeckModelId.LoupedeckLive,
         vendorId: constants_1.VendorIdLoupedeck,
@@ -4256,7 +4395,7 @@ function createCanDrawPixel(drawX, drawY, lcdKeySize, displayInfo) {
     return [canDrawPixel, canDrawRow];
 }
 exports.createCanDrawPixel = createCanDrawPixel;
-function encodeBuffer(input, output, format, outputPadding, width, height, canDrawPixel, canDrawRow) {
+function encodeBuffer(input, output, format, outputPadding, width, height, canDrawPixel, canDrawRow, endianness) {
     const pixelCount = width * height;
     if (input.length !== pixelCount * format.length)
         throw new Error(`Incorrect buffer length ${input.length} expected ${pixelCount * format.length}`);
@@ -4274,7 +4413,12 @@ function encodeBuffer(input, output, format, outputPadding, width, height, canDr
                     const r = input.readUInt8(i * 3 + 0) >> 3;
                     const g = input.readUInt8(i * 3 + 1) >> 2;
                     const b = input.readUInt8(i * 3 + 2) >> 3;
-                    output.writeUint16LE((r << 11) + (g << 5) + b, outputPadding + i * 2);
+                    if (endianness === 'BE') {
+                        output.writeUint16BE((r << 11) + (g << 5) + b, outputPadding + i * 2);
+                    }
+                    else {
+                        output.writeUint16LE((r << 11) + (g << 5) + b, outputPadding + i * 2);
+                    }
                 }
             }
             break;
