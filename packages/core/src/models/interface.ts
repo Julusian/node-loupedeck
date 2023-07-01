@@ -28,6 +28,8 @@ export interface LoupedeckDisplayDefinition {
 	columnGap: number
 	/** Deadspace between each button row */
 	rowGap: number
+	/** The endianness of the pixelbuffer */
+	endianness?: 'LE' | 'BE'
 }
 
 export interface LoupedeckDevice extends EventEmitter<LoupedeckDeviceEvents> {
@@ -62,6 +64,7 @@ export interface LoupedeckDevice extends EventEmitter<LoupedeckDeviceEvents> {
 	displayMain: Readonly<LoupedeckDisplayDefinition>
 	displayLeftStrip: Readonly<LoupedeckDisplayDefinition> | undefined
 	displayRightStrip: Readonly<LoupedeckDisplayDefinition> | undefined
+	displayWheel: Readonly<LoupedeckDisplayDefinition> | undefined
 
 	/**
 	 * Reset all the displays and buttons on the device to black
