@@ -1,6 +1,6 @@
 {
 	"name": "@loupedeck/web",
-	"version": "0.4.0",
+	"version": "0.5.0",
 	"main": "dist/index.js",
 	"typings": "dist/index.d.ts",
 	"license": "MIT",
@@ -34,7 +34,7 @@
 		"node": ">=14.18"
 	},
 	"dependencies": {
-		"@loupedeck/core": "0.4.0",
+		"@loupedeck/core": "0.5.0",
 		"@types/w3c-web-serial": "^1.0.3",
 		"tslib": "^2.6.0"
 	}

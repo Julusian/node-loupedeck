@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.5.0](https://github.com/julusian/node-loupedeck/compare/v0.4.0...v0.5.0) (2023-07-01)
+
+**Note:** Version bump only for package @loupedeck/web
+
+
+
+
+
 # [0.4.0](https://github.com/julusian/node-loupedeck/compare/v0.3.1...v0.4.0) (2023-04-18)
 
 
