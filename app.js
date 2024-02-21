@@ -3468,6 +3468,7 @@ exports.LoupedeckModelId = void 0;
 var LoupedeckModelId;
 (function (LoupedeckModelId) {
     LoupedeckModelId["LoupedeckCt"] = "loupedeck-ct";
+    LoupedeckModelId["LoupedeckCtV1"] = "loupedeck-ct-v1";
     LoupedeckModelId["LoupedeckLive"] = "loupedeck-live";
     LoupedeckModelId["LoupedeckLiveS"] = "loupedeck-live-s";
     LoupedeckModelId["RazerStreamController"] = "razer-stream-controller";
@@ -3988,11 +3989,13 @@ _LoupedeckDeviceBase_touches = new WeakMap(), _LoupedeckDeviceBase_connection = 
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.LoupedeckCtDeviceV1 = void 0;
+const __1 = __webpack_require__(601);
 const base_1 = __webpack_require__(67);
 const ct_v2_1 = __webpack_require__(134);
 const LoupedeckCtV1ModelSpec = {
     ...ct_v2_1.LoupedeckCtV2ModelSpec,
     splitTopDisplays: true,
+    modelId: __1.LoupedeckModelId.LoupedeckCtV1,
 };
 class LoupedeckCtDeviceV1 extends base_1.LoupedeckDeviceBase {
     constructor(connection, options) {
@@ -4117,7 +4120,7 @@ const ct_v1_1 = __webpack_require__(307);
 /** List of all the known models, and the classes to use them */
 exports.DEVICE_MODELS = [
     {
-        id: info_1.LoupedeckModelId.LoupedeckCt,
+        id: info_1.LoupedeckModelId.LoupedeckCtV1,
         vendorId: constants_1.VendorIdLoupedeck,
         productId: 0x0003,
         class: ct_v1_1.LoupedeckCtDeviceV1,
@@ -4851,7 +4854,7 @@ const rapid_fill_1 = __webpack_require__(215);
 if (true) {
     const elm = document.querySelector('#version_str');
     if (elm) {
-        elm.innerHTML = `v${"1.1.0"}`;
+        elm.innerHTML = `v${"1.1.1"}`;
     }
 }
 function appendLog(str) {
