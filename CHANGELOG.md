@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.1.1](https://github.com/Julusian/node-loupedeck/compare/v1.1.0...v1.1.1) (2024-02-21)
+
+
+### Bug Fixes
+
+* duplicate models using same id (ct) ([f4acc90](https://github.com/Julusian/node-loupedeck/commit/f4acc90c6fd27a9f31fc90f86c9b8c7bc51e810a))
+
+
+
+
+
 # [1.1.0](https://github.com/Julusian/node-loupedeck/compare/v1.0.0...v1.1.0) (2024-02-21)
 
 
