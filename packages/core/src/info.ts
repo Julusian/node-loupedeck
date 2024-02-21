@@ -1,5 +1,6 @@
 export enum LoupedeckModelId {
 	LoupedeckCt = 'loupedeck-ct',
+	LoupedeckCtV1 = 'loupedeck-ct-v1',
 	LoupedeckLive = 'loupedeck-live',
 	LoupedeckLiveS = 'loupedeck-live-s',
 	RazerStreamController = 'razer-stream-controller',

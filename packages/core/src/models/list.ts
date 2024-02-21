@@ -20,7 +20,7 @@ export interface DeviceModelSpec {
 /** List of all the known models, and the classes to use them */
 export const DEVICE_MODELS: DeviceModelSpec[] = [
 	{
-		id: LoupedeckModelId.LoupedeckCt,
+		id: LoupedeckModelId.LoupedeckCtV1,
 		vendorId: VendorIdLoupedeck,
 		productId: 0x0003,
 		class: LoupedeckCtDeviceV1,
