@@ -3658,7 +3658,7 @@ class LoupedeckDeviceBase extends eventemitter3_1.EventEmitter {
         if (displayId === constants_1.LoupedeckDisplayId.Wheel) {
             encodedDisplay = constants_1.DisplayWheelEncodedId;
         }
-        else if (!this.modelSpec.splitTopDisplays) {
+        else if (this.modelSpec.splitTopDisplays) {
             switch (displayId) {
                 case constants_1.LoupedeckDisplayId.Center:
                     encodedDisplay = constants_1.DisplayCenterEncodedId;
