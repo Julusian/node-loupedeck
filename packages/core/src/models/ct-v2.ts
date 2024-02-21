@@ -38,7 +38,7 @@ const DisplayWheel: LoupedeckDisplayDefinition = {
 	endianness: 'BE',
 }
 
-const modelSpec: ModelSpec = {
+export const LoupedeckCtV2ModelSpec: ModelSpec = {
 	controls: [],
 
 	displayMain: DisplayCenter,
@@ -55,7 +55,7 @@ const modelSpec: ModelSpec = {
 
 for (let i = 0; i < 8; i++) {
 	// round buttons
-	modelSpec.controls.push({
+	LoupedeckCtV2ModelSpec.controls.push({
 		type: LoupedeckControlType.Button,
 		index: i,
 		encoded: 0x07 + i,
@@ -63,7 +63,7 @@ for (let i = 0; i < 8; i++) {
 }
 for (let i = 0; i < 12; i++) {
 	// square buttons
-	modelSpec.controls.push({
+	LoupedeckCtV2ModelSpec.controls.push({
 		type: LoupedeckControlType.Button,
 		index: i + 8,
 		encoded: 0x0f + i,
@@ -71,21 +71,21 @@ for (let i = 0; i < 12; i++) {
 }
 for (let i = 0; i < 6; i++) {
 	// small rotary encoders
-	modelSpec.controls.push({
+	LoupedeckCtV2ModelSpec.controls.push({
 		type: LoupedeckControlType.Rotary,
 		index: i,
 		encoded: 0x01 + i,
 	})
 }
 // big wheel encoder
-modelSpec.controls.push({
+LoupedeckCtV2ModelSpec.controls.push({
 	type: LoupedeckControlType.Rotary,
 	index: 6,
 	encoded: 0x00,
 })
 
-export class LoupedeckCtDevice extends LoupedeckDeviceBase {
+export class LoupedeckCtDeviceV2 extends LoupedeckDeviceBase {
 	constructor(connection: LoupedeckSerialConnection, options: LoupedeckDeviceOptions) {
-		super(connection, options, modelSpec)
+		super(connection, options, LoupedeckCtV2ModelSpec)
 	}
 }

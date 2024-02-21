@@ -6,8 +6,9 @@ import { LoupedeckSerialConnection } from '../serial'
 import { RazerStreamControllerDevice } from './razer-stream-controller'
 import { LoupedeckDevice } from './interface'
 import { LoupedeckLiveSDevice } from './live-s'
-import { LoupedeckCtDevice } from './ct'
+import { LoupedeckCtDeviceV2 } from './ct-v2'
 import { RazerStreamControllerDeviceX } from './razer-stream-controller-x'
+import { LoupedeckCtDeviceV1 } from './ct-v1'
 
 export interface DeviceModelSpec {
 	id: LoupedeckModelId
@@ -21,8 +22,14 @@ export const DEVICE_MODELS: DeviceModelSpec[] = [
 	{
 		id: LoupedeckModelId.LoupedeckCt,
 		vendorId: VendorIdLoupedeck,
+		productId: 0x0003,
+		class: LoupedeckCtDeviceV1,
+	},
+	{
+		id: LoupedeckModelId.LoupedeckCt,
+		vendorId: VendorIdLoupedeck,
 		productId: 0x0007,
-		class: LoupedeckCtDevice,
+		class: LoupedeckCtDeviceV2,
 	},
 	{
 		id: LoupedeckModelId.LoupedeckLive,

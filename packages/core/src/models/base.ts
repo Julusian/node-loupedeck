@@ -2,6 +2,9 @@ import { EventEmitter } from 'eventemitter3'
 import { LoupedeckDeviceEvents, LoupedeckTouchObject } from '../events'
 import {
 	DisplayCenterEncodedId,
+	DisplayLeftEncodedId,
+	DisplayMainEncodedId,
+	DisplayRightEncodedId,
 	DisplayWheelEncodedId,
 	LoupedeckBufferFormat,
 	LoupedeckControlType,
@@ -43,6 +46,7 @@ export interface ModelSpec {
 	displayLeftStrip: Readonly<LoupedeckDisplayDefinition> | undefined
 	displayRightStrip: Readonly<LoupedeckDisplayDefinition> | undefined
 	displayWheel?: Readonly<LoupedeckDisplayDefinition> | undefined
+	splitTopDisplays?: boolean
 
 	modelId: LoupedeckModelId
 	modelName: string
@@ -213,14 +217,16 @@ export abstract class LoupedeckDeviceBase extends EventEmitter<LoupedeckDeviceEv
 		x: number,
 		y: number
 	): [buffer: Buffer, offset: number] {
-		if (displayId === LoupedeckDisplayId.Left || displayId === LoupedeckDisplayId.Wheel) {
-			// Nothing to do
-		} else if (displayId === LoupedeckDisplayId.Center) {
-			x += this.displayLeftStrip?.width ?? 0
-		} else if (displayId === LoupedeckDisplayId.Right) {
-			x += (this.displayLeftStrip?.width ?? 0) + (this.displayMain.width + this.displayMain.xPadding * 2)
-		} else {
-			throw new Error('Unknown DisplayId')
+		if (!this.modelSpec.splitTopDisplays) {
+			if (displayId === LoupedeckDisplayId.Left || displayId === LoupedeckDisplayId.Wheel) {
+				// Nothing to do
+			} else if (displayId === LoupedeckDisplayId.Center) {
+				x += this.displayLeftStrip?.width ?? 0
+			} else if (displayId === LoupedeckDisplayId.Right) {
+				x += (this.displayLeftStrip?.width ?? 0) + (this.displayMain.width + this.displayMain.xPadding * 2)
+			} else {
+				throw new Error('Unknown DisplayId')
+			}
 		}
 
 		const padding = 10 // header + id
@@ -228,11 +234,26 @@ export abstract class LoupedeckDeviceBase extends EventEmitter<LoupedeckDeviceEv
 		const pixelCount = width * height
 		const encoded = Buffer.alloc(pixelCount * 2 + padding)
 
+		let encodedDisplay = DisplayMainEncodedId
+
 		if (displayId === LoupedeckDisplayId.Wheel) {
-			DisplayWheelEncodedId.copy(encoded, 0)
-		} else {
-			DisplayCenterEncodedId.copy(encoded, 0)
+			encodedDisplay = DisplayWheelEncodedId
+		} else if (!this.modelSpec.splitTopDisplays) {
+			switch (displayId) {
+				case LoupedeckDisplayId.Center:
+					encodedDisplay = DisplayCenterEncodedId
+					break
+				case LoupedeckDisplayId.Left:
+					encodedDisplay = DisplayLeftEncodedId
+					break
+				case LoupedeckDisplayId.Right:
+					encodedDisplay = DisplayRightEncodedId
+					break
+				default:
+					throw new Error('Unknown DisplayId')
+			}
 		}
+		encodedDisplay.copy(encoded, 0)
 		encoded.writeUInt16BE(x, 2)
 		encoded.writeUInt16BE(y, 4)
 		encoded.writeUInt16BE(width, 6)
