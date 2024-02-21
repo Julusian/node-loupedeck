@@ -36,6 +36,6 @@
 	"dependencies": {
 		"eventemitter3": "^4.0.7",
 		"p-queue": "^6.6.2",
-		"tslib": "^2.6.0"
+		"tslib": "^2.6.2"
 	}
 }
