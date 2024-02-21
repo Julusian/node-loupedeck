@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.1.0](https://github.com/julusian/node-loupedeck/compare/v1.0.0...v1.1.0) (2024-02-21)
+
+
+### Bug Fixes
+
+* typo ([7826274](https://github.com/julusian/node-loupedeck/commit/78262742f21636dc2d20da6be52d59337b256a73))
+
+
+### Features
+
+* add support for old loupedeck ct (untested) ([0880237](https://github.com/julusian/node-loupedeck/commit/0880237853aa601c5e607369b0c70e82ffc7a83a))
+
+
+
+
+
 # [1.0.0](https://github.com/julusian/node-loupedeck/compare/v0.4.0...v1.0.0) (2023-07-01)
 
 

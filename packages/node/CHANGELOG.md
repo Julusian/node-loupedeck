@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.1.0](https://github.com/julusian/node-loupedeck/compare/v1.0.0...v1.1.0) (2024-02-21)
+
+**Note:** Version bump only for package @loupedeck/node
+
+
+
+
+
 # [1.0.0](https://github.com/julusian/node-loupedeck/compare/v0.4.0...v1.0.0) (2023-07-01)
 
 **Note:** Version bump only for package @loupedeck/node
