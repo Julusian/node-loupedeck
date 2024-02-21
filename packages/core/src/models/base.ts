@@ -235,10 +235,9 @@ export abstract class LoupedeckDeviceBase extends EventEmitter<LoupedeckDeviceEv
 		const encoded = Buffer.alloc(pixelCount * 2 + padding)
 
 		let encodedDisplay = DisplayMainEncodedId
-
 		if (displayId === LoupedeckDisplayId.Wheel) {
 			encodedDisplay = DisplayWheelEncodedId
-		} else if (!this.modelSpec.splitTopDisplays) {
+		} else if (this.modelSpec.splitTopDisplays) {
 			switch (displayId) {
 				case LoupedeckDisplayId.Center:
 					encodedDisplay = DisplayCenterEncodedId
@@ -253,6 +252,7 @@ export abstract class LoupedeckDeviceBase extends EventEmitter<LoupedeckDeviceEv
 					throw new Error('Unknown DisplayId')
 			}
 		}
+
 		encodedDisplay.copy(encoded, 0)
 		encoded.writeUInt16BE(x, 2)
 		encoded.writeUInt16BE(y, 4)
