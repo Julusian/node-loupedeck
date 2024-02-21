@@ -1,7 +1,7 @@
 /******/ (() => { // webpackBootstrap
 /******/ 	var __webpack_modules__ = ({
 
-/***/ 277:
+/***/ 28:
 /***/ ((__unused_webpack_module, exports) => {
 
 "use strict";
@@ -159,7 +159,7 @@ function fromByteArray (uint8) {
 
 /***/ }),
 
-/***/ 291:
+/***/ 429:
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 "use strict";
@@ -174,16 +174,16 @@ var __webpack_unused_export__;
 
 
 
-const base64 = __webpack_require__(277)
-const ieee754 = __webpack_require__(608)
+const base64 = __webpack_require__(28)
+const ieee754 = __webpack_require__(801)
 const customInspectSymbol =
   (typeof Symbol === 'function' && typeof Symbol['for'] === 'function') // eslint-disable-line dot-notation
     ? Symbol['for']('nodejs.util.inspect.custom') // eslint-disable-line dot-notation
     : null
 
-exports.lW = Buffer
+exports.hp = Buffer
 __webpack_unused_export__ = SlowBuffer
-exports.h2 = 50
+exports.IS = 50
 
 const K_MAX_LENGTH = 0x7fffffff
 __webpack_unused_export__ = K_MAX_LENGTH
@@ -782,7 +782,7 @@ Buffer.prototype.equals = function equals (b) {
 
 Buffer.prototype.inspect = function inspect () {
   let str = ''
-  const max = exports.h2
+  const max = exports.IS
   str = this.toString('hex', 0, max).replace(/(.{2})/g, '$1 ').trim()
   if (this.length > max) str += ' ... '
   return '<Buffer ' + str + '>'
@@ -2274,7 +2274,7 @@ function BufferBigIntNotDefined () {
 
 /***/ }),
 
-/***/ 399:
+/***/ 646:
 /***/ ((module) => {
 
 "use strict";
@@ -2618,7 +2618,7 @@ if (true) {
 
 /***/ }),
 
-/***/ 608:
+/***/ 801:
 /***/ ((__unused_webpack_module, exports) => {
 
 /*! ieee754. BSD-3-Clause License. Feross Aboukhadijeh <https://feross.org/opensource> */
@@ -2710,7 +2710,7 @@ exports.write = function (buffer, value, offset, isLE, mLen, nBytes) {
 
 /***/ }),
 
-/***/ 490:
+/***/ 651:
 /***/ ((module) => {
 
 "use strict";
@@ -2733,15 +2733,15 @@ module.exports = (promise, onFinally) => {
 
 /***/ }),
 
-/***/ 10:
+/***/ 968:
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-const EventEmitter = __webpack_require__(399);
-const p_timeout_1 = __webpack_require__(605);
-const priority_queue_1 = __webpack_require__(986);
+const EventEmitter = __webpack_require__(646);
+const p_timeout_1 = __webpack_require__(455);
+const priority_queue_1 = __webpack_require__(856);
 // eslint-disable-next-line @typescript-eslint/no-empty-function
 const empty = () => { };
 const timeoutError = new p_timeout_1.TimeoutError();
@@ -3020,7 +3020,7 @@ exports["default"] = PQueue;
 
 /***/ }),
 
-/***/ 982:
+/***/ 152:
 /***/ ((__unused_webpack_module, exports) => {
 
 "use strict";
@@ -3049,13 +3049,13 @@ exports["default"] = lowerBound;
 
 /***/ }),
 
-/***/ 986:
+/***/ 856:
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-const lower_bound_1 = __webpack_require__(982);
+const lower_bound_1 = __webpack_require__(152);
 class PriorityQueue {
     constructor() {
         this._queue = [];
@@ -3089,13 +3089,13 @@ exports["default"] = PriorityQueue;
 
 /***/ }),
 
-/***/ 605:
+/***/ 455:
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
 "use strict";
 
 
-const pFinally = __webpack_require__(490);
+const pFinally = __webpack_require__(651);
 
 class TimeoutError extends Error {
 	constructor(message) {
@@ -3154,15 +3154,15 @@ module.exports.TimeoutError = TimeoutError;
 
 /***/ }),
 
-/***/ 306:
+/***/ 964:
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 "use strict";
-/* provided dependency */ var Buffer = __webpack_require__(291)["lW"];
+/* provided dependency */ var Buffer = __webpack_require__(429)["hp"];
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.FillWhenPressedDemo = void 0;
-const web_1 = __webpack_require__(660);
+const web_1 = __webpack_require__(988);
 function stringifyInfo(info) {
     return `${info.type}-${info.index}`;
 }
@@ -3261,14 +3261,14 @@ exports.FillWhenPressedDemo = FillWhenPressedDemo;
 
 /***/ }),
 
-/***/ 283:
+/***/ 215:
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.RapidFillDemo = void 0;
-const web_1 = __webpack_require__(660);
+const web_1 = __webpack_require__(988);
 function getRandomIntInclusive(min, max) {
     min = Math.ceil(min);
     max = Math.floor(max);
@@ -3351,11 +3351,11 @@ exports.RapidFillDemo = RapidFillDemo;
 
 /***/ }),
 
-/***/ 843:
+/***/ 912:
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 "use strict";
-/* provided dependency */ var Buffer = __webpack_require__(291)["lW"];
+/* provided dependency */ var Buffer = __webpack_require__(429)["hp"];
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.LoupedeckBufferFormat = exports.DisplayWheelEncodedId = exports.DisplayCenterEncodedId = exports.LoupedeckDisplayId = exports.LoupedeckVibratePattern = exports.LoupedeckControlType = exports.VendorIdRazer = exports.VendorIdLoupedeck = void 0;
@@ -3417,7 +3417,7 @@ var LoupedeckBufferFormat;
 
 /***/ }),
 
-/***/ 494:
+/***/ 836:
 /***/ ((__unused_webpack_module, exports) => {
 
 "use strict";
@@ -3427,7 +3427,7 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 
 /***/ }),
 
-/***/ 613:
+/***/ 601:
 /***/ (function(__unused_webpack_module, exports, __webpack_require__) {
 
 "use strict";
@@ -3447,15 +3447,15 @@ var __exportStar = (this && this.__exportStar) || function(m, exports) {
     for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-__exportStar(__webpack_require__(843), exports);
-__exportStar(__webpack_require__(494), exports);
-__exportStar(__webpack_require__(970), exports);
-__exportStar(__webpack_require__(72), exports);
+__exportStar(__webpack_require__(912), exports);
+__exportStar(__webpack_require__(836), exports);
+__exportStar(__webpack_require__(810), exports);
+__exportStar(__webpack_require__(193), exports);
 //# sourceMappingURL=index.js.map
 
 /***/ }),
 
-/***/ 970:
+/***/ 810:
 /***/ ((__unused_webpack_module, exports) => {
 
 "use strict";
@@ -3474,15 +3474,15 @@ var LoupedeckModelId;
 
 /***/ }),
 
-/***/ 276:
+/***/ 492:
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 "use strict";
-/* provided dependency */ var Buffer = __webpack_require__(291)["lW"];
+/* provided dependency */ var Buffer = __webpack_require__(429)["hp"];
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.WS_UPGRADE_RESPONSE = exports.WS_UPGRADE_HEADER = exports.DEVICE_MODELS = void 0;
-var list_1 = __webpack_require__(113);
+var list_1 = __webpack_require__(166);
 Object.defineProperty(exports, "DEVICE_MODELS", ({ enumerable: true, get: function () { return list_1.DEVICE_MODELS; } }));
 exports.WS_UPGRADE_HEADER = Buffer.from(`GET /index.html
 HTTP/1.1
@@ -3496,11 +3496,11 @@ exports.WS_UPGRADE_RESPONSE = 'HTTP/1.1';
 
 /***/ }),
 
-/***/ 576:
+/***/ 67:
 /***/ (function(__unused_webpack_module, exports, __webpack_require__) {
 
 "use strict";
-/* provided dependency */ var Buffer = __webpack_require__(291)["lW"];
+/* provided dependency */ var Buffer = __webpack_require__(429)["hp"];
 
 var __classPrivateFieldSet = (this && this.__classPrivateFieldSet) || function (receiver, state, value, kind, f) {
     if (kind === "m") throw new TypeError("Private method is not writable");
@@ -3516,10 +3516,10 @@ var __classPrivateFieldGet = (this && this.__classPrivateFieldGet) || function (
 var _LoupedeckDeviceBase_instances, _LoupedeckDeviceBase_touches, _LoupedeckDeviceBase_connection, _LoupedeckDeviceBase_pendingTransactions, _LoupedeckDeviceBase_nextTransactionId, _LoupedeckDeviceBase_sendQueue, _LoupedeckDeviceBase_getDisplay, _LoupedeckDeviceBase_cleanupPendingPromises, _LoupedeckDeviceBase_onMessage, _LoupedeckDeviceBase_onPress, _LoupedeckDeviceBase_onRotate, _LoupedeckDeviceBase_createTouch, _LoupedeckDeviceBase_runInQueueIfEnabled, _LoupedeckDeviceBase_sendAndWaitIfRequired, _LoupedeckDeviceBase_sendAndWaitForResult, _LoupedeckDeviceBase_sendCommand, _LoupedeckDeviceBase_waitForTransaction;
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.LoupedeckDeviceBase = void 0;
-const eventemitter3_1 = __webpack_require__(399);
-const constants_1 = __webpack_require__(843);
-const util_1 = __webpack_require__(764);
-const p_queue_1 = __webpack_require__(10);
+const eventemitter3_1 = __webpack_require__(646);
+const constants_1 = __webpack_require__(912);
+const util_1 = __webpack_require__(369);
+const p_queue_1 = __webpack_require__(968);
 var CommandIds;
 (function (CommandIds) {
     CommandIds[CommandIds["SetColour"] = 2] = "SetColour";
@@ -3962,16 +3962,16 @@ _LoupedeckDeviceBase_touches = new WeakMap(), _LoupedeckDeviceBase_connection = 
 
 /***/ }),
 
-/***/ 139:
+/***/ 577:
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.LoupedeckCtDevice = void 0;
-const constants_1 = __webpack_require__(843);
-const base_1 = __webpack_require__(576);
-const info_1 = __webpack_require__(970);
+const constants_1 = __webpack_require__(912);
+const base_1 = __webpack_require__(67);
+const info_1 = __webpack_require__(810);
 const DisplayLeft = {
     width: 60,
     height: 270,
@@ -4057,20 +4057,20 @@ exports.LoupedeckCtDevice = LoupedeckCtDevice;
 
 /***/ }),
 
-/***/ 113:
+/***/ 166:
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.DEVICE_MODELS = void 0;
-const constants_1 = __webpack_require__(843);
-const info_1 = __webpack_require__(970);
-const live_1 = __webpack_require__(158);
-const razer_stream_controller_1 = __webpack_require__(348);
-const live_s_1 = __webpack_require__(149);
-const ct_1 = __webpack_require__(139);
-const razer_stream_controller_x_1 = __webpack_require__(722);
+const constants_1 = __webpack_require__(912);
+const info_1 = __webpack_require__(810);
+const live_1 = __webpack_require__(400);
+const razer_stream_controller_1 = __webpack_require__(180);
+const live_s_1 = __webpack_require__(408);
+const ct_1 = __webpack_require__(577);
+const razer_stream_controller_x_1 = __webpack_require__(341);
 /** List of all the known models, and the classes to use them */
 exports.DEVICE_MODELS = [
     {
@@ -4108,16 +4108,16 @@ exports.DEVICE_MODELS = [
 
 /***/ }),
 
-/***/ 149:
+/***/ 408:
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.LoupedeckLiveSDevice = void 0;
-const constants_1 = __webpack_require__(843);
-const base_1 = __webpack_require__(576);
-const info_1 = __webpack_require__(970);
+const constants_1 = __webpack_require__(912);
+const base_1 = __webpack_require__(67);
+const info_1 = __webpack_require__(810);
 const DisplayCenter = {
     width: 480 - 18 * 2,
     height: 270 - 5 * 2,
@@ -4161,16 +4161,16 @@ exports.LoupedeckLiveSDevice = LoupedeckLiveSDevice;
 
 /***/ }),
 
-/***/ 158:
+/***/ 400:
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.LoupedeckLiveDevice = void 0;
-const constants_1 = __webpack_require__(843);
-const base_1 = __webpack_require__(576);
-const info_1 = __webpack_require__(970);
+const constants_1 = __webpack_require__(912);
+const base_1 = __webpack_require__(67);
+const info_1 = __webpack_require__(810);
 const DisplayLeft = {
     width: 60,
     height: 270,
@@ -4230,16 +4230,16 @@ exports.LoupedeckLiveDevice = LoupedeckLiveDevice;
 
 /***/ }),
 
-/***/ 722:
+/***/ 341:
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.RazerStreamControllerDeviceX = void 0;
-const constants_1 = __webpack_require__(843);
-const base_1 = __webpack_require__(576);
-const info_1 = __webpack_require__(970);
+const constants_1 = __webpack_require__(912);
+const base_1 = __webpack_require__(67);
+const info_1 = __webpack_require__(810);
 const DisplayCenter = {
     width: 480 - 5 * 2,
     height: 270,
@@ -4279,16 +4279,16 @@ exports.RazerStreamControllerDeviceX = RazerStreamControllerDeviceX;
 
 /***/ }),
 
-/***/ 348:
+/***/ 180:
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.RazerStreamControllerDevice = void 0;
-const constants_1 = __webpack_require__(843);
-const base_1 = __webpack_require__(576);
-const info_1 = __webpack_require__(970);
+const constants_1 = __webpack_require__(912);
+const base_1 = __webpack_require__(67);
+const info_1 = __webpack_require__(810);
 const DisplayLeft = {
     width: 60,
     height: 270,
@@ -4348,14 +4348,14 @@ exports.RazerStreamControllerDevice = RazerStreamControllerDevice;
 
 /***/ }),
 
-/***/ 72:
+/***/ 193:
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.LoupedeckSerialConnection = void 0;
-const eventemitter3_1 = __webpack_require__(399);
+const eventemitter3_1 = __webpack_require__(646);
 class LoupedeckSerialConnection extends eventemitter3_1.EventEmitter {
 }
 exports.LoupedeckSerialConnection = LoupedeckSerialConnection;
@@ -4363,14 +4363,14 @@ exports.LoupedeckSerialConnection = LoupedeckSerialConnection;
 
 /***/ }),
 
-/***/ 764:
+/***/ 369:
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.checkRGBColor = exports.checkRGBValue = exports.encodeBuffer = exports.createCanDrawPixel = void 0;
-const constants_1 = __webpack_require__(843);
+const constants_1 = __webpack_require__(912);
 function createCanDrawPixel(drawX, drawY, lcdKeySize, displayInfo) {
     const roundY = lcdKeySize + displayInfo.rowGap;
     const roundX = lcdKeySize + displayInfo.columnGap;
@@ -4443,7 +4443,7 @@ exports.checkRGBColor = checkRGBColor;
 
 /***/ }),
 
-/***/ 660:
+/***/ 988:
 /***/ (function(__unused_webpack_module, exports, __webpack_require__) {
 
 "use strict";
@@ -4464,9 +4464,9 @@ var __exportStar = (this && this.__exportStar) || function(m, exports) {
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.openDevice = exports.getLoupedecks = exports.requestLoupedeck = void 0;
-const internal_1 = __webpack_require__(276);
-const serial_1 = __webpack_require__(97);
-__exportStar(__webpack_require__(613), exports);
+const internal_1 = __webpack_require__(492);
+const serial_1 = __webpack_require__(246);
+__exportStar(__webpack_require__(601), exports);
 const serialFilters = internal_1.DEVICE_MODELS.map((model) => ({
     usbProductId: model.productId,
     usbVendorId: model.vendorId,
@@ -4529,16 +4529,16 @@ exports.openDevice = openDevice;
 
 /***/ }),
 
-/***/ 97:
+/***/ 246:
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 "use strict";
-/* provided dependency */ var Buffer = __webpack_require__(291)["lW"];
+/* provided dependency */ var Buffer = __webpack_require__(429)["hp"];
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.LoupedeckWebSerialConnection = void 0;
-const core_1 = __webpack_require__(613);
-const internal_1 = __webpack_require__(276);
+const core_1 = __webpack_require__(601);
+const internal_1 = __webpack_require__(492);
 class LoupedeckWebSerialConnection extends core_1.LoupedeckSerialConnection {
     constructor(connection, reader, writer) {
         super();
@@ -4795,10 +4795,10 @@ var exports = __webpack_exports__;
 var __webpack_unused_export__;
 
 __webpack_unused_export__ = ({ value: true });
-const web_1 = __webpack_require__(660);
+const web_1 = __webpack_require__(988);
 // import { DomImageDemo } from './demo/dom'
-const fill_when_pressed_1 = __webpack_require__(306);
-const rapid_fill_1 = __webpack_require__(283);
+const fill_when_pressed_1 = __webpack_require__(964);
+const rapid_fill_1 = __webpack_require__(215);
 if (true) {
     const elm = document.querySelector('#version_str');
     if (elm) {
