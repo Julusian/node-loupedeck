@@ -3358,7 +3358,7 @@ exports.RapidFillDemo = RapidFillDemo;
 /* provided dependency */ var Buffer = __webpack_require__(429)["hp"];
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.LoupedeckBufferFormat = exports.DisplayWheelEncodedId = exports.DisplayCenterEncodedId = exports.LoupedeckDisplayId = exports.LoupedeckVibratePattern = exports.LoupedeckControlType = exports.VendorIdRazer = exports.VendorIdLoupedeck = void 0;
+exports.LoupedeckBufferFormat = exports.DisplayRightEncodedId = exports.DisplayCenterEncodedId = exports.DisplayLeftEncodedId = exports.DisplayWheelEncodedId = exports.DisplayMainEncodedId = exports.LoupedeckDisplayId = exports.LoupedeckVibratePattern = exports.LoupedeckControlType = exports.VendorIdRazer = exports.VendorIdLoupedeck = void 0;
 exports.VendorIdLoupedeck = 0x2ec2;
 exports.VendorIdRazer = 0x1532;
 var LoupedeckControlType;
@@ -3407,8 +3407,11 @@ var LoupedeckDisplayId;
     LoupedeckDisplayId["Right"] = "right";
     LoupedeckDisplayId["Wheel"] = "wheel";
 })(LoupedeckDisplayId = exports.LoupedeckDisplayId || (exports.LoupedeckDisplayId = {}));
-exports.DisplayCenterEncodedId = Buffer.from([0x00, 0x4d]);
+exports.DisplayMainEncodedId = Buffer.from([0x00, 0x4d]);
 exports.DisplayWheelEncodedId = Buffer.from([0x00, 0x57]);
+exports.DisplayLeftEncodedId = Buffer.from([0x00, 0x4c]);
+exports.DisplayCenterEncodedId = Buffer.from([0x00, 0x41]);
+exports.DisplayRightEncodedId = Buffer.from([0x00, 0x52]);
 var LoupedeckBufferFormat;
 (function (LoupedeckBufferFormat) {
     LoupedeckBufferFormat["RGB"] = "rgb";
@@ -3634,27 +3637,43 @@ class LoupedeckDeviceBase extends eventemitter3_1.EventEmitter {
      * @returns The buffer and the data offset
      */
     createBufferWithHeader(displayId, width, height, x, y) {
-        if (displayId === constants_1.LoupedeckDisplayId.Left || displayId === constants_1.LoupedeckDisplayId.Wheel) {
-            // Nothing to do
-        }
-        else if (displayId === constants_1.LoupedeckDisplayId.Center) {
-            x += this.displayLeftStrip?.width ?? 0;
-        }
-        else if (displayId === constants_1.LoupedeckDisplayId.Right) {
-            x += (this.displayLeftStrip?.width ?? 0) + (this.displayMain.width + this.displayMain.xPadding * 2);
-        }
-        else {
-            throw new Error('Unknown DisplayId');
+        if (!this.modelSpec.splitTopDisplays) {
+            if (displayId === constants_1.LoupedeckDisplayId.Left || displayId === constants_1.LoupedeckDisplayId.Wheel) {
+                // Nothing to do
+            }
+            else if (displayId === constants_1.LoupedeckDisplayId.Center) {
+                x += this.displayLeftStrip?.width ?? 0;
+            }
+            else if (displayId === constants_1.LoupedeckDisplayId.Right) {
+                x += (this.displayLeftStrip?.width ?? 0) + (this.displayMain.width + this.displayMain.xPadding * 2);
+            }
+            else {
+                throw new Error('Unknown DisplayId');
+            }
         }
         const padding = 10; // header + id
         const pixelCount = width * height;
         const encoded = Buffer.alloc(pixelCount * 2 + padding);
+        let encodedDisplay = constants_1.DisplayMainEncodedId;
         if (displayId === constants_1.LoupedeckDisplayId.Wheel) {
-            constants_1.DisplayWheelEncodedId.copy(encoded, 0);
+            encodedDisplay = constants_1.DisplayWheelEncodedId;
         }
-        else {
-            constants_1.DisplayCenterEncodedId.copy(encoded, 0);
+        else if (!this.modelSpec.splitTopDisplays) {
+            switch (displayId) {
+                case constants_1.LoupedeckDisplayId.Center:
+                    encodedDisplay = constants_1.DisplayCenterEncodedId;
+                    break;
+                case constants_1.LoupedeckDisplayId.Left:
+                    encodedDisplay = constants_1.DisplayLeftEncodedId;
+                    break;
+                case constants_1.LoupedeckDisplayId.Right:
+                    encodedDisplay = constants_1.DisplayRightEncodedId;
+                    break;
+                default:
+                    throw new Error('Unknown DisplayId');
+            }
         }
+        encodedDisplay.copy(encoded, 0);
         encoded.writeUInt16BE(x, 2);
         encoded.writeUInt16BE(y, 4);
         encoded.writeUInt16BE(width, 6);
@@ -3962,13 +3981,36 @@ _LoupedeckDeviceBase_touches = new WeakMap(), _LoupedeckDeviceBase_connection = 
 
 /***/ }),
 
-/***/ 577:
+/***/ 307:
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.LoupedeckCtDevice = void 0;
+exports.LoupedeckCtDeviceV1 = void 0;
+const base_1 = __webpack_require__(67);
+const ct_v2_1 = __webpack_require__(134);
+const LoupedeckCtV1ModelSpec = {
+    ...ct_v2_1.LoupedeckCtV2ModelSpec,
+    splitTopDisplays: true,
+};
+class LoupedeckCtDeviceV1 extends base_1.LoupedeckDeviceBase {
+    constructor(connection, options) {
+        super(connection, options, LoupedeckCtV1ModelSpec);
+    }
+}
+exports.LoupedeckCtDeviceV1 = LoupedeckCtDeviceV1;
+//# sourceMappingURL=ct-v1.js.map
+
+/***/ }),
+
+/***/ 134:
+/***/ ((__unused_webpack_module, exports, __webpack_require__) => {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.LoupedeckCtDeviceV2 = exports.LoupedeckCtV2ModelSpec = void 0;
 const constants_1 = __webpack_require__(912);
 const base_1 = __webpack_require__(67);
 const info_1 = __webpack_require__(810);
@@ -4005,7 +4047,7 @@ const DisplayWheel = {
     rowGap: 0,
     endianness: 'BE',
 };
-const modelSpec = {
+exports.LoupedeckCtV2ModelSpec = {
     controls: [],
     displayMain: DisplayCenter,
     displayLeftStrip: DisplayLeft,
@@ -4019,7 +4061,7 @@ const modelSpec = {
 };
 for (let i = 0; i < 8; i++) {
     // round buttons
-    modelSpec.controls.push({
+    exports.LoupedeckCtV2ModelSpec.controls.push({
         type: constants_1.LoupedeckControlType.Button,
         index: i,
         encoded: 0x07 + i,
@@ -4027,7 +4069,7 @@ for (let i = 0; i < 8; i++) {
 }
 for (let i = 0; i < 12; i++) {
     // square buttons
-    modelSpec.controls.push({
+    exports.LoupedeckCtV2ModelSpec.controls.push({
         type: constants_1.LoupedeckControlType.Button,
         index: i + 8,
         encoded: 0x0f + i,
@@ -4035,25 +4077,25 @@ for (let i = 0; i < 12; i++) {
 }
 for (let i = 0; i < 6; i++) {
     // small rotary encoders
-    modelSpec.controls.push({
+    exports.LoupedeckCtV2ModelSpec.controls.push({
         type: constants_1.LoupedeckControlType.Rotary,
         index: i,
         encoded: 0x01 + i,
     });
 }
 // big wheel encoder
-modelSpec.controls.push({
+exports.LoupedeckCtV2ModelSpec.controls.push({
     type: constants_1.LoupedeckControlType.Rotary,
     index: 6,
     encoded: 0x00,
 });
-class LoupedeckCtDevice extends base_1.LoupedeckDeviceBase {
+class LoupedeckCtDeviceV2 extends base_1.LoupedeckDeviceBase {
     constructor(connection, options) {
-        super(connection, options, modelSpec);
+        super(connection, options, exports.LoupedeckCtV2ModelSpec);
     }
 }
-exports.LoupedeckCtDevice = LoupedeckCtDevice;
-//# sourceMappingURL=ct.js.map
+exports.LoupedeckCtDeviceV2 = LoupedeckCtDeviceV2;
+//# sourceMappingURL=ct-v2.js.map
 
 /***/ }),
 
@@ -4069,15 +4111,22 @@ const info_1 = __webpack_require__(810);
 const live_1 = __webpack_require__(400);
 const razer_stream_controller_1 = __webpack_require__(180);
 const live_s_1 = __webpack_require__(408);
-const ct_1 = __webpack_require__(577);
+const ct_v2_1 = __webpack_require__(134);
 const razer_stream_controller_x_1 = __webpack_require__(341);
+const ct_v1_1 = __webpack_require__(307);
 /** List of all the known models, and the classes to use them */
 exports.DEVICE_MODELS = [
     {
         id: info_1.LoupedeckModelId.LoupedeckCt,
         vendorId: constants_1.VendorIdLoupedeck,
+        productId: 0x0003,
+        class: ct_v1_1.LoupedeckCtDeviceV1,
+    },
+    {
+        id: info_1.LoupedeckModelId.LoupedeckCt,
+        vendorId: constants_1.VendorIdLoupedeck,
         productId: 0x0007,
-        class: ct_1.LoupedeckCtDevice,
+        class: ct_v2_1.LoupedeckCtDeviceV2,
     },
     {
         id: info_1.LoupedeckModelId.LoupedeckLive,
