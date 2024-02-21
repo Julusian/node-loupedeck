@@ -8,6 +8,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+        with:
+          persist-credentials: false
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
@@ -26,6 +28,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+        with:
+          persist-credentials: false
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
@@ -50,6 +54,8 @@ jobs:
 
   #   steps:
   #     - uses: actions/checkout@v3
+  #       with:
+  #         persist-credentials: false
   #     - name: Install linux dependencies
   #       if: runner.os == 'Linux'
   #       run: |
@@ -85,6 +91,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
+        with:
+          persist-credentials: false
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
