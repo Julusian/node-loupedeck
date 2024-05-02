@@ -6,25 +6,24 @@
   ],
   "devDependencies": {
     "@sofie-automation/code-standard-preset": "^2.5.2",
-    "@types/node": "^16.11.64",
-    "copy-webpack-plugin": "^11.0.0",
+    "@types/node": "^16.18.96",
+    "copy-webpack-plugin": "^12.0.2",
     "cross-env": "^7.0.3",
-    "husky": "^8.0.3",
-    "lerna": "^7.1.1",
+    "lerna": "^8.1.2",
     "rimraf": "^5.0.5",
     "ts-loader": "^9.5.1",
     "ts-node": "^10.9.2",
-    "typescript": "~5.0",
-    "webpack": "^5.90.3",
+    "typescript": "~5.0.4",
+    "webpack": "^5.91.0",
     "webpack-cli": "^5.1.4",
-    "webpack-dev-server": "^4.15.1"
+    "webpack-dev-server": "^4.15.2"
   },
   "scripts": {
     "prepare": "run g:husky install",
     "dev": "run build:root --watch",
     "dev:demo": "yarn workspace @elgato-stream-deck/webhid-demo start",
     "build": "run build:root && yarn lerna run build",
-    "build:root": "run g:rimraf packages/*/dist && run g:tsc --build tsconfig.build.json",
+    "build:root": "rimraf packages/*/dist && tsc --build tsconfig.build.json",
     "test": "run lint && run unit",
     "unit": "jest",
     "lint:raw": "./node_modules/.bin/eslint --ext .ts --ext .js --ext .tsx --ext .jsx --ignore-pattern dist",
@@ -35,17 +34,15 @@
     "publish2": "run build && lerna publish from-package --pre-dist-tag next",
     "validate:dependencies": "yarn npm audit --groups dependencies && run license-validate",
     "license-validate": "sofie-licensecheck --allowPackages \"@loupedeck/web-demo@$(node -p \"require('./packages/web-demo/package.json').version\");caniuse-lite@1.0.30001449;jackspeak@2.2.1;path-scurry@1.10.0\"",
-    "g:tsc": "cd $INIT_CWD && tsc",
-    "g:rimraf": "cd $INIT_CWD && rimraf",
     "g:husky": "./node_modules/.bin/husky",
     "g:lint-staged": "./node_modules/.bin/lint-staged"
   },
   "lint-staged": {
     "*.{css,json,md,scss}": [
-      "prettier --write"
+      "./node_modules/.bin/prettier --write"
     ],
     "*.{ts,tsx,js,jsx}": [
-      "yarn lint:raw --fix"
+      "run lint:raw --fix"
     ]
   },
   "packageManager": "yarn@4.2.1"
