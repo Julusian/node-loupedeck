@@ -7,7 +7,6 @@
   "devDependencies": {
     "@sofie-automation/code-standard-preset": "^2.5.2",
     "@types/node": "^16.11.64",
-    "concurrently": "^8.2.2",
     "copy-webpack-plugin": "^11.0.0",
     "cross-env": "^7.0.3",
     "husky": "^8.0.3",
@@ -22,8 +21,10 @@
   },
   "scripts": {
     "prepare": "run g:husky install",
-    "dev": "run build && node ./scripts/watch.mjs",
-    "build": "yarn lerna exec yarn build",
+    "dev": "run build:root --watch",
+    "dev:demo": "yarn workspace @elgato-stream-deck/webhid-demo start",
+    "build": "run build:root && yarn lerna run build",
+    "build:root": "run g:rimraf packages/*/dist && run g:tsc --build tsconfig.build.json",
     "test": "run lint && run unit",
     "unit": "jest",
     "lint:raw": "./node_modules/.bin/eslint --ext .ts --ext .js --ext .tsx --ext .jsx --ignore-pattern dist",
