@@ -63,6 +63,7 @@ typings/
 /.idea
 
 /.vscode
+/.yarn
 
 /dist
 /packages/*/dist

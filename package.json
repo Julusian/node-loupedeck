@@ -12,6 +12,7 @@
     "cross-env": "^7.0.3",
     "husky": "^8.0.3",
     "lerna": "^7.1.1",
+    "rimraf": "^5.0.5",
     "ts-loader": "^9.5.1",
     "ts-node": "^10.9.2",
     "typescript": "~5.0",
@@ -20,19 +21,23 @@
     "webpack-dev-server": "^4.15.1"
   },
   "scripts": {
-    "prepare": "husky install",
-    "dev": "yarn build && node ./scripts/watch.mjs",
+    "prepare": "run g:husky install",
+    "dev": "run build && node ./scripts/watch.mjs",
     "build": "yarn lerna exec yarn build",
-    "test": "yarn lint && yarn unit",
+    "test": "run lint && run unit",
     "unit": "jest",
-    "lint:raw": "eslint --ext .ts --ext .js --ext .tsx --ext .jsx --ignore-pattern dist",
-    "lint": "yarn lint:raw packages",
-    "lint-fix": "yarn lint --fix",
+    "lint:raw": "./node_modules/.bin/eslint --ext .ts --ext .js --ext .tsx --ext .jsx --ignore-pattern dist",
+    "lint": "run lint:raw packages",
+    "lint-fix": "run lint --fix",
     "bump": "lerna version --exact --conventional-commits --no-push -m \"chore(release): publish %s\"",
-    "graduate": "yarn bump --conventional-graduate",
-    "publish2": "yarn build && lerna publish from-package --pre-dist-tag next",
-    "validate:dependencies": "yarn audit --groups dependencies && yarn license-validate",
-    "license-validate": "yarn sofie-licensecheck --allowPackages \"@loupedeck/web-demo@$(node -p \"require('./packages/web-demo/package.json').version\");caniuse-lite@1.0.30001449;jackspeak@2.2.1;path-scurry@1.10.0\""
+    "graduate": "run bump --conventional-graduate",
+    "publish2": "run build && lerna publish from-package --pre-dist-tag next",
+    "validate:dependencies": "yarn npm audit --groups dependencies && run license-validate",
+    "license-validate": "sofie-licensecheck --allowPackages \"@loupedeck/web-demo@$(node -p \"require('./packages/web-demo/package.json').version\");caniuse-lite@1.0.30001449;jackspeak@2.2.1;path-scurry@1.10.0\"",
+    "g:tsc": "cd $INIT_CWD && tsc",
+    "g:rimraf": "cd $INIT_CWD && rimraf",
+    "g:husky": "./node_modules/.bin/husky",
+    "g:lint-staged": "./node_modules/.bin/lint-staged"
   },
   "lint-staged": {
     "*.{css,json,md,scss}": [
@@ -41,5 +46,6 @@
     "*.{ts,tsx,js,jsx}": [
       "yarn lint:raw --fix"
     ]
-  }
+  },
+  "packageManager": "yarn@4.2.1"
 }
