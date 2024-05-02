@@ -23,7 +23,7 @@
     "dev": "run build:root --watch",
     "dev:demo": "yarn workspace @elgato-stream-deck/webhid-demo start",
     "build": "run build:root && yarn lerna run build",
-    "build:root": "rimraf packages/*/dist && tsc --build tsconfig.build.json",
+    "build:root": "(rimraf packages/*/dist || true) && tsc --build tsconfig.build.json",
     "test": "run lint && run unit",
     "unit": "jest",
     "lint:raw": "./node_modules/.bin/eslint --ext .ts --ext .js --ext .tsx --ext .jsx --ignore-pattern dist",
