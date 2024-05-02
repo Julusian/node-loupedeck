@@ -3530,7 +3530,7 @@ var CommandIds;
     CommandIds[CommandIds["GetSerialNumber"] = 3] = "GetSerialNumber";
     CommandIds[CommandIds["GetVersion"] = 7] = "GetVersion";
     CommandIds[CommandIds["SetBrightness"] = 9] = "SetBrightness";
-    // RefreshDisplay = 0x0f,
+    CommandIds[CommandIds["RefreshDisplay"] = 15] = "RefreshDisplay";
     CommandIds[CommandIds["DrawFramebuffer"] = 16] = "DrawFramebuffer";
     CommandIds[CommandIds["SetVibration"] = 27] = "SetVibration";
     // CONFIRM: 0x0302,
@@ -3606,8 +3606,12 @@ class LoupedeckDeviceBase extends eventemitter3_1.EventEmitter {
                 for (const displayId of Object.values(constants_1.LoupedeckDisplayId)) {
                     const display = __classPrivateFieldGet(this, _LoupedeckDeviceBase_instances, "m", _LoupedeckDeviceBase_getDisplay).call(this, displayId);
                     if (display) {
-                        const [payload] = this.createBufferWithHeader(displayId, display.width + display.xPadding * 2, display.height + display.yPadding * 2, 0, 0);
-                        await __classPrivateFieldGet(this, _LoupedeckDeviceBase_instances, "m", _LoupedeckDeviceBase_sendAndWaitIfRequired).call(this, CommandIds.DrawFramebuffer, payload, true);
+                        const { encoded, encodedDisplay } = this.createBufferWithHeader(displayId, display.width + display.xPadding * 2, display.height + display.yPadding * 2, 0, 0);
+                        await __classPrivateFieldGet(this, _LoupedeckDeviceBase_instances, "m", _LoupedeckDeviceBase_sendAndWaitIfRequired).call(this, CommandIds.DrawFramebuffer, encoded, true);
+                        // This may flush a display multiple times, but avoiding collisions is hard
+                        if (this.modelSpec.framebufferFlush) {
+                            await __classPrivateFieldGet(this, _LoupedeckDeviceBase_instances, "m", _LoupedeckDeviceBase_sendAndWaitIfRequired).call(this, CommandIds.RefreshDisplay, encodedDisplay, true);
+                        }
                     }
                 }
             }
@@ -3679,7 +3683,7 @@ class LoupedeckDeviceBase extends eventemitter3_1.EventEmitter {
         encoded.writeUInt16BE(y, 4);
         encoded.writeUInt16BE(width, 6);
         encoded.writeUInt16BE(height, 8);
-        return [encoded, padding];
+        return { encoded, padding, encodedDisplay };
     }
     async drawBuffer(displayId, buffer, format, width, height, x, y) {
         const display = __classPrivateFieldGet(this, _LoupedeckDeviceBase_instances, "m", _LoupedeckDeviceBase_getDisplay).call(this, displayId);
@@ -3693,12 +3697,15 @@ class LoupedeckDeviceBase extends eventemitter3_1.EventEmitter {
             throw new Error('x is not valid');
         if (y < 0 || y + height > display.height)
             throw new Error('x is not valid');
-        const [encoded, padding] = this.createBufferWithHeader(displayId, width, height, x + display.xPadding, y + display.yPadding);
+        const { encoded, padding, encodedDisplay } = this.createBufferWithHeader(displayId, width, height, x + display.xPadding, y + display.yPadding);
         const [canDrawPixel, canDrawRow] = (0, util_1.createCanDrawPixel)(x, y, this.lcdKeySize, display);
         (0, util_1.encodeBuffer)(buffer, encoded, format, padding, width, height, canDrawPixel, canDrawRow, display.endianness);
         await __classPrivateFieldGet(this, _LoupedeckDeviceBase_instances, "m", _LoupedeckDeviceBase_runInQueueIfEnabled).call(this, async () => {
             // Run in the queue as a single operation
             await __classPrivateFieldGet(this, _LoupedeckDeviceBase_instances, "m", _LoupedeckDeviceBase_sendAndWaitIfRequired).call(this, CommandIds.DrawFramebuffer, encoded, true);
+            if (this.modelSpec.framebufferFlush) {
+                await __classPrivateFieldGet(this, _LoupedeckDeviceBase_instances, "m", _LoupedeckDeviceBase_sendAndWaitIfRequired).call(this, CommandIds.RefreshDisplay, encodedDisplay, true);
+            }
         }, false);
     }
     async drawKeyBuffer(index, buffer, format) {
@@ -3723,7 +3730,7 @@ class LoupedeckDeviceBase extends eventemitter3_1.EventEmitter {
             (((Math.round(color.green) >> 2) & 0b111111) << 5) +
             ((Math.round(color.blue) >> 3) & 0b11111);
         const [canDrawPixel, canDrawRow] = (0, util_1.createCanDrawPixel)(x, y, this.lcdKeySize, display);
-        const [encoded, padding] = this.createBufferWithHeader(displayId, width, height, x + display.xPadding, y);
+        const { encoded, padding, encodedDisplay } = this.createBufferWithHeader(displayId, width, height, x + display.xPadding, y);
         for (let y = 0; y < height; y++) {
             if (!canDrawRow(y))
                 continue;
@@ -3742,6 +3749,9 @@ class LoupedeckDeviceBase extends eventemitter3_1.EventEmitter {
         await __classPrivateFieldGet(this, _LoupedeckDeviceBase_instances, "m", _LoupedeckDeviceBase_runInQueueIfEnabled).call(this, async () => {
             // Run in the queue as a single operation
             await __classPrivateFieldGet(this, _LoupedeckDeviceBase_instances, "m", _LoupedeckDeviceBase_sendAndWaitIfRequired).call(this, CommandIds.DrawFramebuffer, encoded, true);
+            if (this.modelSpec.framebufferFlush) {
+                await __classPrivateFieldGet(this, _LoupedeckDeviceBase_instances, "m", _LoupedeckDeviceBase_sendAndWaitIfRequired).call(this, CommandIds.RefreshDisplay, encodedDisplay, true);
+            }
         }, false);
     }
     async getFirmwareVersion() {
@@ -3996,6 +4006,7 @@ const LoupedeckCtV1ModelSpec = {
     ...ct_v2_1.LoupedeckCtV2ModelSpec,
     splitTopDisplays: true,
     modelId: __1.LoupedeckModelId.LoupedeckCtV1,
+    framebufferFlush: true,
 };
 class LoupedeckCtDeviceV1 extends base_1.LoupedeckDeviceBase {
     constructor(connection, options) {
