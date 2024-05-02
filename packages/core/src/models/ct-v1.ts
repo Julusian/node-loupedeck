@@ -7,6 +7,8 @@ const LoupedeckCtV1ModelSpec: ModelSpec = {
 	...LoupedeckCtV2ModelSpec,
 	splitTopDisplays: true,
 	modelId: LoupedeckModelId.LoupedeckCtV1,
+
+	framebufferFlush: true,
 }
 
 export class LoupedeckCtDeviceV1 extends LoupedeckDeviceBase {

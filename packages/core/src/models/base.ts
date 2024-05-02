@@ -23,7 +23,7 @@ enum CommandIds {
 	GetSerialNumber = 0x03,
 	GetVersion = 0x07,
 	SetBrightness = 0x09,
-	// RefreshDisplay = 0x0f,
+	RefreshDisplay = 0x0f,
 	DrawFramebuffer = 0x10,
 	SetVibration = 0x1b,
 
@@ -54,6 +54,8 @@ export interface ModelSpec {
 	lcdKeyColumns: number
 	lcdKeyRows: number
 	lcdKeySize: number
+
+	framebufferFlush?: boolean
 }
 
 export interface LoupedeckDeviceOptions {
@@ -157,7 +159,7 @@ export abstract class LoupedeckDeviceBase extends EventEmitter<LoupedeckDeviceEv
 				for (const displayId of Object.values<LoupedeckDisplayId>(LoupedeckDisplayId)) {
 					const display = this.#getDisplay(displayId)
 					if (display) {
-						const [payload] = this.createBufferWithHeader(
+						const { encoded, encodedDisplay } = this.createBufferWithHeader(
 							displayId,
 							display.width + display.xPadding * 2,
 							display.height + display.yPadding * 2,
@@ -165,7 +167,12 @@ export abstract class LoupedeckDeviceBase extends EventEmitter<LoupedeckDeviceEv
 							0
 						)
 
-						await this.#sendAndWaitIfRequired(CommandIds.DrawFramebuffer, payload, true)
+						await this.#sendAndWaitIfRequired(CommandIds.DrawFramebuffer, encoded, true)
+
+						// This may flush a display multiple times, but avoiding collisions is hard
+						if (this.modelSpec.framebufferFlush) {
+							await this.#sendAndWaitIfRequired(CommandIds.RefreshDisplay, encodedDisplay, true)
+						}
 					}
 				}
 			}
@@ -216,7 +223,7 @@ export abstract class LoupedeckDeviceBase extends EventEmitter<LoupedeckDeviceEv
 		height: number,
 		x: number,
 		y: number
-	): [buffer: Buffer, offset: number] {
+	): { encoded: Buffer; padding: number; encodedDisplay: Buffer } {
 		if (!this.modelSpec.splitTopDisplays) {
 			if (displayId === LoupedeckDisplayId.Left || displayId === LoupedeckDisplayId.Wheel) {
 				// Nothing to do
@@ -259,7 +266,7 @@ export abstract class LoupedeckDeviceBase extends EventEmitter<LoupedeckDeviceEv
 		encoded.writeUInt16BE(width, 6)
 		encoded.writeUInt16BE(height, 8)
 
-		return [encoded, padding]
+		return { encoded, padding, encodedDisplay }
 	}
 
 	public async drawBuffer(
@@ -279,7 +286,7 @@ export abstract class LoupedeckDeviceBase extends EventEmitter<LoupedeckDeviceEv
 		if (x < 0 || x + width > display.width) throw new Error('x is not valid')
 		if (y < 0 || y + height > display.height) throw new Error('x is not valid')
 
-		const [encoded, padding] = this.createBufferWithHeader(
+		const { encoded, padding, encodedDisplay } = this.createBufferWithHeader(
 			displayId,
 			width,
 			height,
@@ -292,6 +299,10 @@ export abstract class LoupedeckDeviceBase extends EventEmitter<LoupedeckDeviceEv
 		await this.#runInQueueIfEnabled(async () => {
 			// Run in the queue as a single operation
 			await this.#sendAndWaitIfRequired(CommandIds.DrawFramebuffer, encoded, true)
+
+			if (this.modelSpec.framebufferFlush) {
+				await this.#sendAndWaitIfRequired(CommandIds.RefreshDisplay, encodedDisplay, true)
+			}
 		}, false)
 	}
 
@@ -327,7 +338,13 @@ export abstract class LoupedeckDeviceBase extends EventEmitter<LoupedeckDeviceEv
 
 		const [canDrawPixel, canDrawRow] = createCanDrawPixel(x, y, this.lcdKeySize, display)
 
-		const [encoded, padding] = this.createBufferWithHeader(displayId, width, height, x + display.xPadding, y)
+		const { encoded, padding, encodedDisplay } = this.createBufferWithHeader(
+			displayId,
+			width,
+			height,
+			x + display.xPadding,
+			y
+		)
 		for (let y = 0; y < height; y++) {
 			if (!canDrawRow(y)) continue
 
@@ -346,6 +363,10 @@ export abstract class LoupedeckDeviceBase extends EventEmitter<LoupedeckDeviceEv
 		await this.#runInQueueIfEnabled(async () => {
 			// Run in the queue as a single operation
 			await this.#sendAndWaitIfRequired(CommandIds.DrawFramebuffer, encoded, true)
+
+			if (this.modelSpec.framebufferFlush) {
+				await this.#sendAndWaitIfRequired(CommandIds.RefreshDisplay, encodedDisplay, true)
+			}
 		}, false)
 	}
 
