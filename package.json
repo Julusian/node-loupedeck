@@ -11,6 +11,7 @@
     "cross-env": "^7.0.3",
     "lerna": "^8.1.2",
     "rimraf": "^5.0.5",
+    "snyk-nodejs-lockfile-parser": "^1.53.2",
     "ts-loader": "^9.5.1",
     "ts-node": "^10.9.2",
     "typescript": "~5.0.4",
@@ -32,8 +33,8 @@
     "bump": "lerna version --exact --conventional-commits --no-push -m \"chore(release): publish %s\"",
     "graduate": "run bump --conventional-graduate",
     "publish2": "run build && lerna publish from-package --pre-dist-tag next",
-    "validate:dependencies": "yarn npm audit --groups dependencies && run license-validate",
-    "license-validate": "sofie-licensecheck --allowPackages \"@loupedeck/web-demo@$(node -p \"require('./packages/web-demo/package.json').version\");caniuse-lite@1.0.30001449;jackspeak@2.2.1;path-scurry@1.10.0\"",
+    "validate:dependencies": "yarn npm audit && run license-validate",
+    "license-validate": "node ./scripts/license-check.mjs",
     "g:husky": "./node_modules/.bin/husky",
     "g:lint-staged": "./node_modules/.bin/lint-staged"
   },
