@@ -32,6 +32,6 @@
 	"dependencies": {
 		"@loupedeck/core": "1.1.2",
 		"serialport": "^10.5.0",
-		"tslib": "^2.6.2"
+		"tslib": "^2.6.3"
 	}
 }

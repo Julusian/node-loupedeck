@@ -6,16 +6,16 @@
   ],
   "devDependencies": {
     "@sofie-automation/code-standard-preset": "^2.5.2",
-    "@types/node": "^16.18.96",
+    "@types/node": "^16.18.105",
     "copy-webpack-plugin": "^12.0.2",
     "cross-env": "^7.0.3",
-    "lerna": "^8.1.2",
-    "rimraf": "^5.0.5",
-    "snyk-nodejs-lockfile-parser": "^1.53.2",
+    "lerna": "^8.1.8",
+    "rimraf": "^5.0.10",
+    "snyk-nodejs-lockfile-parser": "^1.58.7",
     "ts-loader": "^9.5.1",
     "ts-node": "^10.9.2",
     "typescript": "~5.0.4",
-    "webpack": "^5.91.0",
+    "webpack": "^5.93.0",
     "webpack-cli": "^5.1.4",
     "webpack-dev-server": "^4.15.2"
   },
@@ -46,5 +46,5 @@
       "run lint:raw --fix"
     ]
   },
-  "packageManager": "yarn@4.2.1"
+  "packageManager": "yarn@4.4.0"
 }
