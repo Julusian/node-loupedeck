@@ -30,8 +30,8 @@
 		"node": ">=14.18"
 	},
 	"dependencies": {
-		"eventemitter3": "^4.0.7",
+		"eventemitter3": "^5.0.1",
 		"p-queue": "^6.6.2",
-		"tslib": "^2.7.0"
+		"tslib": "^2.8.1"
 	}
 }
