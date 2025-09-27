@@ -14,6 +14,13 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 
 
+## [2.0.1](https://github.com/Julusian/node-loupedeck/compare/v2.0.0...v2.0.1) (2025-09-27)
+
+
+### Bug Fixes
+
+* missing publish permission ([6f3abdb](https://github.com/Julusian/node-loupedeck/commit/6f3abdb7bae74a577e2b65047678ca8bc4c30561))
+
 ## [2.0.0](https://github.com/Julusian/node-loupedeck/compare/v1.2.0...v2.0.0) (2025-09-27)
 
 
