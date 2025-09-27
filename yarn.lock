@@ -933,6 +933,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/lodash@npm:^4":
+  version: 4.17.20
+  resolution: "@types/lodash@npm:4.17.20"
+  checksum: 10c0/98cdd0faae22cbb8079a01a3bb65aa8f8c41143367486c1cbf5adc83f16c9272a2a5d2c1f541f61d0d73da543c16ee1d21cf2ef86cb93cd0cc0ac3bced6dd88f
+  languageName: node
+  linkType: hard
+
 "@types/node@npm:*, @types/node@npm:^20.19.17":
   version: 20.19.17
   resolution: "@types/node@npm:20.19.17"
@@ -3038,6 +3045,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"lodash@npm:^4.17.21":
+  version: 4.17.21
+  resolution: "lodash@npm:4.17.21"
+  checksum: 10c0/d8cbea072bb08655bb4c989da418994b073a608dffa608b09ac04b43a791b12aeae7cd7ad919aa4c925f33b48490b5cfe6c1f71d827956071dae2e7bb3a6b74c
+  languageName: node
+  linkType: hard
+
 "log-update@npm:^6.1.0":
   version: 6.1.0
   resolution: "log-update@npm:6.1.0"
@@ -3057,10 +3071,12 @@ __metadata:
   dependencies:
     "@sofie-automation/code-standard-preset": "npm:^3.1.1"
     "@tsconfig/node20": "npm:^20.1.6"
+    "@types/lodash": "npm:^4"
     "@types/node": "npm:^20.19.17"
     eslint: "npm:^9.36.0"
     husky: "npm:^9.1.7"
     lint-staged: "npm:^16.2.1"
+    lodash: "npm:^4.17.21"
     prettier: "npm:^3.6.2"
     rimraf: "npm:^6.0.1"
     snyk-nodejs-lockfile-parser: "npm:^2.2.2"

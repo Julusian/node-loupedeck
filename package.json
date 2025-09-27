@@ -7,10 +7,12 @@
   "devDependencies": {
     "@sofie-automation/code-standard-preset": "^3.1.1",
     "@tsconfig/node20": "^20.1.6",
+    "@types/lodash": "^4",
     "@types/node": "^20.19.17",
     "eslint": "^9.36.0",
     "husky": "^9.1.7",
     "lint-staged": "^16.2.1",
+    "lodash": "^4.17.21",
     "prettier": "^3.6.2",
     "rimraf": "^6.0.1",
     "snyk-nodejs-lockfile-parser": "^2.2.2",
