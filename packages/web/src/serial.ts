@@ -156,9 +156,9 @@ export class LoupedeckWebSerialConnection extends LoupedeckSerialConnection {
 
 			if (!firstRead.value) throw new Error(`No handshake response`)
 
-			const responseBuffer = firstRead.value
-			if (!responseBuffer.toString().startsWith(WS_UPGRADE_RESPONSE))
-				throw new Error(`Invalid handshake response: ${responseBuffer.toString()}`)
+			const responseBuffer = new TextDecoder().decode(firstRead.value)
+			if (!responseBuffer.startsWith(WS_UPGRADE_RESPONSE))
+				throw new Error(`Invalid handshake response: ${responseBuffer}`)
 
 			return new LoupedeckWebSerialConnection(connection, reader, writer)
 		} catch (err) {
