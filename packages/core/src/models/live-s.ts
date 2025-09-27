@@ -77,7 +77,5 @@ freezeDefinitions(modelSpec.controls)
 export class LoupedeckLiveSDevice extends LoupedeckDeviceBase {
 	constructor(connection: LoupedeckSerialConnection, options: LoupedeckDeviceOptions) {
 		super(connection, options, modelSpec)
-
-		console.log('init', JSON.stringify(modelSpec.controls, undefined, 2))
 	}
 }
