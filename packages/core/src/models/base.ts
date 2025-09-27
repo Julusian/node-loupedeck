@@ -13,7 +13,7 @@ import {
 	RGBColor,
 } from '../constants.js'
 import { LoupedeckSerialConnection } from '../serial.js'
-import { checkRGBColor, checkRGBValue, createCanDrawPixel, encodeBuffer } from '../util.js'
+import { checkRGBColor, checkRGBValue, createCanDrawPixel, encodeBuffer, uint8ArrayToDataView } from '../util.js'
 import type { LoupedeckControlDefinition, LoupedeckDevice, LoupedeckDisplayDefinition } from './interface.js'
 import { LoupedeckModelId } from '../info.js'
 import PQueue from 'p-queue'
@@ -36,7 +36,7 @@ enum CommandIds {
 }
 
 interface TransactionHandler {
-	resolve: (buffer: Buffer) => void
+	resolve: (buffer: Uint8Array) => void
 	reject: (error: Error) => void
 }
 
@@ -179,9 +179,10 @@ export abstract class LoupedeckDeviceBase extends EventEmitter<LoupedeckDeviceEv
 
 			if (doButtons) {
 				const buttons = this.controls.filter((c) => c.type === LoupedeckControlType.Button)
-				const payload = Buffer.alloc(4 * buttons.length)
+				const payload = new Uint8Array(4 * buttons.length)
+				const payloadView = uint8ArrayToDataView(payload)
 				for (let i = 0; i < buttons.length; i++) {
-					payload.writeUInt8(buttons[i].encoded, i * 4)
+					payloadView.setUint8(i * 4, buttons[i].encoded)
 				}
 				await this.#sendAndWaitIfRequired(CommandIds.SetColour, payload, true)
 			}
@@ -223,7 +224,7 @@ export abstract class LoupedeckDeviceBase extends EventEmitter<LoupedeckDeviceEv
 		height: number,
 		x: number,
 		y: number
-	): { encoded: Buffer; padding: number; encodedDisplay: Buffer } {
+	): { encoded: Uint8Array; padding: number; encodedDisplay: Uint8Array } {
 		if (!this.modelSpec.splitTopDisplays) {
 			if (displayId === LoupedeckDisplayId.Left || displayId === LoupedeckDisplayId.Wheel) {
 				// Nothing to do
@@ -239,7 +240,8 @@ export abstract class LoupedeckDeviceBase extends EventEmitter<LoupedeckDeviceEv
 		const padding = 10 // header + id
 
 		const pixelCount = width * height
-		const encoded = Buffer.alloc(pixelCount * 2 + padding)
+		const encoded = new Uint8Array(pixelCount * 2 + padding)
+		const encodedView = uint8ArrayToDataView(encoded)
 
 		let encodedDisplay = DisplayMainEncodedId
 		if (displayId === LoupedeckDisplayId.Wheel) {
@@ -260,18 +262,18 @@ export abstract class LoupedeckDeviceBase extends EventEmitter<LoupedeckDeviceEv
 			}
 		}
 
-		encodedDisplay.copy(encoded, 0)
-		encoded.writeUInt16BE(x, 2)
-		encoded.writeUInt16BE(y, 4)
-		encoded.writeUInt16BE(width, 6)
-		encoded.writeUInt16BE(height, 8)
+		encoded.set(encodedDisplay, 0)
+		encodedView.setUint16(2, x, false)
+		encodedView.setUint16(4, y, false)
+		encodedView.setUint16(6, width, false)
+		encodedView.setUint16(8, height, false)
 
 		return { encoded, padding, encodedDisplay }
 	}
 
 	public async drawBuffer(
 		displayId: LoupedeckDisplayId,
-		buffer: Buffer,
+		buffer: Uint8Array | Uint8ClampedArray,
 		format: LoupedeckBufferFormat,
 		width: number,
 		height: number,
@@ -306,7 +308,11 @@ export abstract class LoupedeckDeviceBase extends EventEmitter<LoupedeckDeviceEv
 		}, false)
 	}
 
-	public async drawKeyBuffer(index: number, buffer: Buffer, format: LoupedeckBufferFormat): Promise<void> {
+	public async drawKeyBuffer(
+		index: number,
+		buffer: Uint8Array | Uint8ClampedArray,
+		format: LoupedeckBufferFormat
+	): Promise<void> {
 		const [x, y] = this.convertKeyIndexToCoordinates(index, this.displayMain)
 
 		const size = this.lcdKeySize
@@ -345,17 +351,15 @@ export abstract class LoupedeckDeviceBase extends EventEmitter<LoupedeckDeviceEv
 			x + display.xPadding,
 			y
 		)
+		const encodedView = uint8ArrayToDataView(encoded)
+
 		for (let y = 0; y < height; y++) {
 			if (!canDrawRow(y)) continue
 
 			for (let x = 0; x < width; x++) {
 				if (canDrawPixel(x, y)) {
 					const i = y * width + x
-					if (display.endianness === 'BE') {
-						encoded.writeUint16BE(encodedValue, i * 2 + padding)
-					} else {
-						encoded.writeUint16LE(encodedValue, i * 2 + padding)
-					}
+					encodedView.setUint16(i * 2 + padding, encodedValue, display.endianness !== 'BE')
 				}
 			}
 		}
@@ -373,7 +377,9 @@ export abstract class LoupedeckDeviceBase extends EventEmitter<LoupedeckDeviceEv
 	public async getFirmwareVersion(): Promise<string> {
 		const buffer = await this.#sendAndWaitForResult(CommandIds.GetVersion, undefined)
 
-		return `${buffer.readUInt8(0)}.${buffer.readUInt8(1)}.${buffer.readUInt8(2)}`
+		const bufferView = uint8ArrayToDataView(buffer)
+
+		return `${bufferView.getUint8(0)}.${bufferView.getUint8(1)}.${bufferView.getUint8(2)}`
 	}
 
 	public async getSerialNumber(): Promise<string> {
@@ -382,13 +388,15 @@ export abstract class LoupedeckDeviceBase extends EventEmitter<LoupedeckDeviceEv
 		return buffer.toString().trim()
 	}
 
-	#onMessage(buff: Buffer): void {
+	#onMessage(buff: Uint8Array): void {
 		try {
-			const length = buff.readUint8(2)
-			if (length + 2 !== buff.length) return
-			const header = buff.readUInt8(3)
+			const bufferView = uint8ArrayToDataView(buff)
 
-			const transactionID = buff.readUInt8(4)
+			const length = bufferView.getUint8(2)
+			if (length + 2 !== buff.length) return
+			const header = bufferView.getUint8(3)
+
+			const transactionID = bufferView.getUint8(4)
 
 			if (transactionID === 0) {
 				switch (header) {
@@ -425,19 +433,21 @@ export abstract class LoupedeckDeviceBase extends EventEmitter<LoupedeckDeviceEv
 			console.error('Unhandled error in serial message handler:', e)
 		}
 	}
-	#onPress(buff: Buffer): void {
-		const controlEncoded = buff.readUint8(0)
+	#onPress(buff: Uint8Array): void {
+		const buffView = uint8ArrayToDataView(buff)
+		const controlEncoded = buffView.getUint8(0)
 		const control = this.controls.find((b) => b.encoded === controlEncoded)
 		if (control) {
-			const event = buff.readUint8(1) === 0x00 ? 'down' : 'up'
+			const event = buffView.getUint8(1) === 0x00 ? 'down' : 'up'
 			this.emit(event, { type: control.type, index: control.index })
 		}
 	}
-	#onRotate(buff: Buffer): void {
-		const controlEncoded = buff.readUInt8(0)
+	#onRotate(buff: Uint8Array): void {
+		const buffView = uint8ArrayToDataView(buff)
+		const controlEncoded = buffView.getUint8(0)
 		const control = this.controls.find((b) => b.encoded === controlEncoded)
 		if (control && control.type === LoupedeckControlType.Rotary) {
-			const delta = buff.readInt8(1)
+			const delta = buffView.getInt8(1)
 			this.emit('rotate', { type: control.type, index: control.index }, delta)
 		}
 	}
@@ -465,11 +475,12 @@ export abstract class LoupedeckDeviceBase extends EventEmitter<LoupedeckDeviceEv
 		this.emit(event, { touches: Object.values<LoupedeckTouchObject>(this.#touches), changedTouches: [touch] })
 	}
 
-	protected onTouch(event: 'touchmove' | 'touchend' | 'touchstart', buff: Buffer): void {
+	protected onTouch(event: 'touchmove' | 'touchend' | 'touchstart', buff: Uint8Array): void {
 		// Parse buffer
-		let x = buff.readUInt16BE(1)
-		let y = buff.readUInt16BE(3)
-		const id = buff.readUInt8(5)
+		const buffView = uint8ArrayToDataView(buff)
+		let x = buffView.getUint16(1, false)
+		let y = buffView.getUint16(3, false)
+		const id = buffView.getUint8(5)
 
 		const mainFullWidth = this.displayMain.width + this.displayMain.xPadding * 2
 		const leftWidth = this.displayLeftStrip?.width ?? 0
@@ -504,11 +515,12 @@ export abstract class LoupedeckDeviceBase extends EventEmitter<LoupedeckDeviceEv
 		this.#createTouch(event, x, y, id, screen, key)
 	}
 
-	protected onWheelTouch(event: 'touchmove' | 'touchend' | 'touchstart', buff: Buffer): void {
+	protected onWheelTouch(event: 'touchmove' | 'touchend' | 'touchstart', buff: Uint8Array): void {
 		// Parse buffer
-		const x = buff.readUInt16BE(1)
-		const y = buff.readUInt16BE(3)
-		const id = buff.readUInt8(5)
+		const buffView = uint8ArrayToDataView(buff)
+		const x = buffView.getUint16(1, false)
+		const y = buffView.getUint16(3, false)
+		const id = buffView.getUint8(5)
 
 		const screen: LoupedeckDisplayId = LoupedeckDisplayId.Wheel
 		const key = undefined
@@ -519,7 +531,7 @@ export abstract class LoupedeckDeviceBase extends EventEmitter<LoupedeckDeviceEv
 	public async setBrightness(value: number): Promise<void> {
 		const MAX_BRIGHTNESS = 10
 		const byte = Math.max(0, Math.min(MAX_BRIGHTNESS, Math.round(value * MAX_BRIGHTNESS)))
-		return this.#sendAndWaitIfRequired(CommandIds.SetBrightness, Buffer.from([byte]))
+		return this.#sendAndWaitIfRequired(CommandIds.SetBrightness, new Uint8Array([byte]))
 	}
 
 	public async setButtonColor(
@@ -537,7 +549,9 @@ export abstract class LoupedeckDeviceBase extends EventEmitter<LoupedeckDeviceEv
 
 		// TODO - do we need to check for duplicates?
 
-		const payload = Buffer.alloc(4 * buttons.length)
+		const payload = new Uint8Array(4 * buttons.length)
+		const payloadView = uint8ArrayToDataView(payload)
+
 		for (let i = 0; i < buttons.length; i++) {
 			const button = buttons[i]
 			const offset = i * 4
@@ -549,10 +563,10 @@ export abstract class LoupedeckDeviceBase extends EventEmitter<LoupedeckDeviceEv
 			checkRGBValue(button.green)
 			checkRGBValue(button.blue)
 
-			payload.writeUInt8(encodedId, offset + 0)
-			payload.writeUInt8(button.red, offset + 1)
-			payload.writeUInt8(button.green, offset + 2)
-			payload.writeUInt8(button.blue, offset + 3)
+			payloadView.setUint8(0 + offset, encodedId)
+			payloadView.setUint8(1 + offset, button.red)
+			payloadView.setUint8(2 + offset, button.green)
+			payloadView.setUint8(3 + offset, button.blue)
 		}
 
 		return this.#sendAndWaitIfRequired(CommandIds.SetColour, payload)
@@ -562,7 +576,7 @@ export abstract class LoupedeckDeviceBase extends EventEmitter<LoupedeckDeviceEv
 		if (!pattern) throw new Error('Invalid vibrate pattern')
 		// TODO - validate pattern better?
 
-		return this.#sendAndWaitIfRequired(CommandIds.SetVibration, Buffer.from([pattern]))
+		return this.#sendAndWaitIfRequired(CommandIds.SetVibration, new Uint8Array([pattern]))
 	}
 
 	async #runInQueueIfEnabled<T>(fn: () => Promise<T>, forceSkipQueue: boolean) {
@@ -575,14 +589,22 @@ export abstract class LoupedeckDeviceBase extends EventEmitter<LoupedeckDeviceEv
 		}
 	}
 
-	async #sendAndWaitIfRequired(commandId: number, payload: Buffer | undefined, skipQueue = false): Promise<void> {
+	async #sendAndWaitIfRequired(
+		commandId: number,
+		payload: Uint8Array | Uint8ClampedArray | undefined,
+		skipQueue = false
+	): Promise<void> {
 		return this.#runInQueueIfEnabled(async () => {
 			const transactionId = await this.#sendCommand(commandId, payload)
 
 			if (!this.options.skipWaitForAcks) await this.#waitForTransaction(transactionId)
 		}, skipQueue)
 	}
-	async #sendAndWaitForResult(commandId: number, payload: Buffer | undefined, skipQueue = false): Promise<Buffer> {
+	async #sendAndWaitForResult(
+		commandId: number,
+		payload: Uint8Array | Uint8ClampedArray | undefined,
+		skipQueue = false
+	): Promise<Uint8Array> {
 		return this.#runInQueueIfEnabled(async () => {
 			const transactionId = await this.#sendCommand(commandId, payload)
 
@@ -590,26 +612,28 @@ export abstract class LoupedeckDeviceBase extends EventEmitter<LoupedeckDeviceEv
 		}, skipQueue)
 	}
 
-	async #sendCommand(commandId: number, payload: Buffer | undefined): Promise<number> {
+	async #sendCommand(commandId: number, payload: Uint8Array | Uint8ClampedArray | undefined): Promise<number> {
 		if (!this.#connection.isReady()) throw new Error('Not connected!')
 
 		this.#nextTransactionId = (this.#nextTransactionId + 1) % 256
 		// Skip transaction ID's of zero since the device seems to ignore them
 		if (this.#nextTransactionId === 0) this.#nextTransactionId++
 
-		const packet = Buffer.alloc(3 + (payload?.length ?? 0))
-		packet.writeUInt8(packet.length >= 0xff ? 0xff : packet.length, 0) // TODO - what if it is longer?
-		packet.writeUInt8(commandId, 1)
-		packet.writeUInt8(this.#nextTransactionId, 2)
+		const packet = new Uint8Array(3 + (payload?.length ?? 0))
+		const packetView = uint8ArrayToDataView(packet)
+
+		packetView.setUint8(0, packet.length >= 0xff ? 0xff : packet.length) // TODO - what if it is longer?
+		packetView.setUint8(1, commandId)
+		packetView.setUint8(2, this.#nextTransactionId)
 		if (payload && payload.length) {
-			payload.copy(packet, 3)
+			packet.set(payload, 3)
 		}
 
 		await this.#connection.send(packet)
 
 		return this.#nextTransactionId
 	}
-	async #waitForTransaction(transactionID: number): Promise<Buffer> {
+	async #waitForTransaction(transactionID: number): Promise<Uint8Array> {
 		if (this.#pendingTransactions[transactionID]) throw new Error('Transaction handler already defined')
 		if (!this.#connection.isReady()) throw new Error('Connection is not open')
 
@@ -618,7 +642,7 @@ export abstract class LoupedeckDeviceBase extends EventEmitter<LoupedeckDeviceEv
 			reject: () => null,
 		}
 
-		const promise = new Promise<Buffer>((resolve, reject) => {
+		const promise = new Promise<Uint8Array>((resolve, reject) => {
 			handler.resolve = resolve
 			handler.reject = reject
 		})

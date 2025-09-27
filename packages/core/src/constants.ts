@@ -47,12 +47,12 @@ export enum LoupedeckDisplayId {
 	Wheel = 'wheel',
 }
 
-export const DisplayMainEncodedId = Buffer.from([0x00, 0x4d])
-export const DisplayWheelEncodedId = Buffer.from([0x00, 0x57])
+export const DisplayMainEncodedId = new Uint8Array([0x00, 0x4d])
+export const DisplayWheelEncodedId = new Uint8Array([0x00, 0x57])
 
-export const DisplayLeftEncodedId = Buffer.from([0x00, 0x4c])
-export const DisplayCenterEncodedId = Buffer.from([0x00, 0x41])
-export const DisplayRightEncodedId = Buffer.from([0x00, 0x52])
+export const DisplayLeftEncodedId = new Uint8Array([0x00, 0x4c])
+export const DisplayCenterEncodedId = new Uint8Array([0x00, 0x41])
+export const DisplayRightEncodedId = new Uint8Array([0x00, 0x52])
 
 export interface RGBColor {
 	red: number

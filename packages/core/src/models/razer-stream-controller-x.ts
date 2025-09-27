@@ -39,7 +39,7 @@ export class RazerStreamControllerDeviceX extends LoupedeckDeviceBase {
 		super(connection, options, modelSpec)
 	}
 
-	protected override onTouch(_event: 'touchmove' | 'touchend' | 'touchstart', _buff: Buffer): void {
+	protected override onTouch(_event: 'touchmove' | 'touchend' | 'touchstart', _buff: Uint8Array): void {
 		// Not supported by device
 	}
 }

@@ -5,7 +5,7 @@ import {
 	LoupedeckTouchEventData,
 	RGBColor,
 } from '@loupedeck/web'
-import { Demo } from './demo'
+import { Demo } from './demo.js'
 
 function getRandomIntInclusive(min: number, max: number) {
 	min = Math.ceil(min)

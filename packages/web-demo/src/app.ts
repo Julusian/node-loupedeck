@@ -5,10 +5,10 @@ import {
 	LoupedeckControlInfo,
 	LoupedeckTouchEventData,
 } from '@loupedeck/web'
-import { Demo } from './demo/demo'
+import type { Demo } from './demo/demo.js'
 // import { DomImageDemo } from './demo/dom'
-import { FillWhenPressedDemo } from './demo/fill-when-pressed'
-import { RapidFillDemo } from './demo/rapid-fill'
+import { FillWhenPressedDemo } from './demo/fill-when-pressed.js'
+import { RapidFillDemo } from './demo/rapid-fill.js'
 // import { ChaseDemo } from './demo/chase'
 
 declare const LIB_VERSION: any

@@ -88,7 +88,7 @@ export interface LoupedeckDevice extends EventEmitter<LoupedeckDeviceEvents> {
 	 */
 	drawBuffer(
 		displayId: LoupedeckDisplayId,
-		buffer: Buffer,
+		buffer: Uint8Array | Uint8ClampedArray,
 		format: LoupedeckBufferFormat,
 		width: number,
 		height: number,
@@ -102,7 +102,7 @@ export interface LoupedeckDevice extends EventEmitter<LoupedeckDeviceEvents> {
 	 * @param buffer The buffer to draw
 	 * @param format The format of the source buffer
 	 */
-	drawKeyBuffer(index: number, buffer: Buffer, format: LoupedeckBufferFormat): Promise<void>
+	drawKeyBuffer(index: number, buffer: Uint8Array | Uint8ClampedArray, format: LoupedeckBufferFormat): Promise<void>
 
 	/**
 	 * Draw a solid colour to a display

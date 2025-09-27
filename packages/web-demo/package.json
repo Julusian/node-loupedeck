@@ -26,7 +26,6 @@
   },
   "dependencies": {
     "@loupedeck/web": "1.2.0",
-    "buffer": "^6.0.3",
     "html-to-image": "^1.11.13"
   }
 }

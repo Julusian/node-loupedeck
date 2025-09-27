@@ -7,7 +7,7 @@ import {
 	LoupedeckTouchEventData,
 	RGBColor,
 } from '@loupedeck/web'
-import { Demo } from './demo'
+import { Demo } from './demo.js'
 
 function stringifyInfo(info: LoupedeckControlInfo): string {
 	return `${info.type}-${info.index}`
@@ -16,8 +16,11 @@ function stringifyInfo(info: LoupedeckControlInfo): string {
 const colorRed: RGBColor = { red: 255, green: 0, blue: 0 }
 const colorBlack: RGBColor = { red: 0, green: 0, blue: 0 }
 
-const bufferRed = Buffer.alloc(80 * 80 * 3, Buffer.from([255, 0, 0]))
-const bufferBlack = Buffer.alloc(80 * 80 * 3)
+const bufferBlack = new Uint8Array(80 * 80 * 3)
+const bufferRed = new Uint8Array(80 * 80 * 3)
+for (let i = 0; i < 80 * 80; i++) {
+	bufferRed.set([255, 0, 0], i * 3)
+}
 
 export class FillWhenPressedDemo implements Demo {
 	private pressed: string[] = []

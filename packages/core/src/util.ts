@@ -39,8 +39,8 @@ export function createCanDrawPixel(
 }
 
 export function encodeBuffer(
-	input: Buffer,
-	output: Buffer,
+	input: Uint8Array | Uint8ClampedArray,
+	output: Uint8Array,
 	format: LoupedeckBufferFormat,
 	outputPadding: number,
 	width: number,
@@ -55,6 +55,9 @@ export function encodeBuffer(
 	if (output.length !== pixelCount * 2 + outputPadding)
 		throw new Error(`Incorrect buffer length ${output.length} expected ${pixelCount * 2 + outputPadding}`)
 
+	const inputView = uint8ArrayToDataView(input)
+	const outputView = uint8ArrayToDataView(output)
+
 	switch (format) {
 		case LoupedeckBufferFormat.RGB:
 			for (let y = 0; y < height; y++) {
@@ -64,14 +67,10 @@ export function encodeBuffer(
 					if (!canDrawPixel(x, y)) continue
 
 					const i = y * width + x
-					const r = input.readUInt8(i * 3 + 0) >> 3
-					const g = input.readUInt8(i * 3 + 1) >> 2
-					const b = input.readUInt8(i * 3 + 2) >> 3
-					if (endianness === 'BE') {
-						output.writeUint16BE((r << 11) + (g << 5) + b, outputPadding + i * 2)
-					} else {
-						output.writeUint16LE((r << 11) + (g << 5) + b, outputPadding + i * 2)
-					}
+					const r = inputView.getUint8(i * 3 + 0) >> 3
+					const g = inputView.getUint8(i * 3 + 1) >> 2
+					const b = inputView.getUint8(i * 3 + 2) >> 3
+					outputView.setUint16(outputPadding + i * 2, (r << 11) + (g << 5) + b, endianness !== 'BE')
 				}
 			}
 			break
@@ -90,4 +89,33 @@ export function checkRGBColor(color: RGBColor): void {
 	checkRGBValue(color.red)
 	checkRGBValue(color.green)
 	checkRGBValue(color.blue)
+}
+
+export function uint8ArrayToDataView(buffer: Uint8Array | Uint8ClampedArray): DataView {
+	return new DataView(buffer.buffer, buffer.byteOffset, buffer.byteLength)
+}
+
+export function createSerialPacketHeaderPacket(data: Uint8Array): Uint8Array {
+	// Large messages
+	if (data.length > 0xff) {
+		const prep = new Uint8Array(14)
+
+		const prepView = uint8ArrayToDataView(prep)
+		prepView.setUint8(0, 0x82)
+		prepView.setUint8(1, 0xff)
+		prepView.setUint32(6, data.length, false)
+
+		return prep
+	}
+	// Small messages
+	else {
+		// Prepend each message with a send indicating the length to come
+		const prep = new Uint8Array(6)
+
+		const prepView = uint8ArrayToDataView(prep)
+		prepView.setUint8(0, 0x82)
+		prepView.setUint8(1, 0x80 + data.length) // TODO - is this correct, or should it switch to large mode sooner?
+
+		return prep
+	}
 }

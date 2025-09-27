@@ -3,7 +3,7 @@ import { EventEmitter } from 'eventemitter3'
 export type LoupedeckSerialConnectionEvents = {
 	disconnect: []
 	error: [err: Error]
-	message: [msg: Buffer]
+	message: [msg: Uint8Array]
 }
 
 export abstract class LoupedeckSerialConnection extends EventEmitter<LoupedeckSerialConnectionEvents> {
@@ -11,5 +11,5 @@ export abstract class LoupedeckSerialConnection extends EventEmitter<LoupedeckSe
 
 	public abstract isReady(): boolean
 
-	public abstract send(buff: Buffer): Promise<void>
+	public abstract send(buff: Uint8Array): Promise<void>
 }

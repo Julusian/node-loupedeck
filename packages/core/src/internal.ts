@@ -1,6 +1,7 @@
 export { DEVICE_MODELS } from './models/list.js'
+export { uint8ArrayToDataView, createSerialPacketHeaderPacket } from './util.js'
 
-export const WS_UPGRADE_HEADER = Buffer.from(`GET /index.html
+export const WS_UPGRADE_HEADER: Uint8Array = new TextEncoder().encode(`GET /index.html
 HTTP/1.1
 Connection: Upgrade
 Upgrade: websocket

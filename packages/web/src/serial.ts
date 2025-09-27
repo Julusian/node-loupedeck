@@ -1,5 +1,10 @@
 import { LoupedeckSerialConnection } from '@loupedeck/core'
-import { WS_UPGRADE_RESPONSE, WS_UPGRADE_HEADER } from '@loupedeck/core/dist/internal.js'
+import {
+	WS_UPGRADE_RESPONSE,
+	WS_UPGRADE_HEADER,
+	createSerialPacketHeaderPacket,
+	uint8ArrayToDataView,
+} from '@loupedeck/core/dist/internal.js'
 
 export class LoupedeckWebSerialConnection extends LoupedeckSerialConnection {
 	private connection: SerialPort | undefined
@@ -54,7 +59,7 @@ export class LoupedeckWebSerialConnection extends LoupedeckSerialConnection {
 				while (true) {
 					const { value, done } = await reader.read()
 					if (value) {
-						const chunks = parser.transform(Buffer.from(value))
+						const chunks = parser.transform(value)
 						for (const chunk of chunks) {
 							this.emit('message', chunk)
 						}
@@ -152,7 +157,7 @@ export class LoupedeckWebSerialConnection extends LoupedeckSerialConnection {
 
 			if (!firstRead.value) throw new Error(`No handshake response`)
 
-			const responseBuffer = Buffer.from(firstRead.value)
+			const responseBuffer = firstRead.value
 			if (!responseBuffer.toString().startsWith(WS_UPGRADE_RESPONSE))
 				throw new Error(`Invalid handshake response: ${responseBuffer.toString()}`)
 
@@ -182,25 +187,11 @@ export class LoupedeckWebSerialConnection extends LoupedeckSerialConnection {
 		return this.connection !== undefined && this.isOpen
 	}
 
-	public override async send(buff: Buffer, raw = false): Promise<void> {
+	public override async send(buff: Uint8Array, raw = false): Promise<void> {
 		if (!this.connection || !this.writer) throw new Error('Not connected!')
 
 		if (!raw) {
-			let prep
-			// Large messages
-			if (buff.length > 0xff) {
-				prep = Buffer.alloc(14)
-				prep.writeUint8(0x82, 0)
-				prep.writeUint8(0xff, 1)
-				prep.writeUInt32BE(buff.length, 6)
-			}
-			// Small messages
-			else {
-				// Prepend each message with a send indicating the length to come
-				prep = Buffer.alloc(6)
-				prep.writeUint8(0x82, 0)
-				prep.writeUint8(0x80 + buff.length, 1) // TODO - is this correct, or should it switch to large mode sooner?
-			}
+			const prep = createSerialPacketHeaderPacket(buff)
 			await this.writer.write(prep)
 		}
 		await this.writer.write(buff)
@@ -210,28 +201,26 @@ export class LoupedeckWebSerialConnection extends LoupedeckSerialConnection {
 interface Opts {
 	delimiter: number
 	packetOverhead: number
-	lengthBytes: number
 	lengthOffset: number
 	maxLen: number
 }
 
 class PacketLengthParser {
-	buffer = Buffer.alloc(0)
+	buffer = new Uint8Array(0)
 	start = true
 	opts: Opts
 
 	constructor(options: Partial<Opts> = {}) {
-		const { delimiter = 0xaa, packetOverhead = 2, lengthBytes = 1, lengthOffset = 1, maxLen = 0xff } = options
+		const { delimiter = 0xaa, packetOverhead = 2, lengthOffset = 1, maxLen = 0xff } = options
 		this.opts = {
 			delimiter,
 			packetOverhead,
-			lengthBytes,
 			lengthOffset,
 			maxLen,
 		}
 	}
-	transform(chunk: Buffer): Buffer[] {
-		const chunks: Buffer[] = []
+	transform(chunk: Uint8Array): Uint8Array[] {
+		const chunks: Uint8Array[] = []
 
 		// TODO - this is really really inefficient...
 
@@ -241,12 +230,18 @@ class PacketLengthParser {
 				this.start = true
 			}
 			if (true === this.start) {
-				this.buffer = Buffer.concat([this.buffer, Buffer.from([byte])])
-				if (this.buffer.length >= this.opts.lengthOffset + this.opts.lengthBytes) {
-					const len = this.buffer.readUIntLE(this.opts.lengthOffset, this.opts.lengthBytes)
+				const oldBuffer = this.buffer
+				this.buffer = new Uint8Array(oldBuffer.length + 1)
+				const bufferView = uint8ArrayToDataView(this.buffer)
+
+				this.buffer.set(oldBuffer, 0)
+				this.buffer[this.buffer.length - 1] = byte
+
+				if (this.buffer.length >= this.opts.lengthOffset + 1) {
+					const len = bufferView.getUint8(this.opts.lengthOffset)
 					if (this.buffer.length == len + this.opts.packetOverhead || len > this.opts.maxLen) {
 						chunks.push(this.buffer)
-						this.buffer = Buffer.alloc(0)
+						this.buffer = new Uint8Array(0)
 						this.start = false
 					}
 				}
