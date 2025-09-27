@@ -20,7 +20,7 @@
     "build": "cross-env NODE_ENV=production webpack --progress"
   },
   "engines": {
-    "node": ">=14.18"
+    "node": ">=20.18"
   },
   "dependencies": {
     "@loupedeck/web": "1.2.0",

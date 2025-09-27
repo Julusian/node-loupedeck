@@ -27,7 +27,7 @@
 		"dist"
 	],
 	"engines": {
-		"node": ">=14.18"
+		"node": ">=20.18"
 	},
 	"dependencies": {
 		"@loupedeck/core": "1.2.0",

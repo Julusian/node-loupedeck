@@ -27,7 +27,7 @@
 		"dist"
 	],
 	"engines": {
-		"node": ">=14.18"
+		"node": ">=20.18"
 	},
 	"dependencies": {
 		"eventemitter3": "^5.0.1",
