@@ -18,8 +18,8 @@
     "email": "git@julusian.co.uk"
   },
   "scripts": {
-    "start": "webpack serve --mode development --color",
-    "build": "NODE_ENV=production webpack --progress"
+    "start": "vite",
+    "build": "vite build"
   },
   "engines": {
     "node": ">=20.18"
@@ -27,5 +27,8 @@
   "dependencies": {
     "@loupedeck/web": "1.2.0",
     "html-to-image": "^1.11.13"
+  },
+  "devDependencies": {
+    "vite": "^7.1.7"
   }
 }
