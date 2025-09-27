@@ -2,7 +2,7 @@ import type { LoupedeckSerialConnection } from '../serial.js'
 import { LoupedeckDeviceBase, type LoupedeckDeviceOptions, type ModelSpec } from './base.js'
 import { LoupedeckModelId } from '../info.js'
 import type { LoupedeckDisplayDefinition } from './interface.js'
-import { freezeDefinitions } from '../controlsGenerator.js'
+import { freezeDefinitions, generateButtonGrid } from '../controlsGenerator.js'
 
 const DisplayCenter: LoupedeckDisplayDefinition = {
 	width: 480 - 18 * 2,
@@ -48,7 +48,6 @@ modelSpec.controls.push(
 		column: 0,
 		encodedIndex: 0x07,
 		feedbackType: 'rgb',
-		isTouch: false,
 	}
 )
 
@@ -61,14 +60,24 @@ for (let i = 0; i < 3; i++) {
 		column: 6,
 		encodedIndex: 0x08 + i,
 		feedbackType: 'rgb',
-		isTouch: false,
 	})
 }
+
+modelSpec.controls.push(
+	...generateButtonGrid(modelSpec, {
+		rows: 3,
+		columns: 5,
+		colOffset: 1,
+		startEncodedIndex: null,
+	})
+)
 
 freezeDefinitions(modelSpec.controls)
 
 export class LoupedeckLiveSDevice extends LoupedeckDeviceBase {
 	constructor(connection: LoupedeckSerialConnection, options: LoupedeckDeviceOptions) {
 		super(connection, options, modelSpec)
+
+		console.log('init', JSON.stringify(modelSpec.controls, undefined, 2))
 	}
 }

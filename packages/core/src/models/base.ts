@@ -1,5 +1,5 @@
 import { EventEmitter } from 'eventemitter3'
-import type { LoupedeckDeviceEvents, LoupedeckTouchLocation, LoupedeckTouchObject } from '../events.js'
+import type { LoupedeckDeviceEvents, LoupedeckTouchObject } from '../events.js'
 import {
 	DisplayCenterEncodedId,
 	DisplayLeftEncodedId,
@@ -299,10 +299,17 @@ export abstract class LoupedeckDeviceBase extends EventEmitter<LoupedeckDeviceEv
 			(c): c is LoupedeckButtonControlDefinition => c.type === 'button' && c.id === id
 		)
 		if (!control) throw new Error('Invalid button id')
-		if (control.feedbackType !== 'lcd') throw new Error('Control is not an LCD button')
+		if (control.feedbackType !== 'lcd' || !control.lcdPosition) throw new Error('Control is not an LCD button')
 
-		const size = this.lcdKeySize
-		return this.drawBuffer(LoupedeckDisplayId.Center, buffer, format, size, size, control.column, control.row)
+		return this.drawBuffer(
+			control.lcdPosition.display,
+			buffer,
+			format,
+			control.lcdPosition.size,
+			control.lcdPosition.size,
+			control.lcdPosition.x,
+			control.lcdPosition.y
+		)
 	}
 
 	public async drawSolidColour(
@@ -449,10 +456,10 @@ export abstract class LoupedeckDeviceBase extends EventEmitter<LoupedeckDeviceEv
 		y: number,
 		id: number,
 		screen: LoupedeckDisplayId,
-		key: LoupedeckTouchLocation | undefined
+		control: LoupedeckControlDefinition | undefined
 	): void {
 		// Create touch
-		const touch: LoupedeckTouchObject = { x, y, id, target: { screen, key: key } }
+		const touch: LoupedeckTouchObject = { x, y, id, target: { screen, control: control } }
 
 		// End touch, remove from local cache
 		if (event === 'touchend') {
@@ -490,20 +497,17 @@ export abstract class LoupedeckDeviceBase extends EventEmitter<LoupedeckDeviceEv
 			y -= this.displayMain.yPadding
 		}
 
-		let key: LoupedeckTouchLocation | undefined
-		if (screen === LoupedeckDisplayId.Center) {
-			// Pad by half the gap, to make the maths simpler
-			const xPadded = x + this.displayMain.columnGap / 2
-			const yPadded = y + this.displayMain.rowGap / 2
+		const control = this.modelSpec.controls.find((c) => {
+			if (c.type !== 'button' || c.feedbackType !== 'lcd' || !c.lcdPosition) return false
 
-			// Find the column, including the gap as evenly distributed
-			key = {
-				row: Math.floor(yPadded / (this.lcdKeySize + this.displayMain.rowGap)),
-				column: Math.floor(xPadded / (this.lcdKeySize + this.displayMain.columnGap)),
-			}
-		}
+			// Bounds check
+			if (x < c.lcdPosition.x || x >= c.lcdPosition.x + c.lcdPosition.size) return false
+			if (y < c.lcdPosition.y || y >= c.lcdPosition.y + c.lcdPosition.size) return false
 
-		this.#createTouch(event, x, y, id, screen, key)
+			return true
+		})
+
+		this.#createTouch(event, x, y, id, screen, control)
 	}
 
 	protected onWheelTouch(event: 'touchmove' | 'touchend' | 'touchstart', buff: Uint8Array): void {

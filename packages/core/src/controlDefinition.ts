@@ -1,8 +1,17 @@
+import type { LoupedeckDisplayId } from './constants.js'
+
 export interface LoupedeckControlDefinitionBase {
 	type: 'button' | 'encoder' | 'wheel'
 
 	row: number
 	column: number
+}
+
+export interface LoupedeckButtonControlLcdPosition {
+	display: LoupedeckDisplayId
+	x: number
+	y: number
+	size: number
 }
 
 export interface LoupedeckButtonControlDefinition extends LoupedeckControlDefinitionBase {
@@ -14,9 +23,10 @@ export interface LoupedeckButtonControlDefinition extends LoupedeckControlDefini
 	feedbackType: 'lcd' | 'rgb'
 
 	/**
-	 * Whether this button provides touch events instead of simple up/down
+	 * The LCD position of this button, if it has one
+	 * This must be set if the button is of feedbackType 'lcd'
 	 */
-	isTouch: boolean
+	lcdPosition?: LoupedeckButtonControlLcdPosition
 }
 
 export interface LoupedeckEncoderControlDefinition extends LoupedeckControlDefinitionBase {

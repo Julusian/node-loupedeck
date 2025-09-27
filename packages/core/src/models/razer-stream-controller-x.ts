@@ -26,7 +26,7 @@ const modelSpec: ModelSpec = {
 }
 
 modelSpec.controls.push(
-	...generateButtonGrid({
+	...generateButtonGrid(modelSpec, {
 		rows: 3,
 		columns: 5,
 		colOffset: 0,

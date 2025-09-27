@@ -60,7 +60,7 @@ LoupedeckCtV2ModelSpec.controls.push(
 	...generateButtonsRow(0x07),
 	...generateTopScreenEncoders(0x01),
 
-	...generateButtonGrid({
+	...generateButtonGrid(LoupedeckCtV2ModelSpec, {
 		rows: 3,
 		columns: 4,
 		colOffset: 2,
@@ -74,7 +74,6 @@ LoupedeckCtV2ModelSpec.controls.push(
 		column: 0,
 		encodedIndex: 0x08,
 		feedbackType: 'rgb',
-		isTouch: false,
 	},
 	{
 		type: 'button',
@@ -83,7 +82,6 @@ LoupedeckCtV2ModelSpec.controls.push(
 		column: 0,
 		encodedIndex: 0x09,
 		feedbackType: 'rgb',
-		isTouch: false,
 	},
 	{
 		type: 'button',
@@ -92,7 +90,6 @@ LoupedeckCtV2ModelSpec.controls.push(
 		column: 0,
 		encodedIndex: 0x0a,
 		feedbackType: 'rgb',
-		isTouch: false,
 	},
 	{
 		type: 'button',
@@ -101,7 +98,6 @@ LoupedeckCtV2ModelSpec.controls.push(
 		column: 1,
 		encodedIndex: 0x0b,
 		feedbackType: 'rgb',
-		isTouch: false,
 	},
 	{
 		type: 'button',
@@ -110,7 +106,6 @@ LoupedeckCtV2ModelSpec.controls.push(
 		column: 1,
 		encodedIndex: 0x0c,
 		feedbackType: 'rgb',
-		isTouch: false,
 	},
 	{
 		type: 'button',
@@ -119,7 +114,6 @@ LoupedeckCtV2ModelSpec.controls.push(
 		column: 1,
 		encodedIndex: 0x0d,
 		feedbackType: 'rgb',
-		isTouch: false,
 	},
 	{
 		type: 'button',
@@ -128,7 +122,6 @@ LoupedeckCtV2ModelSpec.controls.push(
 		column: 6,
 		encodedIndex: 0x0e,
 		feedbackType: 'rgb',
-		isTouch: false,
 	},
 	{
 		type: 'button',
@@ -137,7 +130,6 @@ LoupedeckCtV2ModelSpec.controls.push(
 		column: 6,
 		encodedIndex: 0x0f,
 		feedbackType: 'rgb',
-		isTouch: false,
 	},
 	{
 		type: 'button',
@@ -146,7 +138,6 @@ LoupedeckCtV2ModelSpec.controls.push(
 		column: 6,
 		encodedIndex: 0x10,
 		feedbackType: 'rgb',
-		isTouch: false,
 	},
 	{
 		type: 'button',
@@ -155,7 +146,6 @@ LoupedeckCtV2ModelSpec.controls.push(
 		column: 7,
 		encodedIndex: 0x11,
 		feedbackType: 'rgb',
-		isTouch: false,
 	},
 	{
 		type: 'button',
@@ -164,7 +154,6 @@ LoupedeckCtV2ModelSpec.controls.push(
 		column: 7,
 		encodedIndex: 0x12,
 		feedbackType: 'rgb',
-		isTouch: false,
 	},
 	{
 		type: 'button',
@@ -173,7 +162,6 @@ LoupedeckCtV2ModelSpec.controls.push(
 		column: 7,
 		encodedIndex: 0x13,
 		feedbackType: 'rgb',
-		isTouch: false,
 	},
 
 	{

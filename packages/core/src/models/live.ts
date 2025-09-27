@@ -50,7 +50,7 @@ modelSpec.controls.push(
 	...generateButtonsRow(0x07),
 	...generateTopScreenEncoders(0x01),
 
-	...generateButtonGrid({
+	...generateButtonGrid(modelSpec, {
 		rows: 3,
 		columns: 4,
 		colOffset: 2,

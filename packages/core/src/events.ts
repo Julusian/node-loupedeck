@@ -11,11 +11,6 @@ export type LoupedeckDeviceEvents = {
 	touchend: [data: LoupedeckTouchEventData]
 }
 
-export interface LoupedeckTouchLocation {
-	row: number
-	column: number
-}
-
 export interface LoupedeckTouchObject {
 	/** Unique touch identifier */
 	id: number
@@ -28,7 +23,7 @@ export interface LoupedeckTouchObject {
 		/** Identifier of screen this touch was detected on */
 		screen: LoupedeckDisplayId
 		/** Location of key touched, if on `center` screen */
-		key: LoupedeckTouchLocation | undefined
+		control: LoupedeckControlDefinition | undefined
 	}
 }
 export interface LoupedeckTouchEventData {

@@ -68,13 +68,13 @@ export class FillWhenPressedDemo implements Demo {
 		let rightPercent = 0
 
 		for (const touch of event.touches) {
-			if (touch.target.screen === LoupedeckDisplayId.Center && touch.target.key !== undefined) {
-				newIds.add(touch.target.key)
+			if (touch.target.screen === LoupedeckDisplayId.Center && touch.target.control !== undefined) {
+				newIds.add(touch.target.control)
 
-				if (!this.touchBoxes.has(touch.target.key)) {
-					this.touchBoxes.add(touch.target.key)
+				if (!this.touchBoxes.has(touch.target.control)) {
+					this.touchBoxes.add(touch.target.control)
 
-					ps.push(device.drawKeyBuffer(touch.target.key, bufferRed, LoupedeckBufferFormat.RGB))
+					ps.push(device.drawKeyBuffer(touch.target.control, bufferRed, LoupedeckBufferFormat.RGB))
 				}
 			} else if (touch.target.screen === LoupedeckDisplayId.Left && device.displayLeftStrip) {
 				const percent = touch.y / device.displayLeftStrip.height

@@ -1,4 +1,6 @@
+import { LoupedeckDisplayId } from './constants.js'
 import type { LoupedeckControlDefinition } from './controlDefinition.js'
+import type { ModelSpec } from './models/base.js'
 
 export function freezeDefinitions(controls: LoupedeckControlDefinition[]): Readonly<LoupedeckControlDefinition[]> {
 	return Object.freeze(controls.map((control) => Object.freeze(control)))
@@ -15,7 +17,6 @@ export function generateButtonsRow(encodedIndex: number): LoupedeckControlDefini
 			column: i,
 			encodedIndex: encodedIndex + i,
 			feedbackType: 'rgb',
-			isTouch: false,
 		})
 	}
 
@@ -54,7 +55,7 @@ interface ButtonGridOptions {
 	startEncodedIndex: number | null
 }
 
-export function generateButtonGrid(options: ButtonGridOptions): LoupedeckControlDefinition[] {
+export function generateButtonGrid(model: ModelSpec, options: ButtonGridOptions): LoupedeckControlDefinition[] {
 	const controls: LoupedeckControlDefinition[] = []
 
 	for (let y = 0; y < options.rows; y++) {
@@ -70,7 +71,12 @@ export function generateButtonGrid(options: ButtonGridOptions): LoupedeckControl
 				column,
 				encodedIndex: options.startEncodedIndex !== null ? options.startEncodedIndex + index : 0,
 				feedbackType: 'lcd',
-				isTouch: options.startEncodedIndex === null,
+				lcdPosition: {
+					display: LoupedeckDisplayId.Center,
+					size: model.lcdKeySize,
+					x: x * (model.lcdKeySize + model.displayMain.columnGap),
+					y: y * (model.lcdKeySize + model.displayMain.rowGap),
+				},
 			})
 		}
 	}
