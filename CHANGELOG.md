@@ -14,6 +14,21 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 
 
+## [2.0.0](https://github.com/Julusian/node-loupedeck/compare/v1.2.0...v2.0.0) (2025-09-27)
+
+
+### ⚠ BREAKING CHANGES
+
+* remove need for buffer polyfill
+* convert to esm
+* require node 20
+
+### Features
+
+* convert to esm ([01fb652](https://github.com/Julusian/node-loupedeck/commit/01fb65204bbd9577ef0709a75ea9f155211cc028))
+* remove need for buffer polyfill ([d2eb409](https://github.com/Julusian/node-loupedeck/commit/d2eb4094dbb0184b318697834cccd0f5dea3d5a7))
+* require node 20 ([cb0ce9a](https://github.com/Julusian/node-loupedeck/commit/cb0ce9a1289dbb9fbd19673b72c51fb2ec927cfb))
+
 ## [1.1.2](https://github.com/Julusian/node-loupedeck/compare/v1.1.1...v1.1.2) (2024-05-02)
 
 
