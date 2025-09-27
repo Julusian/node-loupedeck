@@ -2,6 +2,7 @@
   "name": "@loupedeck/web-demo",
   "version": "1.2.0",
   "private": true,
+  "type": "module",
   "license": "MIT",
   "homepage": "https://github.com/julusian/node-loupedeck#readme",
   "repository": {
@@ -18,7 +19,7 @@
   },
   "scripts": {
     "start": "webpack serve --mode development --color",
-    "build": "cross-env NODE_ENV=production webpack --progress"
+    "build": "NODE_ENV=production webpack --progress"
   },
   "engines": {
     "node": ">=20.18"

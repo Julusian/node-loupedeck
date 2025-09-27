@@ -1,6 +1,6 @@
 import { SerialPort, PacketLengthParser } from 'serialport'
 import { LoupedeckSerialConnection } from '@loupedeck/core'
-import { WS_UPGRADE_RESPONSE, WS_UPGRADE_HEADER } from '@loupedeck/core/dist/internal'
+import { WS_UPGRADE_RESPONSE, WS_UPGRADE_HEADER } from '@loupedeck/core/dist/internal.js'
 
 export class LoupedeckNodeSerialConnection extends LoupedeckSerialConnection {
 	private connection: SerialPort | undefined

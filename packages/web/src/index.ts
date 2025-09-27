@@ -1,6 +1,6 @@
 import { LoupedeckDevice, LoupedeckDeviceOptions } from '@loupedeck/core'
-import { DEVICE_MODELS } from '@loupedeck/core/dist/internal'
-import { LoupedeckWebSerialConnection } from './serial'
+import { DEVICE_MODELS } from '@loupedeck/core/dist/internal.js'
+import { LoupedeckWebSerialConnection } from './serial.js'
 export * from '@loupedeck/core'
 
 const serialFilters: SerialPortFilter[] = DEVICE_MODELS.map((model) => ({

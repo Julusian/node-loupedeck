@@ -3,6 +3,7 @@
 	"version": "1.2.0",
 	"main": "dist/index.js",
 	"typings": "dist/index.d.ts",
+  "type": "module",
 	"license": "MIT",
 	"homepage": "https://github.com/julusian/node-loupedeck#readme",
 	"repository": {

@@ -1,5 +1,6 @@
 {
-	"extends": "@sofie-automation/code-standard-preset/ts/tsconfig.bin",
+	"extends": "../../tsconfig.base.json",
+	"include": ["src/**/*.ts"],
 	"exclude": ["node_modules/**", "src/**/*spec.ts", "src/**/__tests__/*", "src/**/__mocks__/*", "dist/**"],
 	"compilerOptions": {
 		"outDir": "./dist",
@@ -8,7 +9,7 @@
 			"*": ["./node_modules/*"],
 			"@loupedeck/web-demo": ["./src/index.ts"]
 		},
-		"lib": ["es6", "dom"],
+		"lib": ["ES2023", "dom"],
 		"types": ["w3c-web-serial"],
 		"importHelpers": false
 	}

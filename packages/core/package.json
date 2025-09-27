@@ -3,6 +3,7 @@
 	"version": "1.2.0",
 	"main": "dist/index.js",
 	"typings": "dist/index.d.ts",
+	"type": "module",
 	"license": "MIT",
 	"homepage": "https://github.com/julusian/node-loupedeck#readme",
 	"repository": {
@@ -32,7 +33,7 @@
 	},
 	"dependencies": {
 		"eventemitter3": "^5.0.1",
-		"p-queue": "^6.6.2",
+		"p-queue": "^8.1.1",
 		"tslib": "^2.8.1"
 	}
 }

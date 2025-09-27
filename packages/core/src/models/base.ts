@@ -1,5 +1,5 @@
 import { EventEmitter } from 'eventemitter3'
-import { LoupedeckDeviceEvents, LoupedeckTouchObject } from '../events'
+import type { LoupedeckDeviceEvents, LoupedeckTouchObject } from '../events.js'
 import {
 	DisplayCenterEncodedId,
 	DisplayLeftEncodedId,
@@ -11,11 +11,11 @@ import {
 	LoupedeckDisplayId,
 	LoupedeckVibratePattern,
 	RGBColor,
-} from '../constants'
-import { LoupedeckSerialConnection } from '../serial'
-import { checkRGBColor, checkRGBValue, createCanDrawPixel, encodeBuffer } from '../util'
-import { LoupedeckControlDefinition, LoupedeckDevice, LoupedeckDisplayDefinition } from './interface'
-import { LoupedeckModelId } from '../info'
+} from '../constants.js'
+import { LoupedeckSerialConnection } from '../serial.js'
+import { checkRGBColor, checkRGBValue, createCanDrawPixel, encodeBuffer } from '../util.js'
+import type { LoupedeckControlDefinition, LoupedeckDevice, LoupedeckDisplayDefinition } from './interface.js'
+import { LoupedeckModelId } from '../info.js'
 import PQueue from 'p-queue'
 
 enum CommandIds {
@@ -567,7 +567,9 @@ export abstract class LoupedeckDeviceBase extends EventEmitter<LoupedeckDeviceEv
 
 	async #runInQueueIfEnabled<T>(fn: () => Promise<T>, forceSkipQueue: boolean) {
 		if (this.#sendQueue && !forceSkipQueue) {
-			return this.#sendQueue.add(fn)
+			return this.#sendQueue.add(fn, {
+				throwOnTimeout: true,
+			})
 		} else {
 			return fn()
 		}

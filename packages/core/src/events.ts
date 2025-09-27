@@ -1,4 +1,4 @@
-import { LoupedeckControlType, LoupedeckDisplayId } from './constants'
+import type { LoupedeckControlType, LoupedeckDisplayId } from './constants.js'
 
 export type LoupedeckDeviceEvents = {
 	error: [error: Error]

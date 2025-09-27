@@ -1,13 +1,13 @@
-import { EventEmitter } from 'eventemitter3'
-import { LoupedeckDeviceEvents } from '../events'
-import {
+import type { EventEmitter } from 'eventemitter3'
+import type { LoupedeckDeviceEvents } from '../events.js'
+import type {
 	LoupedeckBufferFormat,
 	LoupedeckControlType,
 	LoupedeckDisplayId,
 	LoupedeckVibratePattern,
 	RGBColor,
-} from '../constants'
-import { LoupedeckModelId } from '..'
+} from '../constants.js'
+import type { LoupedeckModelId } from '../info.js'
 
 export interface LoupedeckControlDefinition {
 	type: LoupedeckControlType

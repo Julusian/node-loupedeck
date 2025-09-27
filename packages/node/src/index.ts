@@ -1,7 +1,7 @@
 import { LoupedeckDevice, LoupedeckDeviceInfo, LoupedeckDeviceOptions } from '@loupedeck/core'
-import { DEVICE_MODELS } from '@loupedeck/core/dist/internal'
+import { DEVICE_MODELS } from '@loupedeck/core/dist/internal.js'
 import { SerialPort } from 'serialport'
-import { LoupedeckNodeSerialConnection } from './serial'
+import { LoupedeckNodeSerialConnection } from './serial.js'
 export * from '@loupedeck/core'
 
 /**

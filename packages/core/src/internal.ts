@@ -1,4 +1,4 @@
-export { DEVICE_MODELS } from './models/list'
+export { DEVICE_MODELS } from './models/list.js'
 
 export const WS_UPGRADE_HEADER = Buffer.from(`GET /index.html
 HTTP/1.1

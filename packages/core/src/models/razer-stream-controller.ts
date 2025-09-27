@@ -1,8 +1,8 @@
-import { LoupedeckControlType } from '../constants'
-import { LoupedeckSerialConnection } from '../serial'
-import { LoupedeckDeviceBase, LoupedeckDeviceOptions, ModelSpec } from './base'
-import { LoupedeckModelId } from '../info'
-import { LoupedeckDisplayDefinition } from './interface'
+import { LoupedeckControlType } from '../constants.js'
+import { LoupedeckSerialConnection } from '../serial.js'
+import { LoupedeckDeviceBase, LoupedeckDeviceOptions, ModelSpec } from './base.js'
+import { LoupedeckModelId } from '../info.js'
+import type { LoupedeckDisplayDefinition } from './interface.js'
 
 const DisplayLeft: LoupedeckDisplayDefinition = {
 	width: 60,
