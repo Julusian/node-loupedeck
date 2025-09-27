@@ -1,10 +1,6 @@
 import { SerialPort, PacketLengthParser } from 'serialport'
 import { LoupedeckSerialConnection } from '@loupedeck/core'
-import {
-	WS_UPGRADE_RESPONSE,
-	WS_UPGRADE_HEADER,
-	createSerialPacketHeaderPacket,
-} from '@loupedeck/core/dist/internal.js'
+import { WS_UPGRADE_RESPONSE, WS_UPGRADE_HEADER, createSerialPacketHeaderPacket } from '@loupedeck/core/internal'
 
 export class LoupedeckNodeSerialConnection extends LoupedeckSerialConnection {
 	private connection: SerialPort | undefined
@@ -41,7 +37,7 @@ export class LoupedeckNodeSerialConnection extends LoupedeckSerialConnection {
 		await new Promise<void>((resolve, reject) => {
 			connection.once('data', (buff) => {
 				if (buff.toString().startsWith(WS_UPGRADE_RESPONSE)) resolve()
-				else reject(`Invalid handshake response: ${buff.toString()}`)
+				else reject(new Error(`Invalid handshake response: ${buff.toString()}`))
 			})
 			connection.write(WS_UPGRADE_HEADER)
 

@@ -1,8 +1,10 @@
 {
 	"name": "@loupedeck/core",
 	"version": "1.2.0",
-	"main": "dist/index.js",
-	"typings": "dist/index.d.ts",
+	"exports": {
+		".": "./dist/index.js",
+		"./internal": "./dist/internal.js"
+	},
 	"type": "module",
 	"license": "MIT",
 	"homepage": "https://github.com/julusian/node-loupedeck#readme",

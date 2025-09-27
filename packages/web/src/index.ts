@@ -1,5 +1,5 @@
-import { LoupedeckDevice, LoupedeckDeviceOptions } from '@loupedeck/core'
-import { DEVICE_MODELS } from '@loupedeck/core/dist/internal.js'
+import type { LoupedeckDevice, LoupedeckDeviceOptions } from '@loupedeck/core'
+import { DEVICE_MODELS } from '@loupedeck/core/internal'
 import { LoupedeckWebSerialConnection } from './serial.js'
 export * from '@loupedeck/core'
 

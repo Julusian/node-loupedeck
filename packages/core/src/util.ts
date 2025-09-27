@@ -1,4 +1,4 @@
-import { LoupedeckBufferFormat, RGBColor } from './constants.js'
+import { LoupedeckBufferFormat, type RGBColor } from './constants.js'
 import type { LoupedeckDisplayDefinition } from './models/interface.js'
 
 export type CanDrawPixelFn = (x: number, y: number) => boolean

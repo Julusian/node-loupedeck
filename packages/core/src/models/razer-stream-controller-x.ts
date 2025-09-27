@@ -1,6 +1,6 @@
 import { LoupedeckControlType } from '../constants.js'
-import { LoupedeckSerialConnection } from '../serial.js'
-import { LoupedeckDeviceBase, LoupedeckDeviceOptions, ModelSpec } from './base.js'
+import type { LoupedeckSerialConnection } from '../serial.js'
+import { LoupedeckDeviceBase, type LoupedeckDeviceOptions, type ModelSpec } from './base.js'
 import { LoupedeckModelId } from '../info.js'
 import type { LoupedeckDisplayDefinition } from './interface.js'
 

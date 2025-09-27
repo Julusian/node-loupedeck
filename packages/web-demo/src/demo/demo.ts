@@ -1,4 +1,4 @@
-import { LoupedeckControlInfo, LoupedeckDevice, LoupedeckTouchEventData } from '@loupedeck/web'
+import type { LoupedeckControlInfo, LoupedeckDevice, LoupedeckTouchEventData } from '@loupedeck/web'
 
 export interface Demo {
 	start(device: LoupedeckDevice): Promise<void>

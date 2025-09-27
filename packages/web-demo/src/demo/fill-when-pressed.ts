@@ -1,13 +1,6 @@
-import {
-	LoupedeckBufferFormat,
-	LoupedeckControlInfo,
-	LoupedeckDevice,
-	LoupedeckDisplayId,
-	LoupedeckModelId,
-	LoupedeckTouchEventData,
-	RGBColor,
-} from '@loupedeck/web'
-import { Demo } from './demo.js'
+import type { LoupedeckControlInfo, LoupedeckDevice, LoupedeckTouchEventData, RGBColor } from '@loupedeck/web'
+import { LoupedeckBufferFormat, LoupedeckDisplayId, LoupedeckModelId } from '@loupedeck/web'
+import type { Demo } from './demo.js'
 
 function stringifyInfo(info: LoupedeckControlInfo): string {
 	return `${info.type}-${info.index}`

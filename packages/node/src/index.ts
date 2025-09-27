@@ -1,13 +1,14 @@
-import { LoupedeckDevice, LoupedeckDeviceInfo, LoupedeckDeviceOptions } from '@loupedeck/core'
-import { DEVICE_MODELS } from '@loupedeck/core/dist/internal.js'
+import type { LoupedeckDevice, LoupedeckDeviceInfo, LoupedeckDeviceOptions } from '@loupedeck/core'
+import { DEVICE_MODELS } from '@loupedeck/core/internal'
 import { SerialPort } from 'serialport'
 import { LoupedeckNodeSerialConnection } from './serial.js'
 export * from '@loupedeck/core'
+import type { PortInfo } from '@serialport/bindings-cpp'
 
 /**
  * If the provided device is a loupedeck, get the info about it
  */
-export function getLoupedeckDeviceInfo(dev: import('@serialport/bindings-cpp').PortInfo): LoupedeckDeviceInfo | null {
+export function getLoupedeckDeviceInfo(dev: PortInfo): LoupedeckDeviceInfo | null {
 	if (!dev.vendorId || !dev.productId) return null
 
 	const vendorId = parseInt(dev.vendorId, 16)

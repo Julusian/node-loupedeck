@@ -29,7 +29,7 @@
     "build:root": "(rimraf packages/*/dist || true) && tsc --build tsconfig.build.json",
     "test": "run lint && run unit",
     "unit": "jest",
-    "lint:raw": "./node_modules/.bin/eslint --ext .ts --ext .js --ext .tsx --ext .jsx --ignore-pattern dist",
+    "lint:raw": "eslint",
     "lint": "run lint:raw packages",
     "lint-fix": "run lint --fix",
     "validate:dependencies": "yarn npm audit && run license-validate",
@@ -37,10 +37,10 @@
   },
   "lint-staged": {
     "*.{css,json,md,scss}": [
-      "./node_modules/.bin/prettier --write"
+      "prettier"
     ],
     "*.{ts,tsx,js,jsx}": [
-      "run lint:raw --fix"
+      "yarn lint:raw"
     ]
   },
   "packageManager": "yarn@4.10.3"

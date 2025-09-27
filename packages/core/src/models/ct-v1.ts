@@ -1,6 +1,6 @@
 import { LoupedeckModelId } from '../info.js'
-import { LoupedeckSerialConnection } from '../serial.js'
-import { LoupedeckDeviceBase, LoupedeckDeviceOptions, ModelSpec } from './base.js'
+import type { LoupedeckSerialConnection } from '../serial.js'
+import { LoupedeckDeviceBase, type LoupedeckDeviceOptions, type ModelSpec } from './base.js'
 import { LoupedeckCtV2ModelSpec } from './ct-v2.js'
 
 const LoupedeckCtV1ModelSpec: ModelSpec = {

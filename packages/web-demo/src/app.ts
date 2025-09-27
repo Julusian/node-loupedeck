@@ -1,10 +1,5 @@
-import {
-	requestLoupedeck,
-	getLoupedecks,
-	LoupedeckDevice,
-	LoupedeckControlInfo,
-	LoupedeckTouchEventData,
-} from '@loupedeck/web'
+import type { LoupedeckDevice, LoupedeckControlInfo, LoupedeckTouchEventData } from '@loupedeck/web'
+import { requestLoupedeck, getLoupedecks } from '@loupedeck/web'
 import type { Demo } from './demo/demo.js'
 // import { DomImageDemo } from './demo/dom'
 import { FillWhenPressedDemo } from './demo/fill-when-pressed.js'

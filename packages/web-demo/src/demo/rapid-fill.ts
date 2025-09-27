@@ -1,11 +1,6 @@
-import {
-	LoupedeckControlInfo,
-	LoupedeckDevice,
-	LoupedeckDisplayId,
-	LoupedeckTouchEventData,
-	RGBColor,
-} from '@loupedeck/web'
-import { Demo } from './demo.js'
+import type { LoupedeckControlInfo, LoupedeckDevice, LoupedeckTouchEventData, RGBColor } from '@loupedeck/web'
+import { LoupedeckDisplayId } from '@loupedeck/web'
+import type { Demo } from './demo.js'
 
 function getRandomIntInclusive(min: number, max: number) {
 	min = Math.ceil(min)
@@ -45,7 +40,7 @@ export class RapidFillDemo implements Demo {
 									device.displayLeftStrip.height,
 									0,
 									0
-							  )
+								)
 							: undefined,
 						device.displayRightStrip
 							? device.drawSolidColour(
@@ -55,7 +50,7 @@ export class RapidFillDemo implements Demo {
 									device.displayRightStrip.height,
 									0,
 									0
-							  )
+								)
 							: undefined,
 						// TODO fix
 						// device.setButtonColor(

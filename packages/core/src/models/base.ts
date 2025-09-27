@@ -6,16 +6,16 @@ import {
 	DisplayMainEncodedId,
 	DisplayRightEncodedId,
 	DisplayWheelEncodedId,
-	LoupedeckBufferFormat,
 	LoupedeckControlType,
 	LoupedeckDisplayId,
-	LoupedeckVibratePattern,
-	RGBColor,
+	type LoupedeckBufferFormat,
+	type LoupedeckVibratePattern,
+	type RGBColor,
 } from '../constants.js'
-import { LoupedeckSerialConnection } from '../serial.js'
+import type { LoupedeckSerialConnection } from '../serial.js'
 import { checkRGBColor, checkRGBValue, createCanDrawPixel, encodeBuffer, uint8ArrayToDataView } from '../util.js'
 import type { LoupedeckControlDefinition, LoupedeckDevice, LoupedeckDisplayDefinition } from './interface.js'
-import { LoupedeckModelId } from '../info.js'
+import type { LoupedeckModelId } from '../info.js'
 import PQueue from 'p-queue'
 
 enum CommandIds {

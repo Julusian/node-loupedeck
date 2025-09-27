@@ -4,7 +4,7 @@ import {
 	WS_UPGRADE_HEADER,
 	createSerialPacketHeaderPacket,
 	uint8ArrayToDataView,
-} from '@loupedeck/core/dist/internal.js'
+} from '@loupedeck/core/internal'
 
 export class LoupedeckWebSerialConnection extends LoupedeckSerialConnection {
 	private connection: SerialPort | undefined
@@ -55,7 +55,6 @@ export class LoupedeckWebSerialConnection extends LoupedeckSerialConnection {
 					delimiter: 0x82,
 				})
 
-				// eslint-disable-next-line no-constant-condition
 				while (true) {
 					const { value, done } = await reader.read()
 					if (value) {
@@ -138,7 +137,7 @@ export class LoupedeckWebSerialConnection extends LoupedeckSerialConnection {
 									setTimeout(tick, 10)
 								})
 								.catch((e) => {
-									reject(e)
+									reject(e instanceof Error ? e : new Error(String(e)))
 								})
 						}
 					}
