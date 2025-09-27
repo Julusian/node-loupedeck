@@ -1,18 +1,19 @@
-import type { LoupedeckControlType, LoupedeckDisplayId } from './constants.js'
+import type { LoupedeckDisplayId } from './constants.js'
+import type { LoupedeckControlDefinition } from './controlDefinition.js'
 
 export type LoupedeckDeviceEvents = {
 	error: [error: Error]
-	down: [info: LoupedeckControlInfo]
-	up: [info: LoupedeckControlInfo]
-	rotate: [info: LoupedeckControlInfo, delta: number]
+	down: [info: LoupedeckControlDefinition]
+	up: [info: LoupedeckControlDefinition]
+	rotate: [info: LoupedeckControlDefinition, delta: number]
 	touchstart: [data: LoupedeckTouchEventData]
 	touchmove: [data: LoupedeckTouchEventData]
 	touchend: [data: LoupedeckTouchEventData]
 }
 
-export interface LoupedeckControlInfo {
-	type: LoupedeckControlType
-	index: number
+export interface LoupedeckTouchLocation {
+	row: number
+	column: number
 }
 
 export interface LoupedeckTouchObject {
@@ -26,8 +27,8 @@ export interface LoupedeckTouchObject {
 	target: {
 		/** Identifier of screen this touch was detected on */
 		screen: LoupedeckDisplayId
-		/** Index of key touched ([0-11]), if on `center` screen */
-		key: number | undefined
+		/** Location of key touched, if on `center` screen */
+		key: LoupedeckTouchLocation | undefined
 	}
 }
 export interface LoupedeckTouchEventData {

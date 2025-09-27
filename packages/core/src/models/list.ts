@@ -26,7 +26,7 @@ export const DEVICE_MODELS: DeviceModelSpec[] = [
 		class: LoupedeckCtDeviceV1,
 	},
 	{
-		id: LoupedeckModelId.LoupedeckCt,
+		id: LoupedeckModelId.LoupedeckCtV2,
 		vendorId: VendorIdLoupedeck,
 		productId: 0x0007,
 		class: LoupedeckCtDeviceV2,

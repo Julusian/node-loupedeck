@@ -1,6 +1,7 @@
 export * from './constants.js'
+export * from './controlDefinition.js'
 export * from './events.js'
 export * from './info.js'
 export * from './serial.js'
 export type { LoupedeckDeviceOptions } from './models/base.js'
-export type { LoupedeckDevice, LoupedeckControlDefinition, LoupedeckDisplayDefinition } from './models/interface.js'
+export type { LoupedeckDevice, LoupedeckDisplayDefinition } from './models/interface.js'

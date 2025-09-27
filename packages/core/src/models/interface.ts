@@ -1,19 +1,8 @@
 import type { EventEmitter } from 'eventemitter3'
 import type { LoupedeckDeviceEvents } from '../events.js'
-import type {
-	LoupedeckBufferFormat,
-	LoupedeckControlType,
-	LoupedeckDisplayId,
-	LoupedeckVibratePattern,
-	RGBColor,
-} from '../constants.js'
+import type { LoupedeckBufferFormat, LoupedeckDisplayId, LoupedeckVibratePattern, RGBColor } from '../constants.js'
 import type { LoupedeckModelId } from '../info.js'
-
-export interface LoupedeckControlDefinition {
-	type: LoupedeckControlType
-	index: number
-	encoded: number
-}
+import type { LoupedeckControlDefinition } from '../controlDefinition.js'
 
 export interface LoupedeckDisplayDefinition {
 	/** Total usable width of the display */
@@ -43,14 +32,6 @@ export interface LoupedeckDevice extends EventEmitter<LoupedeckDeviceEvents> {
 	 */
 	modelName: string
 
-	/**
-	 * Number of columns in LCD button grid
-	 */
-	lcdKeyColumns: number
-	/**
-	 * Number of rows in LCD button grid
-	 */
-	lcdKeyRows: number
 	/**
 	 * Pixel size of key on LCD button grid
 	 */
@@ -98,11 +79,11 @@ export interface LoupedeckDevice extends EventEmitter<LoupedeckDeviceEvents> {
 
 	/**
 	 * Draw a buffer to a key on the display
-	 * @param index Key index (0 top left)
+	 * @param index Key id
 	 * @param buffer The buffer to draw
 	 * @param format The format of the source buffer
 	 */
-	drawKeyBuffer(index: number, buffer: Uint8Array | Uint8ClampedArray, format: LoupedeckBufferFormat): Promise<void>
+	drawKeyBuffer(id: string, buffer: Uint8Array | Uint8ClampedArray, format: LoupedeckBufferFormat): Promise<void>
 
 	/**
 	 * Draw a solid colour to a display
@@ -141,7 +122,7 @@ export interface LoupedeckDevice extends EventEmitter<LoupedeckDeviceEvents> {
 	/**
 	 * Set the color of one of more buttons
 	 */
-	setButtonColor(...buttons: Array<{ id: number; red: number; green: number; blue: number }>): Promise<void>
+	setButtonColor(...buttons: Array<{ id: string; red: number; green: number; blue: number }>): Promise<void>
 
 	/**
 	 * Vibrate the device

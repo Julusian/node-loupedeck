@@ -2,6 +2,7 @@ import { LoupedeckModelId } from '../info.js'
 import type { LoupedeckSerialConnection } from '../serial.js'
 import { LoupedeckDeviceBase, type LoupedeckDeviceOptions, type ModelSpec } from './base.js'
 import { LoupedeckCtV2ModelSpec } from './ct-v2.js'
+import { freezeDefinitions } from '../controlsGenerator.js'
 
 const LoupedeckCtV1ModelSpec: ModelSpec = {
 	...LoupedeckCtV2ModelSpec,
@@ -10,6 +11,8 @@ const LoupedeckCtV1ModelSpec: ModelSpec = {
 
 	framebufferFlush: true,
 }
+
+freezeDefinitions(LoupedeckCtV1ModelSpec.controls)
 
 export class LoupedeckCtDeviceV1 extends LoupedeckDeviceBase {
 	constructor(connection: LoupedeckSerialConnection, options: LoupedeckDeviceOptions) {

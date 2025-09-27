@@ -1,4 +1,4 @@
-import type { LoupedeckDevice, LoupedeckControlInfo, LoupedeckTouchEventData } from '@loupedeck/web'
+import type { LoupedeckDevice, LoupedeckControlDefinition, LoupedeckTouchEventData } from '@loupedeck/web'
 import { requestLoupedeck, getLoupedecks } from '@loupedeck/web'
 import type { Demo } from './demo/demo.js'
 // import { DomImageDemo } from './demo/dom'
@@ -54,16 +54,16 @@ async function openDevice(device: LoupedeckDevice): Promise<void> {
 	device.on('error', (err: Error) => {
 		appendLog(`Error: ${err}`)
 	})
-	device.on('down', (info: LoupedeckControlInfo) => {
-		appendLog(`${info.type}-${info.index} down`)
+	device.on('down', (info: LoupedeckControlDefinition) => {
+		appendLog(`${info.type}-${info.row}-${info.column} down`)
 		currentDemo.controlDown(device, info).catch(console.error)
 	})
-	device.on('up', (info: LoupedeckControlInfo) => {
-		appendLog(`${info.type}-${info.index} up`)
+	device.on('up', (info: LoupedeckControlDefinition) => {
+		appendLog(`${info.type}-${info.row}-${info.column} up`)
 		currentDemo.controlUp(device, info).catch(console.error)
 	})
-	device.on('rotate', (info: LoupedeckControlInfo, delta) => {
-		appendLog(`${info.type}-${info.index} rotate ${delta}`)
+	device.on('rotate', (info: LoupedeckControlDefinition, delta) => {
+		appendLog(`${info.type}-${info.row}-${info.column} rotate ${delta}`)
 		currentDemo.controlRotate(device, info, delta).catch(console.error)
 	})
 	device.on('touchstart', (evt: LoupedeckTouchEventData) => {

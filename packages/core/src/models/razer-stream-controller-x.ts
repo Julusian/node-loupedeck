@@ -1,8 +1,8 @@
-import { LoupedeckControlType } from '../constants.js'
 import type { LoupedeckSerialConnection } from '../serial.js'
 import { LoupedeckDeviceBase, type LoupedeckDeviceOptions, type ModelSpec } from './base.js'
 import { LoupedeckModelId } from '../info.js'
 import type { LoupedeckDisplayDefinition } from './interface.js'
+import { freezeDefinitions, generateButtonGrid } from '../controlsGenerator.js'
 
 const DisplayCenter: LoupedeckDisplayDefinition = {
 	width: 480 - 5 * 2,
@@ -23,17 +23,19 @@ const modelSpec: ModelSpec = {
 	modelId: LoupedeckModelId.RazerStreamControllerX,
 	modelName: 'Razer Stream Controller X',
 	lcdKeySize: 78,
-	lcdKeyColumns: 5,
-	lcdKeyRows: 3,
 }
 
-for (let i = 0; i < 15; i++) {
-	modelSpec.controls.push({
-		type: LoupedeckControlType.Button,
-		index: i,
-		encoded: 0x1b + i,
+modelSpec.controls.push(
+	...generateButtonGrid({
+		rows: 3,
+		columns: 5,
+		colOffset: 0,
+		startEncodedIndex: 0x1b,
 	})
-}
+)
+
+freezeDefinitions(modelSpec.controls)
+
 export class RazerStreamControllerDeviceX extends LoupedeckDeviceBase {
 	constructor(connection: LoupedeckSerialConnection, options: LoupedeckDeviceOptions) {
 		super(connection, options, modelSpec)

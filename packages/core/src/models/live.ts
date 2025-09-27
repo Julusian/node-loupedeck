@@ -1,8 +1,13 @@
-import { LoupedeckControlType } from '../constants.js'
 import type { LoupedeckSerialConnection } from '../serial.js'
 import { LoupedeckDeviceBase, type LoupedeckDeviceOptions, type ModelSpec } from './base.js'
 import { LoupedeckModelId } from '../info.js'
 import type { LoupedeckDisplayDefinition } from './interface.js'
+import {
+	freezeDefinitions,
+	generateButtonGrid,
+	generateButtonsRow,
+	generateTopScreenEncoders,
+} from '../controlsGenerator.js'
 
 const DisplayLeft: LoupedeckDisplayDefinition = {
 	width: 60,
@@ -39,24 +44,21 @@ const modelSpec: ModelSpec = {
 	modelId: LoupedeckModelId.LoupedeckLive,
 	modelName: 'Loupedeck Live',
 	lcdKeySize: 80,
-	lcdKeyColumns: 4,
-	lcdKeyRows: 3,
 }
 
-for (let i = 0; i < 8; i++) {
-	modelSpec.controls.push({
-		type: LoupedeckControlType.Button,
-		index: i,
-		encoded: 0x07 + i,
+modelSpec.controls.push(
+	...generateButtonsRow(0x07),
+	...generateTopScreenEncoders(0x01),
+
+	...generateButtonGrid({
+		rows: 3,
+		columns: 4,
+		colOffset: 2,
+		startEncodedIndex: null,
 	})
-}
-for (let i = 0; i < 6; i++) {
-	modelSpec.controls.push({
-		type: LoupedeckControlType.Rotary,
-		index: i,
-		encoded: 0x01 + i,
-	})
-}
+)
+
+freezeDefinitions(modelSpec.controls)
 
 export class LoupedeckLiveDevice extends LoupedeckDeviceBase {
 	constructor(connection: LoupedeckSerialConnection, options: LoupedeckDeviceOptions) {

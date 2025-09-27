@@ -1,8 +1,13 @@
-import { LoupedeckControlType } from '../constants.js'
 import type { LoupedeckSerialConnection } from '../serial.js'
 import { LoupedeckDeviceBase, type LoupedeckDeviceOptions, type ModelSpec } from './base.js'
 import { LoupedeckModelId } from '../info.js'
 import type { LoupedeckDisplayDefinition } from './interface.js'
+import {
+	freezeDefinitions,
+	generateButtonGrid,
+	generateButtonsRow,
+	generateTopScreenEncoders,
+} from '../controlsGenerator.js'
 
 const DisplayLeft: LoupedeckDisplayDefinition = {
 	width: 60,
@@ -46,43 +51,144 @@ export const LoupedeckCtV2ModelSpec: ModelSpec = {
 	displayRightStrip: DisplayRight,
 	displayWheel: DisplayWheel,
 
-	modelId: LoupedeckModelId.LoupedeckCt,
+	modelId: LoupedeckModelId.LoupedeckCtV2,
 	modelName: 'Loupedeck CT',
 	lcdKeySize: 80,
-	lcdKeyColumns: 4,
-	lcdKeyRows: 3,
 }
 
-for (let i = 0; i < 8; i++) {
-	// round buttons
-	LoupedeckCtV2ModelSpec.controls.push({
-		type: LoupedeckControlType.Button,
-		index: i,
-		encoded: 0x07 + i,
-	})
-}
-for (let i = 0; i < 12; i++) {
-	// square buttons
-	LoupedeckCtV2ModelSpec.controls.push({
-		type: LoupedeckControlType.Button,
-		index: i + 8,
-		encoded: 0x0f + i,
-	})
-}
-for (let i = 0; i < 6; i++) {
-	// small rotary encoders
-	LoupedeckCtV2ModelSpec.controls.push({
-		type: LoupedeckControlType.Rotary,
-		index: i,
-		encoded: 0x01 + i,
-	})
-}
-// big wheel encoder
-LoupedeckCtV2ModelSpec.controls.push({
-	type: LoupedeckControlType.Rotary,
-	index: 6,
-	encoded: 0x00,
-})
+LoupedeckCtV2ModelSpec.controls.push(
+	...generateButtonsRow(0x07),
+	...generateTopScreenEncoders(0x01),
+
+	...generateButtonGrid({
+		rows: 3,
+		columns: 4,
+		colOffset: 2,
+		startEncodedIndex: null,
+	}),
+
+	{
+		type: 'button',
+		id: 'button-home',
+		row: 4,
+		column: 0,
+		encodedIndex: 0x08,
+		feedbackType: 'rgb',
+		isTouch: false,
+	},
+	{
+		type: 'button',
+		id: 'button-undo',
+		row: 5,
+		column: 0,
+		encodedIndex: 0x09,
+		feedbackType: 'rgb',
+		isTouch: false,
+	},
+	{
+		type: 'button',
+		id: 'button-keyboard',
+		row: 6,
+		column: 0,
+		encodedIndex: 0x0a,
+		feedbackType: 'rgb',
+		isTouch: false,
+	},
+	{
+		type: 'button',
+		id: 'button-return',
+		row: 4,
+		column: 1,
+		encodedIndex: 0x0b,
+		feedbackType: 'rgb',
+		isTouch: false,
+	},
+	{
+		type: 'button',
+		id: 'button-save',
+		row: 5,
+		column: 1,
+		encodedIndex: 0x0c,
+		feedbackType: 'rgb',
+		isTouch: false,
+	},
+	{
+		type: 'button',
+		id: 'button-fn-left',
+		row: 6,
+		column: 1,
+		encodedIndex: 0x0d,
+		feedbackType: 'rgb',
+		isTouch: false,
+	},
+	{
+		type: 'button',
+		id: 'button-up',
+		row: 4,
+		column: 6,
+		encodedIndex: 0x0e,
+		feedbackType: 'rgb',
+		isTouch: false,
+	},
+	{
+		type: 'button',
+		id: 'button-left',
+		row: 5,
+		column: 6,
+		encodedIndex: 0x0f,
+		feedbackType: 'rgb',
+		isTouch: false,
+	},
+	{
+		type: 'button',
+		id: 'button-fn-right',
+		row: 6,
+		column: 6,
+		encodedIndex: 0x10,
+		feedbackType: 'rgb',
+		isTouch: false,
+	},
+	{
+		type: 'button',
+		id: 'button-down',
+		row: 4,
+		column: 7,
+		encodedIndex: 0x11,
+		feedbackType: 'rgb',
+		isTouch: false,
+	},
+	{
+		type: 'button',
+		id: 'button-right',
+		row: 5,
+		column: 7,
+		encodedIndex: 0x12,
+		feedbackType: 'rgb',
+		isTouch: false,
+	},
+	{
+		type: 'button',
+		id: 'button-blank',
+		row: 6,
+		column: 7,
+		encodedIndex: 0x13,
+		feedbackType: 'rgb',
+		isTouch: false,
+	},
+
+	{
+		type: 'wheel',
+		id: 'wheel',
+
+		row: 4,
+		column: 2,
+
+		rowSpan: 3,
+		columnSpan: 4,
+	}
+)
+
+freezeDefinitions(LoupedeckCtV2ModelSpec.controls)
 
 export class LoupedeckCtDeviceV2 extends LoupedeckDeviceBase {
 	constructor(connection: LoupedeckSerialConnection, options: LoupedeckDeviceOptions) {

@@ -1,12 +1,11 @@
 import { EventEmitter } from 'eventemitter3'
-import type { LoupedeckDeviceEvents, LoupedeckTouchObject } from '../events.js'
+import type { LoupedeckDeviceEvents, LoupedeckTouchLocation, LoupedeckTouchObject } from '../events.js'
 import {
 	DisplayCenterEncodedId,
 	DisplayLeftEncodedId,
 	DisplayMainEncodedId,
 	DisplayRightEncodedId,
 	DisplayWheelEncodedId,
-	LoupedeckControlType,
 	LoupedeckDisplayId,
 	type LoupedeckBufferFormat,
 	type LoupedeckVibratePattern,
@@ -14,8 +13,9 @@ import {
 } from '../constants.js'
 import type { LoupedeckSerialConnection } from '../serial.js'
 import { checkRGBColor, checkRGBValue, createCanDrawPixel, encodeBuffer, uint8ArrayToDataView } from '../util.js'
-import type { LoupedeckControlDefinition, LoupedeckDevice, LoupedeckDisplayDefinition } from './interface.js'
+import type { LoupedeckDevice, LoupedeckDisplayDefinition } from './interface.js'
 import type { LoupedeckModelId } from '../info.js'
+import type { LoupedeckButtonControlDefinition, LoupedeckControlDefinition } from '../controlDefinition.js'
 import PQueue from 'p-queue'
 
 enum CommandIds {
@@ -51,8 +51,6 @@ export interface ModelSpec {
 	modelId: LoupedeckModelId
 	modelName: string
 
-	lcdKeyColumns: number
-	lcdKeyRows: number
 	lcdKeySize: number
 
 	framebufferFlush?: boolean
@@ -126,12 +124,6 @@ export abstract class LoupedeckDeviceBase extends EventEmitter<LoupedeckDeviceEv
 		return this.modelSpec.modelName
 	}
 
-	public get lcdKeyColumns(): number {
-		return this.modelSpec.lcdKeyColumns
-	}
-	public get lcdKeyRows(): number {
-		return this.modelSpec.lcdKeyRows
-	}
 	public get lcdKeySize(): number {
 		return this.modelSpec.lcdKeySize
 	}
@@ -178,11 +170,13 @@ export abstract class LoupedeckDeviceBase extends EventEmitter<LoupedeckDeviceEv
 			}
 
 			if (doButtons) {
-				const buttons = this.controls.filter((c) => c.type === LoupedeckControlType.Button)
+				const buttons = this.controls.filter(
+					(c): c is LoupedeckButtonControlDefinition => c.type === 'button' && c.feedbackType === 'rgb'
+				)
 				const payload = new Uint8Array(4 * buttons.length)
 				const payloadView = uint8ArrayToDataView(payload)
 				for (let i = 0; i < buttons.length; i++) {
-					payloadView.setUint8(i * 4, buttons[i].encoded)
+					payloadView.setUint8(i * 4, buttons[i].encodedIndex)
 				}
 				await this.#sendAndWaitIfRequired(CommandIds.SetColour, payload, true)
 			}
@@ -200,18 +194,6 @@ export abstract class LoupedeckDeviceBase extends EventEmitter<LoupedeckDeviceEv
 	public async close(): Promise<void> {
 		this.#cleanupPendingPromises()
 		await this.#connection.close()
-	}
-
-	private convertKeyIndexToCoordinates(index: number, display: LoupedeckDisplayDefinition): [x: number, y: number] {
-		const cols = this.lcdKeyColumns
-
-		const width = this.lcdKeySize + (display.columnGap ?? 0)
-		const height = this.lcdKeySize + (display.rowGap ?? 0)
-
-		const x = (index % cols) * width
-		const y = Math.floor(index / cols) * height
-
-		return [x, y]
 	}
 
 	/**
@@ -309,14 +291,18 @@ export abstract class LoupedeckDeviceBase extends EventEmitter<LoupedeckDeviceEv
 	}
 
 	public async drawKeyBuffer(
-		index: number,
+		id: string,
 		buffer: Uint8Array | Uint8ClampedArray,
 		format: LoupedeckBufferFormat
 	): Promise<void> {
-		const [x, y] = this.convertKeyIndexToCoordinates(index, this.displayMain)
+		const control = this.controls.find(
+			(c): c is LoupedeckButtonControlDefinition => c.type === 'button' && c.id === id
+		)
+		if (!control) throw new Error('Invalid button id')
+		if (control.feedbackType !== 'lcd') throw new Error('Control is not an LCD button')
 
 		const size = this.lcdKeySize
-		return this.drawBuffer(LoupedeckDisplayId.Center, buffer, format, size, size, x, y)
+		return this.drawBuffer(LoupedeckDisplayId.Center, buffer, format, size, size, control.column, control.row)
 	}
 
 	public async drawSolidColour(
@@ -436,19 +422,24 @@ export abstract class LoupedeckDeviceBase extends EventEmitter<LoupedeckDeviceEv
 	#onPress(buff: Uint8Array): void {
 		const buffView = uint8ArrayToDataView(buff)
 		const controlEncoded = buffView.getUint8(0)
-		const control = this.controls.find((b) => b.encoded === controlEncoded)
+		const control = this.controls.find(
+			(b) => (b.type === 'button' || b.type === 'encoder') && b.encodedIndex === controlEncoded
+		)
 		if (control) {
 			const event = buffView.getUint8(1) === 0x00 ? 'down' : 'up'
-			this.emit(event, { type: control.type, index: control.index })
+			this.emit(event, control)
 		}
 	}
 	#onRotate(buff: Uint8Array): void {
 		const buffView = uint8ArrayToDataView(buff)
 		const controlEncoded = buffView.getUint8(0)
-		const control = this.controls.find((b) => b.encoded === controlEncoded)
-		if (control && control.type === LoupedeckControlType.Rotary) {
+		const control =
+			controlEncoded === 0
+				? this.controls.find((c) => c.type === 'wheel')
+				: this.controls.find((b) => b.type === 'encoder' && b.encodedIndex === controlEncoded)
+		if (control) {
 			const delta = buffView.getInt8(1)
-			this.emit('rotate', { type: control.type, index: control.index }, delta)
+			this.emit('rotate', control, delta)
 		}
 	}
 
@@ -458,10 +449,10 @@ export abstract class LoupedeckDeviceBase extends EventEmitter<LoupedeckDeviceEv
 		y: number,
 		id: number,
 		screen: LoupedeckDisplayId,
-		key: number | undefined
+		key: LoupedeckTouchLocation | undefined
 	): void {
 		// Create touch
-		const touch: LoupedeckTouchObject = { x, y, id, target: { screen, key } }
+		const touch: LoupedeckTouchObject = { x, y, id, target: { screen, key: key } }
 
 		// End touch, remove from local cache
 		if (event === 'touchend') {
@@ -499,17 +490,17 @@ export abstract class LoupedeckDeviceBase extends EventEmitter<LoupedeckDeviceEv
 			y -= this.displayMain.yPadding
 		}
 
-		let key: number | undefined
+		let key: LoupedeckTouchLocation | undefined
 		if (screen === LoupedeckDisplayId.Center) {
 			// Pad by half the gap, to make the maths simpler
 			const xPadded = x + this.displayMain.columnGap / 2
 			const yPadded = y + this.displayMain.rowGap / 2
 
 			// Find the column, including the gap as evenly distributed
-			const column = Math.floor(xPadded / (this.lcdKeySize + this.displayMain.columnGap))
-			const row = Math.floor(yPadded / (this.lcdKeySize + this.displayMain.rowGap))
-
-			key = row * this.lcdKeyColumns + column
+			key = {
+				row: Math.floor(yPadded / (this.lcdKeySize + this.displayMain.rowGap)),
+				column: Math.floor(xPadded / (this.lcdKeySize + this.displayMain.columnGap)),
+			}
 		}
 
 		this.#createTouch(event, x, y, id, screen, key)
@@ -535,15 +526,15 @@ export abstract class LoupedeckDeviceBase extends EventEmitter<LoupedeckDeviceEv
 	}
 
 	public async setButtonColor(
-		...buttons: Array<{ id: number; red: number; green: number; blue: number }>
+		...buttons: Array<{ id: string; red: number; green: number; blue: number }>
 	): Promise<void> {
 		if (buttons.length === 0) return
 
 		// Compile a set of the valid button ids
-		const buttonIdLookup: Record<number, number | undefined> = {}
+		const buttonIdLookup: Record<string, number | undefined> = {}
 		for (const control of this.controls) {
-			if (control.type === LoupedeckControlType.Button) {
-				buttonIdLookup[control.index] = control.encoded
+			if (control.type === 'button' && control.feedbackType === 'rgb') {
+				buttonIdLookup[control.id] = control.encodedIndex
 			}
 		}
 

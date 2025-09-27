@@ -1,11 +1,6 @@
 export const VendorIdLoupedeck = 0x2ec2
 export const VendorIdRazer = 0x1532
 
-export enum LoupedeckControlType {
-	Button = 'button',
-	Rotary = 'rotary',
-}
-
 export enum LoupedeckVibratePattern {
 	SHORT = 0x01,
 	MEDIUM = 0x0a,
