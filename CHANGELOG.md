@@ -14,6 +14,13 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 
 
+## [2.0.3](https://github.com/Julusian/node-loupedeck/compare/v2.0.2...v2.0.3) (2025-09-30)
+
+
+### Bug Fixes
+
+* force bump ([78f33e7](https://github.com/Julusian/node-loupedeck/commit/78f33e74c8f7f1ecd5e2ca02a3047b7fc15cabeb))
+
 ## [2.0.2](https://github.com/Julusian/node-loupedeck/compare/v2.0.1...v2.0.2) (2025-09-30)
 
 
