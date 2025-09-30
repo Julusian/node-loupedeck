@@ -173,12 +173,14 @@ export abstract class LoupedeckDeviceBase extends EventEmitter<LoupedeckDeviceEv
 				const buttons = this.controls.filter(
 					(c): c is LoupedeckButtonControlDefinition => c.type === 'button' && c.feedbackType === 'rgb'
 				)
-				const payload = new Uint8Array(4 * buttons.length)
-				const payloadView = uint8ArrayToDataView(payload)
-				for (let i = 0; i < buttons.length; i++) {
-					payloadView.setUint8(i * 4, buttons[i].encodedIndex)
+				if (buttons.length > 0) {
+					const payload = new Uint8Array(4 * buttons.length)
+					const payloadView = uint8ArrayToDataView(payload)
+					for (let i = 0; i < buttons.length; i++) {
+						payloadView.setUint8(i * 4, buttons[i].encodedIndex)
+					}
+					await this.#sendAndWaitIfRequired(CommandIds.SetColour, payload, true)
 				}
-				await this.#sendAndWaitIfRequired(CommandIds.SetColour, payload, true)
 			}
 		}, false)
 	}
