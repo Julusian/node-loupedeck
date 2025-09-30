@@ -14,6 +14,13 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 
 
+## [2.0.2](https://github.com/Julusian/node-loupedeck/compare/v2.0.1...v2.0.2) (2025-09-30)
+
+
+### Bug Fixes
+
+* stream controller x crash during blank ([766bc0e](https://github.com/Julusian/node-loupedeck/commit/766bc0e4c673a48314e7a16159810b4f45cbbccc))
+
 ## [2.0.1](https://github.com/Julusian/node-loupedeck/compare/v2.0.0...v2.0.1) (2025-09-27)
 
 
