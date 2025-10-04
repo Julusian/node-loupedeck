@@ -7,6 +7,7 @@ import {
 	generateButtonGrid,
 	generateButtonsRow,
 	generateTopScreenEncoders,
+	generateTopScreenLcdStrips,
 } from '../controlsGenerator.js'
 
 const DisplayLeft: LoupedeckDisplayDefinition = {
@@ -59,6 +60,7 @@ export const LoupedeckCtV2ModelSpec: ModelSpec = {
 LoupedeckCtV2ModelSpec.controls.push(
 	...generateButtonsRow(0x07),
 	...generateTopScreenEncoders(0x01),
+	...generateTopScreenLcdStrips(1, 6),
 
 	...generateButtonGrid(LoupedeckCtV2ModelSpec, {
 		rows: 3,

@@ -500,13 +500,24 @@ export abstract class LoupedeckDeviceBase extends EventEmitter<LoupedeckDeviceEv
 		}
 
 		const control = this.modelSpec.controls.find((c) => {
-			if (c.type !== 'button' || c.feedbackType !== 'lcd' || !c.lcdPosition) return false
+			switch (screen) {
+				case LoupedeckDisplayId.Left:
+					return c.type === 'lcd-segment' && c.id === 'left'
+				case LoupedeckDisplayId.Right:
+					return c.type === 'lcd-segment' && c.id === 'right'
+				case LoupedeckDisplayId.Center: {
+					if (c.type !== 'button' || c.feedbackType !== 'lcd' || !c.lcdPosition) return false
 
-			// Bounds check
-			if (x < c.lcdPosition.x || x >= c.lcdPosition.x + c.lcdPosition.size) return false
-			if (y < c.lcdPosition.y || y >= c.lcdPosition.y + c.lcdPosition.size) return false
+					// Bounds check
+					if (x < c.lcdPosition.x || x >= c.lcdPosition.x + c.lcdPosition.size) return false
+					if (y < c.lcdPosition.y || y >= c.lcdPosition.y + c.lcdPosition.size) return false
 
-			return true
+					return true
+				}
+				default:
+					// Unreachable
+					return false
+			}
 		})
 
 		this.#createTouch(event, x, y, id, screen, control)
@@ -520,9 +531,9 @@ export abstract class LoupedeckDeviceBase extends EventEmitter<LoupedeckDeviceEv
 		const id = buffView.getUint8(5)
 
 		const screen: LoupedeckDisplayId = LoupedeckDisplayId.Wheel
-		const key = undefined
+		const control = this.modelSpec.controls.find((c) => c.type === 'wheel')
 
-		this.#createTouch(event, x, y, id, screen, key)
+		this.#createTouch(event, x, y, id, screen, control)
 	}
 
 	public async setBrightness(value: number): Promise<void> {

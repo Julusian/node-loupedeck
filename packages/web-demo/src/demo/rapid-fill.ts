@@ -1,4 +1,4 @@
-import type { LoupedeckControlInfo, LoupedeckDevice, LoupedeckTouchEventData, RGBColor } from '@loupedeck/web'
+import type { LoupedeckControlDefinition, LoupedeckDevice, LoupedeckTouchEventData, RGBColor } from '@loupedeck/web'
 import { LoupedeckDisplayId } from '@loupedeck/web'
 import type { Demo } from './demo.js'
 
@@ -87,13 +87,17 @@ export class RapidFillDemo implements Demo {
 		await device.blankDevice(true, true)
 	}
 
-	public async controlDown(_device: LoupedeckDevice, _info: LoupedeckControlInfo): Promise<void> {
+	public async controlDown(_device: LoupedeckDevice, _info: LoupedeckControlDefinition): Promise<void> {
 		// Nothing to do
 	}
-	public async controlUp(_device: LoupedeckDevice, _info: LoupedeckControlInfo): Promise<void> {
+	public async controlUp(_device: LoupedeckDevice, _info: LoupedeckControlDefinition): Promise<void> {
 		// Nothing to do
 	}
-	public async controlRotate(_device: LoupedeckDevice, _info: LoupedeckControlInfo, _delta: number): Promise<void> {
+	public async controlRotate(
+		_device: LoupedeckDevice,
+		_info: LoupedeckControlDefinition,
+		_delta: number
+	): Promise<void> {
 		// Nothing to do
 	}
 	public async touchStart(_device: LoupedeckDevice, _event: LoupedeckTouchEventData): Promise<void> {

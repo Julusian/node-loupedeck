@@ -1,10 +1,6 @@
-import type { LoupedeckControlInfo, LoupedeckDevice, LoupedeckTouchEventData, RGBColor } from '@loupedeck/web'
+import type { LoupedeckControlDefinition, LoupedeckDevice, LoupedeckTouchEventData, RGBColor } from '@loupedeck/web'
 import { LoupedeckBufferFormat, LoupedeckDisplayId, LoupedeckModelId } from '@loupedeck/web'
 import type { Demo } from './demo.js'
-
-function stringifyInfo(info: LoupedeckControlInfo): string {
-	return `${info.type}-${info.index}`
-}
 
 const colorRed: RGBColor = { red: 255, green: 0, blue: 0 }
 const colorBlack: RGBColor = { red: 0, green: 0, blue: 0 }
@@ -17,7 +13,7 @@ for (let i = 0; i < 80 * 80; i++) {
 
 export class FillWhenPressedDemo implements Demo {
 	private pressed: string[] = []
-	private touchBoxes = new Set<number>()
+	private touchBoxes = new Set<string>()
 	private touchingLeft = false
 	private touchingRight = false
 
@@ -27,33 +23,35 @@ export class FillWhenPressedDemo implements Demo {
 	public async stop(device: LoupedeckDevice): Promise<void> {
 		await device.blankDevice(true, false)
 	}
-	public async controlDown(device: LoupedeckDevice, info: LoupedeckControlInfo): Promise<void> {
-		const id = stringifyInfo(info)
-		if (this.pressed.indexOf(id) === -1) {
-			this.pressed.push(id)
+	public async controlDown(device: LoupedeckDevice, info: LoupedeckControlDefinition): Promise<void> {
+		if (this.pressed.indexOf(info.id) === -1) {
+			this.pressed.push(info.id)
 
 			if (device.modelId === LoupedeckModelId.RazerStreamControllerX) {
-				await device.drawKeyBuffer(info.index, bufferRed, LoupedeckBufferFormat.RGB)
+				await device.drawKeyBuffer(info.id, bufferRed, LoupedeckBufferFormat.RGB)
 			} else {
-				await device.setButtonColor({ id: info.index, ...colorRed })
+				await device.setButtonColor({ id: info.id, ...colorRed })
 			}
 		}
 	}
-	public async controlUp(device: LoupedeckDevice, info: LoupedeckControlInfo): Promise<void> {
-		const id = stringifyInfo(info)
-		const index = this.pressed.indexOf(id)
+	public async controlUp(device: LoupedeckDevice, info: LoupedeckControlDefinition): Promise<void> {
+		const index = this.pressed.indexOf(info.id)
 		if (index !== -1) {
 			this.pressed.splice(index, 1)
 
 			if (device.modelId === LoupedeckModelId.RazerStreamControllerX) {
-				await device.drawKeyBuffer(info.index, bufferBlack, LoupedeckBufferFormat.RGB)
+				await device.drawKeyBuffer(info.id, bufferBlack, LoupedeckBufferFormat.RGB)
 			} else {
-				await device.setButtonColor({ id: info.index, ...colorBlack })
+				await device.setButtonColor({ id: info.id, ...colorBlack })
 			}
 		}
 	}
 
-	public async controlRotate(_device: LoupedeckDevice, _info: LoupedeckControlInfo, _delta: number): Promise<void> {
+	public async controlRotate(
+		_device: LoupedeckDevice,
+		_info: LoupedeckControlDefinition,
+		_delta: number
+	): Promise<void> {
 		// Ignored
 	}
 
@@ -63,18 +61,18 @@ export class FillWhenPressedDemo implements Demo {
 	public async touchMove(device: LoupedeckDevice, event: LoupedeckTouchEventData): Promise<void> {
 		const ps: Array<Promise<void>> = []
 
-		const newIds = new Set<number>()
+		const newIds = new Set<string>()
 		let leftPercent = 0
 		let rightPercent = 0
 
 		for (const touch of event.touches) {
 			if (touch.target.screen === LoupedeckDisplayId.Center && touch.target.control !== undefined) {
-				newIds.add(touch.target.control)
+				newIds.add(touch.target.control.id)
 
-				if (!this.touchBoxes.has(touch.target.control)) {
-					this.touchBoxes.add(touch.target.control)
+				if (!this.touchBoxes.has(touch.target.control.id)) {
+					this.touchBoxes.add(touch.target.control.id)
 
-					ps.push(device.drawKeyBuffer(touch.target.control, bufferRed, LoupedeckBufferFormat.RGB))
+					ps.push(device.drawKeyBuffer(touch.target.control.id, bufferRed, LoupedeckBufferFormat.RGB))
 				}
 			} else if (touch.target.screen === LoupedeckDisplayId.Left && device.displayLeftStrip) {
 				const percent = touch.y / device.displayLeftStrip.height

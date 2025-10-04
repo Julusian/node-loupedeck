@@ -1,7 +1,7 @@
 import type { LoupedeckDisplayId } from './constants.js'
 
 export interface LoupedeckControlDefinitionBase {
-	type: 'button' | 'encoder' | 'wheel'
+	type: 'button' | 'encoder' | 'wheel' | 'lcd-segment'
 
 	row: number
 	column: number
@@ -45,7 +45,17 @@ export interface LoupedeckWheelControlDefinition extends LoupedeckControlDefinit
 	columnSpan: number
 }
 
+export interface LoupedeckLcdSegmentControlDefinition extends LoupedeckControlDefinitionBase {
+	type: 'lcd-segment'
+
+	id: 'left' | 'right'
+
+	rowSpan: number
+	columnSpan: number
+}
+
 export type LoupedeckControlDefinition =
 	| LoupedeckButtonControlDefinition
 	| LoupedeckEncoderControlDefinition
 	| LoupedeckWheelControlDefinition
+	| LoupedeckLcdSegmentControlDefinition

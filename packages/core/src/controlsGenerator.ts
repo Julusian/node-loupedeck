@@ -46,6 +46,27 @@ export function generateTopScreenEncoders(encodedIndex: number): LoupedeckContro
 	]
 }
 
+export function generateTopScreenLcdStrips(x1: number, x2: number): LoupedeckControlDefinition[] {
+	return [
+		{
+			id: `left`,
+			type: 'lcd-segment',
+			row: 0,
+			column: x1,
+			rowSpan: 3,
+			columnSpan: 1,
+		},
+		{
+			id: `right`,
+			type: 'lcd-segment',
+			row: 0,
+			column: x2,
+			rowSpan: 3,
+			columnSpan: 1,
+		},
+	]
+}
+
 interface ButtonGridOptions {
 	rows: number
 	columns: number
