@@ -361,7 +361,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@loupedeck/core@npm:2.0.3, @loupedeck/core@workspace:packages/core":
+"@loupedeck/core@npm:2.1.0, @loupedeck/core@workspace:packages/core":
   version: 0.0.0-use.local
   resolution: "@loupedeck/core@workspace:packages/core"
   dependencies:
@@ -375,7 +375,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@loupedeck/node@workspace:packages/node"
   dependencies:
-    "@loupedeck/core": "npm:2.0.3"
+    "@loupedeck/core": "npm:2.1.0"
     serialport: "npm:^13.0.0"
     tslib: "npm:^2.8.1"
   languageName: unknown
@@ -385,17 +385,17 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@loupedeck/web-demo@workspace:packages/web-demo"
   dependencies:
-    "@loupedeck/web": "npm:2.0.3"
+    "@loupedeck/web": "npm:2.1.0"
     html-to-image: "npm:^1.11.13"
     vite: "npm:^7.1.7"
   languageName: unknown
   linkType: soft
 
-"@loupedeck/web@npm:2.0.3, @loupedeck/web@workspace:packages/web":
+"@loupedeck/web@npm:2.1.0, @loupedeck/web@workspace:packages/web":
   version: 0.0.0-use.local
   resolution: "@loupedeck/web@workspace:packages/web"
   dependencies:
-    "@loupedeck/core": "npm:2.0.3"
+    "@loupedeck/core": "npm:2.1.0"
     "@types/w3c-web-serial": "npm:^1.0.8"
     tslib: "npm:^2.8.1"
   languageName: unknown
