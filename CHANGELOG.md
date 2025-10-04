@@ -14,6 +14,13 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 
 
+## [2.1.0](https://github.com/Julusian/node-loupedeck/compare/v2.0.3...v2.1.0) (2025-10-04)
+
+
+### Features
+
+* expose lcd strips as controls ([b94291c](https://github.com/Julusian/node-loupedeck/commit/b94291c7a5b0a155d6c5ea2a20e5b1efcd27a494))
+
 ## [2.0.3](https://github.com/Julusian/node-loupedeck/compare/v2.0.2...v2.0.3) (2025-09-30)
 
 
