@@ -29,6 +29,6 @@
     "html-to-image": "^1.11.13"
   },
   "devDependencies": {
-    "vite": "^7.1.7"
+    "vite": "^7.1.11"
   }
 }
