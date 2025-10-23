@@ -119,3 +119,7 @@ export function createSerialPacketHeaderPacket(data: Uint8Array): Uint8Array {
 		return prep
 	}
 }
+
+export function assertNever(_v: never): void {
+	// Nothing to do
+}

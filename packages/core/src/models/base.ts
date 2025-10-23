@@ -14,7 +14,7 @@ import {
 import type { LoupedeckSerialConnection } from '../serial.js'
 import { checkRGBColor, checkRGBValue, createCanDrawPixel, encodeBuffer, uint8ArrayToDataView } from '../util.js'
 import type { LoupedeckDevice, LoupedeckDisplayDefinition } from './interface.js'
-import type { LoupedeckModelId } from '../info.js'
+import { getModelName, type LoupedeckModelId } from '../info.js'
 import type { LoupedeckButtonControlDefinition, LoupedeckControlDefinition } from '../controlDefinition.js'
 import PQueue from 'p-queue'
 
@@ -49,7 +49,6 @@ export interface ModelSpec {
 	splitTopDisplays?: boolean
 
 	modelId: LoupedeckModelId
-	modelName: string
 
 	lcdKeySize: number
 
@@ -121,7 +120,7 @@ export abstract class LoupedeckDeviceBase extends EventEmitter<LoupedeckDeviceEv
 		return this.modelSpec.modelId
 	}
 	public get modelName(): string {
-		return this.modelSpec.modelName
+		return getModelName(this.modelSpec.modelId)
 	}
 
 	public get lcdKeySize(): number {

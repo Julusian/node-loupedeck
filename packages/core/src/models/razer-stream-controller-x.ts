@@ -21,7 +21,6 @@ const modelSpec: ModelSpec = {
 	displayRightStrip: undefined,
 
 	modelId: LoupedeckModelId.RazerStreamControllerX,
-	modelName: 'Razer Stream Controller X',
 	lcdKeySize: 78,
 }
 

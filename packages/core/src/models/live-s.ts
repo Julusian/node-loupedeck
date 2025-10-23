@@ -21,7 +21,6 @@ const modelSpec: ModelSpec = {
 	displayRightStrip: undefined,
 
 	modelId: LoupedeckModelId.LoupedeckLiveS,
-	modelName: 'Loupedeck Live S',
 	lcdKeySize: 80,
 }
 

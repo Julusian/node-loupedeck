@@ -53,7 +53,6 @@ export const LoupedeckCtV2ModelSpec: ModelSpec = {
 	displayWheel: DisplayWheel,
 
 	modelId: LoupedeckModelId.LoupedeckCtV2,
-	modelName: 'Loupedeck CT',
 	lcdKeySize: 80,
 }
 
