@@ -14,6 +14,13 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 
 
+## [2.2.0](https://github.com/Julusian/node-loupedeck/compare/v2.1.0...v2.2.0) (2025-10-23)
+
+
+### Features
+
+* expose helper to generate model name ([4f14091](https://github.com/Julusian/node-loupedeck/commit/4f140912782f20499cfb88653ea8177dd1e4ec70))
+
 ## [2.1.0](https://github.com/Julusian/node-loupedeck/compare/v2.0.3...v2.1.0) (2025-10-04)
 
 
