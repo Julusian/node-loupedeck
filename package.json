@@ -5,18 +5,18 @@
     "packages/*"
   ],
   "devDependencies": {
-    "@sofie-automation/code-standard-preset": "^3.1.1",
-    "@tsconfig/node20": "^20.1.6",
-    "@types/lodash": "^4",
-    "@types/node": "^20.19.17",
-    "eslint": "^9.36.0",
+    "@sofie-automation/code-standard-preset": "^3.2.0",
+    "@tsconfig/node20": "^20.1.8",
+    "@types/lodash": "^4.17.21",
+    "@types/node": "^20.19.27",
+    "eslint": "^9.39.2",
     "husky": "^9.1.7",
-    "lint-staged": "^16.2.1",
+    "lint-staged": "^16.2.7",
     "lodash": "^4.17.21",
-    "prettier": "^3.6.2",
-    "rimraf": "^6.0.1",
-    "snyk-nodejs-lockfile-parser": "^2.2.2",
-    "typescript": "~5.9.2"
+    "prettier": "^3.7.4",
+    "rimraf": "^6.1.2",
+    "snyk-nodejs-lockfile-parser": "^2.4.4",
+    "typescript": "~5.9.3"
   },
   "scripts": {
     "prepare": "husky",
@@ -40,6 +40,6 @@
       "yarn lint:raw"
     ]
   },
-  "packageManager": "yarn@4.10.3",
+  "packageManager": "yarn@4.12.0",
   "version": "2.2.0"
 }
