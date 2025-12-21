@@ -14,6 +14,13 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 
 
+## [2.2.1](https://github.com/Julusian/node-loupedeck/compare/v2.2.0...v2.2.1) (2025-12-21)
+
+
+### Bug Fixes
+
+* incorrect ct keymap ([3040cf8](https://github.com/Julusian/node-loupedeck/commit/3040cf8da001f7dfe551f2928a10938487c323be))
+
 ## [2.2.0](https://github.com/Julusian/node-loupedeck/compare/v2.1.0...v2.2.0) (2025-10-23)
 
 
