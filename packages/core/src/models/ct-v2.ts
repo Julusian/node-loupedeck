@@ -73,7 +73,7 @@ LoupedeckCtV2ModelSpec.controls.push(
 		id: 'button-home',
 		row: 4,
 		column: 0,
-		encodedIndex: 0x08,
+		encodedIndex: 0x0f,
 		feedbackType: 'rgb',
 	},
 	{
@@ -81,7 +81,7 @@ LoupedeckCtV2ModelSpec.controls.push(
 		id: 'button-undo',
 		row: 5,
 		column: 0,
-		encodedIndex: 0x09,
+		encodedIndex: 0x10,
 		feedbackType: 'rgb',
 	},
 	{
@@ -89,7 +89,7 @@ LoupedeckCtV2ModelSpec.controls.push(
 		id: 'button-keyboard',
 		row: 6,
 		column: 0,
-		encodedIndex: 0x0a,
+		encodedIndex: 0x11,
 		feedbackType: 'rgb',
 	},
 	{
@@ -97,7 +97,7 @@ LoupedeckCtV2ModelSpec.controls.push(
 		id: 'button-return',
 		row: 4,
 		column: 1,
-		encodedIndex: 0x0b,
+		encodedIndex: 0x12,
 		feedbackType: 'rgb',
 	},
 	{
@@ -105,7 +105,7 @@ LoupedeckCtV2ModelSpec.controls.push(
 		id: 'button-save',
 		row: 5,
 		column: 1,
-		encodedIndex: 0x0c,
+		encodedIndex: 0x13,
 		feedbackType: 'rgb',
 	},
 	{
@@ -113,7 +113,7 @@ LoupedeckCtV2ModelSpec.controls.push(
 		id: 'button-fn-left',
 		row: 6,
 		column: 1,
-		encodedIndex: 0x0d,
+		encodedIndex: 0x14,
 		feedbackType: 'rgb',
 	},
 	{
@@ -121,7 +121,7 @@ LoupedeckCtV2ModelSpec.controls.push(
 		id: 'button-up',
 		row: 4,
 		column: 6,
-		encodedIndex: 0x0e,
+		encodedIndex: 0x15,
 		feedbackType: 'rgb',
 	},
 	{
@@ -129,7 +129,7 @@ LoupedeckCtV2ModelSpec.controls.push(
 		id: 'button-left',
 		row: 5,
 		column: 6,
-		encodedIndex: 0x0f,
+		encodedIndex: 0x16,
 		feedbackType: 'rgb',
 	},
 	{
@@ -137,7 +137,7 @@ LoupedeckCtV2ModelSpec.controls.push(
 		id: 'button-fn-right',
 		row: 6,
 		column: 6,
-		encodedIndex: 0x10,
+		encodedIndex: 0x17,
 		feedbackType: 'rgb',
 	},
 	{
@@ -145,7 +145,7 @@ LoupedeckCtV2ModelSpec.controls.push(
 		id: 'button-down',
 		row: 4,
 		column: 7,
-		encodedIndex: 0x11,
+		encodedIndex: 0x18,
 		feedbackType: 'rgb',
 	},
 	{
@@ -153,7 +153,7 @@ LoupedeckCtV2ModelSpec.controls.push(
 		id: 'button-right',
 		row: 5,
 		column: 7,
-		encodedIndex: 0x12,
+		encodedIndex: 0x19,
 		feedbackType: 'rgb',
 	},
 	{
@@ -161,7 +161,7 @@ LoupedeckCtV2ModelSpec.controls.push(
 		id: 'button-blank',
 		row: 6,
 		column: 7,
-		encodedIndex: 0x13,
+		encodedIndex: 0x1a,
 		feedbackType: 'rgb',
 	},
 
