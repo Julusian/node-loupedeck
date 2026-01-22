@@ -12,7 +12,7 @@
     "eslint": "^9.39.2",
     "husky": "^9.1.7",
     "lint-staged": "^16.2.7",
-    "lodash": "^4.17.21",
+    "lodash": "^4.17.23",
     "prettier": "^3.7.4",
     "rimraf": "^6.1.2",
     "snyk-nodejs-lockfile-parser": "^2.4.4",
