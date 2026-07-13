@@ -14,6 +14,13 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 
 
+## [2.2.2](https://github.com/Julusian/node-loupedeck/compare/v2.2.1...v2.2.2) (2026-07-13)
+
+
+### Bug Fixes
+
+* not closing serialport upon close ([8c939ec](https://github.com/Julusian/node-loupedeck/commit/8c939ec307094a594462f7638e4ab7d84c5c8575))
+
 ## [2.2.1](https://github.com/Julusian/node-loupedeck/compare/v2.2.0...v2.2.1) (2025-12-21)
 
 
