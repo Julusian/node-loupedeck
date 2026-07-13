@@ -51,7 +51,7 @@ export class LoupedeckNodeSerialConnection extends LoupedeckSerialConnection {
 
 	public override async close(): Promise<void> {
 		if (!this.connection) return
-		if (!this.connection.isOpen) this.connection.close()
+		if (this.connection.isOpen) this.connection.close()
 		delete this.connection
 	}
 
