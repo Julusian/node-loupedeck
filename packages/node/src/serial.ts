@@ -64,8 +64,23 @@ export class LoupedeckNodeSerialConnection extends LoupedeckSerialConnection {
 
 		if (!raw) {
 			const prep = createSerialPacketHeaderPacket(buff)
-			this.connection.write(prep)
+			const headerWrite = this.#write(prep)
+			const payloadWrite = this.#write(buff)
+			await Promise.all([headerWrite, payloadWrite])
+		} else {
+			await this.#write(buff)
 		}
-		this.connection.write(buff)
+	}
+
+	async #write(buff: Uint8Array): Promise<void> {
+		const connection = this.connection
+		if (!connection) throw new Error('Not connected!')
+
+		await new Promise<void>((resolve, reject) => {
+			connection.write(buff, (err) => {
+				if (err) reject(err)
+				else resolve()
+			})
+		})
 	}
 }

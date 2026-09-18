@@ -13,7 +13,7 @@ import {
 } from '../constants.js'
 import type { LoupedeckSerialConnection } from '../serial.js'
 import { checkRGBColor, checkRGBValue, createCanDrawPixel, encodeBuffer, uint8ArrayToDataView } from '../util.js'
-import type { LoupedeckDevice, LoupedeckDisplayDefinition } from './interface.js'
+import type { LoupedeckDevice, LoupedeckDisplayDefinition, VibrateOptions } from './interface.js'
 import { getModelName, type LoupedeckModelId } from '../info.js'
 import type { LoupedeckButtonControlDefinition, LoupedeckControlDefinition } from '../controlDefinition.js'
 import PQueue from 'p-queue'
@@ -39,6 +39,13 @@ interface TransactionHandler {
 	resolve: (buffer: Uint8Array) => void
 	reject: (error: Error) => void
 }
+
+interface BestEffortVibrateTransaction {
+	/** Reserved transaction IDs whose acknowledgements have not arrived: the pattern, plus its interrupt if any */
+	outstandingIds: Set<number>
+}
+
+type TransactionOutcome = { success: true; value: Uint8Array } | { success: false; error: unknown }
 
 export interface ModelSpec {
 	controls: LoupedeckControlDefinition[]
@@ -86,8 +93,16 @@ export abstract class LoupedeckDeviceBase extends EventEmitter<LoupedeckDeviceEv
 		return this.modelSpec.displayWheel
 	}
 
+	/** Number of best-effort vibration requests dropped while a prior one awaits an acknowledgement. */
+	public get suppressedBestEffortVibrations(): number {
+		return this.#suppressedBestEffortVibrations
+	}
+
 	readonly #pendingTransactions: Record<number, TransactionHandler> = {}
 	#nextTransactionId = 0
+	#bestEffortVibrateTransaction: BestEffortVibrateTransaction | undefined
+	#suppressedBestEffortVibrations = 0
+	#isClosing = false
 
 	readonly #sendQueue: PQueue | undefined
 
@@ -110,7 +125,7 @@ export abstract class LoupedeckDeviceBase extends EventEmitter<LoupedeckDeviceEv
 		})
 		this.#connection.on('disconnect', () => {
 			// TODO - not if closed?
-			this.#cleanupPendingPromises()
+			this.#cleanupPendingPromises(true)
 			this.emit('error', new Error('Connection lost'))
 		})
 		this.#connection.on('message', this.#onMessage.bind(this))
@@ -184,7 +199,9 @@ export abstract class LoupedeckDeviceBase extends EventEmitter<LoupedeckDeviceEv
 		}, false)
 	}
 
-	#cleanupPendingPromises(): void {
+	#cleanupPendingPromises(clearBestEffortVibrateTransaction = false): void {
+		if (clearBestEffortVibrateTransaction) this.#bestEffortVibrateTransaction = undefined
+
 		setTimeout(() => {
 			for (const promise of Object.values<TransactionHandler>(this.#pendingTransactions)) {
 				promise.reject(new Error('Connection closed'))
@@ -193,8 +210,10 @@ export abstract class LoupedeckDeviceBase extends EventEmitter<LoupedeckDeviceEv
 	}
 
 	public async close(): Promise<void> {
+		this.#isClosing = true
 		this.#cleanupPendingPromises()
 		await this.#connection.close()
+		this.#bestEffortVibrateTransaction = undefined
 	}
 
 	/**
@@ -416,6 +435,11 @@ export abstract class LoupedeckDeviceBase extends EventEmitter<LoupedeckDeviceEv
 						console.warn('unhandled incoming message', buff)
 						break
 				}
+			} else if (this.#bestEffortVibrateTransaction?.outstandingIds.has(transactionID)) {
+				this.#bestEffortVibrateTransaction.outstandingIds.delete(transactionID)
+				if (this.#bestEffortVibrateTransaction.outstandingIds.size === 0) {
+					this.#bestEffortVibrateTransaction = undefined
+				}
 			} else {
 				const resolver = this.#pendingTransactions[transactionID]
 				if (resolver) {
@@ -579,9 +603,71 @@ export abstract class LoupedeckDeviceBase extends EventEmitter<LoupedeckDeviceEv
 		return this.#sendAndWaitIfRequired(CommandIds.SetColour, payload)
 	}
 
-	public async vibrate(pattern: LoupedeckVibratePattern): Promise<void> {
+	public async vibrate(pattern: LoupedeckVibratePattern, options: VibrateOptions = {}): Promise<void> {
 		if (!pattern) throw new Error('Invalid vibrate pattern')
 		// TODO - validate pattern better?
+
+		const interrupt = options.interrupt
+		if (interrupt) {
+			if (!options.bestEffort) throw new Error('A vibrate interrupt requires bestEffort')
+			if (!interrupt.pattern) throw new Error('Invalid vibrate interrupt pattern')
+			if (!Number.isFinite(interrupt.afterMs) || interrupt.afterMs < 1 || interrupt.afterMs > 250) {
+				throw new RangeError('A vibrate interrupt delay must be from 1 to 250 milliseconds')
+			}
+		}
+
+		if (options.bestEffort) {
+			if (this.#isClosing) return
+			if (this.#bestEffortVibrateTransaction) {
+				this.#suppressedBestEffortVibrations++
+				return
+			}
+			if (!this.#connection.isReady()) throw new Error('Not connected!')
+
+			const transactionId = this.#allocateTransactionId()
+			const transaction: BestEffortVibrateTransaction = { outstandingIds: new Set([transactionId]) }
+			this.#bestEffortVibrateTransaction = transaction
+
+			let interruptTransactionId: number | undefined
+			if (interrupt) {
+				try {
+					// Reserved now, so the allocator cannot hand it to a normal command during the delay
+					interruptTransactionId = this.#allocateTransactionId()
+				} catch (e) {
+					this.#bestEffortVibrateTransaction = undefined
+					throw e
+				}
+				transaction.outstandingIds.add(interruptTransactionId)
+			}
+
+			return this.#runInQueueIfEnabled(async () => {
+				if (this.#isClosing || this.#bestEffortVibrateTransaction !== transaction) return
+
+				try {
+					await this.#sendCommandWithTransactionId(
+						CommandIds.SetVibration,
+						new Uint8Array([pattern]),
+						transactionId
+					)
+				} catch (e) {
+					// The interrupt was never written, so only the pattern's delivery is uncertain
+					if (interruptTransactionId !== undefined) transaction.outstandingIds.delete(interruptTransactionId)
+					throw e
+				}
+
+				if (!interrupt || interruptTransactionId === undefined) return
+
+				// Stay in this queue slot, so queued draws cannot stretch the pulse
+				await new Promise<void>((resolve) => setTimeout(resolve, interrupt.afterMs))
+				if (this.#isClosing || this.#bestEffortVibrateTransaction !== transaction) return
+
+				await this.#sendCommandWithTransactionId(
+					CommandIds.SetVibration,
+					new Uint8Array([interrupt.pattern]),
+					interruptTransactionId
+				)
+			}, false)
+		}
 
 		return this.#sendAndWaitIfRequired(CommandIds.SetVibration, new Uint8Array([pattern]))
 	}
@@ -602,9 +688,22 @@ export abstract class LoupedeckDeviceBase extends EventEmitter<LoupedeckDeviceEv
 		skipQueue = false
 	): Promise<void> {
 		return this.#runInQueueIfEnabled(async () => {
-			const transactionId = await this.#sendCommand(commandId, payload)
+			if (this.options.skipWaitForAcks) {
+				await this.#sendCommand(commandId, payload)
+				return
+			}
 
-			if (!this.options.skipWaitForAcks) await this.#waitForTransaction(transactionId)
+			const transactionId = this.#allocateTransactionId()
+			const transaction = this.#createTransactionOutcome(transactionId)
+
+			try {
+				await this.#sendCommandWithTransactionId(commandId, payload, transactionId)
+			} catch (e) {
+				delete this.#pendingTransactions[transactionId]
+				throw e
+			}
+
+			await this.#resolveTransactionOutcome(transaction)
 		}, skipQueue)
 	}
 	async #sendAndWaitForResult(
@@ -613,32 +712,74 @@ export abstract class LoupedeckDeviceBase extends EventEmitter<LoupedeckDeviceEv
 		skipQueue = false
 	): Promise<Uint8Array> {
 		return this.#runInQueueIfEnabled(async () => {
-			const transactionId = await this.#sendCommand(commandId, payload)
+			const transactionId = this.#allocateTransactionId()
+			const transaction = this.#createTransactionOutcome(transactionId)
 
-			return this.#waitForTransaction(transactionId)
+			try {
+				await this.#sendCommandWithTransactionId(commandId, payload, transactionId)
+			} catch (e) {
+				delete this.#pendingTransactions[transactionId]
+				throw e
+			}
+
+			return this.#resolveTransactionOutcome(transaction)
 		}, skipQueue)
+	}
+	async #createTransactionOutcome(transactionId: number): Promise<TransactionOutcome> {
+		return this.#waitForTransaction(transactionId).then(
+			(value) => ({ success: true, value }),
+			(error) => ({ success: false, error })
+		)
+	}
+	async #resolveTransactionOutcome(transaction: Promise<TransactionOutcome>): Promise<Uint8Array> {
+		const outcome = await transaction
+		if (!outcome.success) throw outcome.error
+
+		return outcome.value
 	}
 
 	async #sendCommand(commandId: number, payload: Uint8Array | Uint8ClampedArray | undefined): Promise<number> {
 		if (!this.#connection.isReady()) throw new Error('Not connected!')
 
-		this.#nextTransactionId = (this.#nextTransactionId + 1) % 256
-		// Skip transaction ID's of zero since the device seems to ignore them
-		if (this.#nextTransactionId === 0) this.#nextTransactionId++
+		const transactionId = this.#allocateTransactionId()
+		await this.#sendCommandWithTransactionId(commandId, payload, transactionId)
+
+		return transactionId
+	}
+	#allocateTransactionId(): number {
+		for (let attempt = 0; attempt < 255; attempt++) {
+			this.#nextTransactionId = (this.#nextTransactionId + 1) % 256
+			// Skip transaction ID's of zero since the device seems to ignore them
+			if (this.#nextTransactionId === 0) this.#nextTransactionId++
+
+			if (
+				!this.#bestEffortVibrateTransaction?.outstandingIds.has(this.#nextTransactionId) &&
+				!this.#pendingTransactions[this.#nextTransactionId]
+			) {
+				return this.#nextTransactionId
+			}
+		}
+
+		throw new Error('No transaction ID available')
+	}
+	async #sendCommandWithTransactionId(
+		commandId: number,
+		payload: Uint8Array | Uint8ClampedArray | undefined,
+		transactionId: number
+	): Promise<void> {
+		if (!this.#connection.isReady()) throw new Error('Not connected!')
 
 		const packet = new Uint8Array(3 + (payload?.length ?? 0))
 		const packetView = uint8ArrayToDataView(packet)
 
 		packetView.setUint8(0, packet.length >= 0xff ? 0xff : packet.length) // TODO - what if it is longer?
 		packetView.setUint8(1, commandId)
-		packetView.setUint8(2, this.#nextTransactionId)
+		packetView.setUint8(2, transactionId)
 		if (payload && payload.length) {
 			packet.set(payload, 3)
 		}
 
 		await this.#connection.send(packet)
-
-		return this.#nextTransactionId
 	}
 	async #waitForTransaction(transactionID: number): Promise<Uint8Array> {
 		if (this.#pendingTransactions[transactionID]) throw new Error('Transaction handler already defined')

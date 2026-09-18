@@ -4,6 +4,31 @@ import type { LoupedeckBufferFormat, LoupedeckDisplayId, LoupedeckVibratePattern
 import type { LoupedeckModelId } from '../info.js'
 import type { LoupedeckControlDefinition } from '../controlDefinition.js'
 
+export interface VibrateOptions {
+	/**
+	 * Submit after any earlier queued commands finish, then resolve after the
+	 * transport write completes without waiting for this vibration's
+	 * acknowledgement. Only one best-effort vibration can be outstanding at a time.
+	 */
+	bestEffort?: boolean
+	/**
+	 * Shorten the vibration by submitting a second pattern shortly after the first.
+	 * A new vibration command replaces the one that is playing, so a pattern that is
+	 * too weak to feel cuts the first one short. Both commands are submitted from the
+	 * same queue slot, so other queued commands cannot change the spacing; with
+	 * `skipWaitForAcks` there is no queue and other writes can land between them.
+	 * Requires `bestEffort`; neither acknowledgement is waited for.
+	 */
+	interrupt?: VibrateInterruptOptions
+}
+
+export interface VibrateInterruptOptions {
+	/** Delay between the two transport writes, from 1 to 250 milliseconds */
+	afterMs: number
+	/** The pattern that replaces the first one */
+	pattern: LoupedeckVibratePattern
+}
+
 export interface LoupedeckDisplayDefinition {
 	/** Total usable width of the display */
 	width: number
@@ -128,5 +153,5 @@ export interface LoupedeckDevice extends EventEmitter<LoupedeckDeviceEvents> {
 	 * Vibrate the device
 	 * @param pattern The pattern to activate
 	 */
-	vibrate(pattern: LoupedeckVibratePattern): Promise<void>
+	vibrate(pattern: LoupedeckVibratePattern, options?: VibrateOptions): Promise<void>
 }
