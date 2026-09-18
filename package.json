@@ -26,6 +26,7 @@
     "build:root": "(rimraf packages/*/dist || true) && tsc --build tsconfig.build.json",
     "test": "run lint && run unit",
     "unit": "jest",
+    "unit:node": "node --test packages/core/test/haptic-feedback.test.mjs",
     "lint:raw": "eslint",
     "lint": "run lint:raw packages",
     "lint-fix": "run lint --fix",

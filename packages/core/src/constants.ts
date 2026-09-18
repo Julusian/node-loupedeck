@@ -3,6 +3,9 @@ export const VendorIdRazer = 0x1532
 
 export enum LoupedeckVibratePattern {
 	SHORT = 0x01,
+	SHARP_CLICK_MEDIUM = 0x05,
+	/** Too weak to feel on a Live S; useful as the interrupting pattern of a shortened pulse */
+	SHARP_CLICK_LOW = 0x06,
 	MEDIUM = 0x0a,
 	LONG = 0x0f,
 	LOW = 0x31,
